@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Create account — Pass Spot</title>
+    <link rel="icon" type="image/svg+xml" href="assets/favicon/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body data-page="signup">
+    <div class="auth">
+      <!-- Brand visual side -->
+      <aside class="auth-visual">
+        <a href="index.html" class="brand">Pass<span>Spot</span></a>
+
+        <div class="auth-visual-content">
+          <h2>Everything you need to run events — or attend them.</h2>
+          <p>
+            One account. Unlimited access to Nigeria's best experiences and
+            powerful organizer tools.
+          </p>
+
+          <div class="auth-features">
+            <div class="auth-feature">
+              <span class="fi"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" /></svg
+              ></span>
+              Attendee or organizer account
+            </div>
+            <div class="auth-feature">
+              <span class="fi"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                  <polyline points="16 7 22 7 22 13" /></svg
+              ></span>
+              Live sales and revenue tracking
+            </div>
+            <div class="auth-feature">
+              <span class="fi"
+                ><svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg
+              ></span>
+              Bank-grade security
+            </div>
+          </div>
+        </div>
+
+        <p
+          style="
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8125rem;
+            position: relative;
+            z-index: 1;
+          "
+        >
+          © 2025 Pass Spot · All rights reserved
+        </p>
+      </aside>
+
+      <!-- Form side -->
+      <main class="auth-form-side">
+        <button
+          class="theme-toggle-auth"
+          data-theme-toggle
+          aria-label="Toggle theme"
+        ></button>
+
+        <div class="auth-form-wrap">
+          <a href="index.html" class="brand">Pass<span>Spot</span></a>
+
+          <div class="auth-head">
+            <h1>Create your account</h1>
+            <p>It takes less than a minute.</p>
+          </div>
+
+          <!-- =========================================
+                 SIGNUP FORM
+                 Validated in JS. Simulated account creation.
+            ========================================= -->
+          <form id="signup-form" novalidate>
+            <div
+              style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px"
+            >
+              <div class="form-group">
+                <label class="form-label" for="first"
+                  >First name <span class="req">*</span></label
+                >
+                <input
+                  type="text"
+                  id="first"
+                  name="firstName"
+                  class="form-control"
+                  placeholder="Adaeze"
+                  autocomplete="given-name"
+                  required
+                />
+                <div class="form-error"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="last"
+                  >Last name <span class="req">*</span></label
+                >
+                <input
+                  type="text"
+                  id="last"
+                  name="lastName"
+                  class="form-control"
+                  placeholder="Okonkwo"
+                  autocomplete="family-name"
+                  required
+                />
+                <div class="form-error"></div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="email"
+                >Email <span class="req">*</span></label
+              >
+              <input
+                type="email"
+                id="email"
+                name="email"
+                class="form-control"
+                placeholder="you@example.com"
+                autocomplete="email"
+                required
+              />
+              <div class="form-error"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="phone"
+                >Phone number <span class="req">*</span></label
+              >
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                class="form-control"
+                placeholder="+234 800 000 0000"
+                autocomplete="tel"
+                required
+              />
+              <div class="form-error"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="password"
+                >Password <span class="req">*</span></label
+              >
+              <div class="input-icon-wrap" data-pwd-toggle>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  class="form-control"
+                  placeholder="At least 8 characters"
+                  autocomplete="new-password"
+                  required
+                />
+                <button
+                  type="button"
+                  class="input-suffix"
+                  aria-label="Show password"
+                ></button>
+              </div>
+              <div class="pwd-strength" data-level="0">
+                <span class="bar"></span><span class="bar"></span
+                ><span class="bar"></span><span class="bar"></span>
+              </div>
+              <div class="pwd-strength-label">
+                Password must be at least 8 characters, include uppercase,
+                lowercase, number and symbol.
+              </div>
+              <div class="form-error"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="confirm"
+                >Confirm password <span class="req">*</span></label
+              >
+              <div class="input-icon-wrap" data-pwd-toggle>
+                <input
+                  type="password"
+                  id="confirm"
+                  name="confirm"
+                  class="form-control"
+                  placeholder="Re-enter your password"
+                  autocomplete="new-password"
+                  required
+                />
+                <button
+                  type="button"
+                  class="input-suffix"
+                  aria-label="Show password"
+                ></button>
+              </div>
+              <div class="form-error"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="account-type"
+                >Account type <span class="req">*</span></label
+              >
+              <select
+                id="account-type"
+                name="accountType"
+                class="form-control"
+                required
+              >
+                <option value="">Select an option</option>
+                <option value="Attendee">
+                  Attendee — buy tickets to events
+                </option>
+                <option value="Organizer">
+                  Organizer — create and sell tickets
+                </option>
+              </select>
+              <div class="form-error"></div>
+            </div>
+
+            <div class="form-group">
+              <label class="check">
+                <input type="checkbox" id="terms" name="terms" />
+                <span class="box"
+                  ><svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  >
+                    <polyline points="20 6 9 17 4 12" /></svg
+                ></span>
+                I agree to the <a href="#">Terms of Service</a> and
+                <a href="#">Privacy Policy</a>. <span class="req">*</span>
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg">
+              Create account
+            </button>
+          </form>
+
+          <p class="auth-foot">
+            Already have an account? <a href="login.html">Sign in</a>
+          </p>
+        </div>
+      </main>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/pages.js"></script>
+  </body>
+</html>
