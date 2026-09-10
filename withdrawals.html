@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Withdraw — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Withdraw funds</h2>
+              <p class="page-subtitle">
+                Transfer money from your Pass Spot wallet to your bank.
+              </p>
+            </div>
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1.5fr 1fr;
+              gap: var(--space-8);
+            "
+            id="wdGrid"
+          >
+            <form id="wdForm" class="card" novalidate>
+              <div class="info-panel mb-6">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 16v-4M12 8h.01" />
+                </svg>
+                <span
+                  >Available balance:
+                  <strong id="wdAvailable">₦110,000.00</strong></span
+                >
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"
+                  >Withdrawal amount <span class="required">*</span></label
+                >
+                <div class="input-group">
+                  <span class="input-prefix" id="wdSymbol">₦</span>
+                  <input
+                    class="form-input"
+                    type="number"
+                    id="wdAmount"
+                    min="100"
+                    step="100"
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                <span class="form-error"></span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"
+                  >Bank <span class="required">*</span></label
+                >
+                <select class="form-select" id="wdBank" required>
+                  <option value="">Select your bank</option>
+                </select>
+                <span class="form-error"></span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"
+                  >Account number <span class="required">*</span></label
+                >
+                <input
+                  class="form-input"
+                  type="text"
+                  id="wdAccount"
+                  placeholder="10-digit account number"
+                  maxlength="10"
+                  inputmode="numeric"
+                  required
+                />
+                <span class="form-error"></span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"
+                  >Account name <span class="required">*</span></label
+                >
+                <input
+                  class="form-input"
+                  type="text"
+                  id="wdAccountName"
+                  placeholder="Account holder name"
+                  required
+                />
+                <span class="form-error"></span>
+              </div>
+
+              <button
+                type="submit"
+                class="btn btn-primary btn-lg btn-block"
+                id="wdSubmit"
+              >
+                Request withdrawal
+              </button>
+              <p class="text-xs text-muted mt-3" style="text-align: center">
+                Withdrawals are processed within 24 hours on business days.
+              </p>
+            </form>
+
+            <div>
+              <div class="card mb-4">
+                <h3 class="card-title mb-4">Withdrawal summary</h3>
+                <div class="summary-row">
+                  <span class="text-muted text-sm">Amount</span
+                  ><span class="fw-semibold text-sm" id="sumAmount">₦0.00</span>
+                </div>
+                <div class="summary-row">
+                  <span class="text-muted text-sm">Fee</span
+                  ><span class="fw-semibold text-sm">₦0.00</span>
+                </div>
+                <div class="summary-row total">
+                  <span>You'll receive</span><span id="sumTotal">₦0.00</span>
+                </div>
+                <div class="divider"></div>
+                <div class="summary-row">
+                  <span class="text-muted text-sm">Remaining balance</span
+                  ><span class="fw-semibold text-sm" id="sumRemaining"
+                    >₦0.00</span
+                  >
+                </div>
+              </div>
+
+              <div class="card">
+                <h3 class="card-title mb-3">Security note</h3>
+                <p
+                  class="text-xs text-muted"
+                  style="line-height: var(--lh-relaxed)"
+                >
+                  This is a frontend prototype. No real bank transfers occur. In
+                  production, withdrawals are verified by the platform and
+                  processed through licensed Nigerian payment providers.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent withdrawals -->
+          <div class="card mt-8">
+            <h3 class="card-title mb-4">Recent withdrawals</h3>
+            <div class="tx-list" id="wdHistory"></div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Confirmation modal -->
+    <div class="modal-overlay" id="confirmModal">
+      <div class="modal modal-sm">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title">Confirm withdrawal</h3>
+            <p class="modal-subtitle">Review your withdrawal details.</p>
+          </div>
+          <button class="modal-close" onclick="PS.closeModal('confirmModal')">
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="summary-row">
+            <span>Amount</span
+            ><span class="fw-bold" id="confAmount">₦0.00</span>
+          </div>
+          <div class="summary-row">
+            <span>Bank</span><span id="confBank">—</span>
+          </div>
+          <div class="summary-row">
+            <span>Account</span><span id="confAccount">—</span>
+          </div>
+          <div class="summary-row total">
+            <span>You'll receive</span><span id="confTotal">₦0.00</span>
+          </div>
+          <div class="info-panel warning mt-4">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M10.29 3.86 1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+              />
+              <path d="M12 9v4M12 17h.01" />
+            </svg>
+            <span>This is a demo — no real funds will be moved.</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="PS.closeModal('confirmModal')"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="confirmWd">
+            Confirm withdrawal
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      /* =========================================
+       WITHDRAWALS PAGE
+    ========================================= */
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_SHELL.renderSidebar("wallet");
+        window.PS_SHELL.renderTopbar("Withdraw");
+
+        // Populate banks
+        const bankSel = document.getElementById("wdBank");
+        window.PS_DATA.NIGERIAN_BANKS.forEach((b) => {
+          const o = document.createElement("option");
+          o.value = b;
+          o.textContent = b;
+          bankSel.appendChild(o);
+        });
+
+        const available = () => PS.wallet.getBalance() - 15000; // minus pending
+
+        function updateSummary() {
+          const cur = PS.getCurrency();
+          const amt =
+            parseFloat(document.getElementById("wdAmount").value) || 0;
+          document.getElementById("sumAmount").textContent = PS.formatMoney(
+            amt,
+            cur,
+          );
+          document.getElementById("sumTotal").textContent = PS.formatMoney(
+            amt,
+            cur,
+          );
+          document.getElementById("sumRemaining").textContent = PS.formatMoney(
+            available() - amt,
+            cur,
+          );
+          document.getElementById("wdAvailable").textContent = PS.formatMoney(
+            available(),
+            cur,
+          );
+        }
+
+        document
+          .getElementById("wdAmount")
+          .addEventListener("input", updateSummary);
+        document.addEventListener("ps:currencychange", updateSummary);
+        updateSummary();
+
+        // =========================================
+        // FORM SUBMISSION & VALIDATION
+        // =========================================
+        document.getElementById("wdForm").addEventListener("submit", (e) => {
+          e.preventDefault();
+          const amount = parseFloat(document.getElementById("wdAmount").value);
+          const bank = document.getElementById("wdBank").value;
+          const account = document.getElementById("wdAccount").value.trim();
+          const accountName = document
+            .getElementById("wdAccountName")
+            .value.trim();
+          let valid = true;
+
+          const amtEl = document.getElementById("wdAmount");
+          PS.clearFieldError(amtEl);
+          if (!amount || amount <= 0) {
+            PS.setFieldError(amtEl, "Enter a valid amount.");
+            valid = false;
+          } else if (amount > available()) {
+            PS.setFieldError(amtEl, "Amount exceeds your available balance.");
+            valid = false;
+          }
+
+          PS.clearFieldError(bankSel);
+          if (!bank) {
+            PS.setFieldError(bankSel, "Select your bank.");
+            valid = false;
+          }
+
+          const accEl = document.getElementById("wdAccount");
+          PS.clearFieldError(accEl);
+          if (!account) {
+            PS.setFieldError(accEl, "Enter your account number.");
+            valid = false;
+          } else if (!/^\d{10}$/.test(account)) {
+            PS.setFieldError(accEl, "Account number must be 10 digits.");
+            valid = false;
+          }
+
+          const nameEl = document.getElementById("wdAccountName");
+          PS.clearFieldError(nameEl);
+          if (!accountName) {
+            PS.setFieldError(nameEl, "Enter the account name.");
+            valid = false;
+          }
+
+          if (!valid) return;
+
+          const cur = PS.getCurrency();
+          document.getElementById("confAmount").textContent = PS.formatMoney(
+            amount,
+            cur,
+          );
+          document.getElementById("confBank").textContent = bank;
+          document.getElementById("confAccount").textContent =
+            `****${account.slice(-4)}`;
+          document.getElementById("confTotal").textContent = PS.formatMoney(
+            amount,
+            cur,
+          );
+          PS.openModal("confirmModal");
+        });
+
+        document.getElementById("confirmWd").addEventListener("click", (e) => {
+          const btn = e.currentTarget;
+          btn.classList.add("is-loading");
+          btn.disabled = true;
+
+          setTimeout(() => {
+            const amount = parseFloat(
+              document.getElementById("wdAmount").value,
+            );
+            PS.wallet.deduct(amount);
+            PS.closeModal("confirmModal");
+            PS.toast("Withdrawal request submitted", "success");
+            document.getElementById("wdForm").reset();
+            updateSummary();
+            btn.classList.remove("is-loading");
+            btn.disabled = false;
+          }, 1200);
+        });
+
+        // =========================================
+        // RECENT WITHDRAWALS
+        // =========================================
+        const recent = window.PS_DATA.DEMO_TRANSACTIONS.filter(
+          (t) => t.type === "Withdrawal",
+        );
+        document.getElementById("wdHistory").innerHTML = recent.length
+          ? recent
+              .map(
+                (tx) => `
+        <div class="tx-row">
+          <div class="tx-icon out">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+          </div>
+          <div class="tx-main">
+            <div class="tx-title">${tx.description}</div>
+            <div class="tx-meta">${PS.formatDateTime(tx.date)} · ${tx.method}</div>
+          </div>
+          <div class="tx-amount out">${PS.formatMoney(tx.amount, PS.getCurrency())}</div>
+        </div>
+      `,
+              )
+              .join("")
+          : `<div class="empty-state" style="padding:var(--space-8);"><p class="text-sm text-muted">No withdrawals yet.</p></div>`;
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notifications — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Notifications</h2>
+              <p class="page-subtitle">
+                Stay updated on your tickets, payments, and events.
+              </p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-secondary btn-sm" id="markAllBtn">
+                Mark all as read
+              </button>
+            </div>
+          </div>
+
+          <div class="tabs">
+            <button class="tab is-active" data-tab="all">All</button>
+            <button class="tab" data-tab="unread">Unread</button>
+            <button class="tab" data-tab="payments">Payments</button>
+            <button class="tab" data-tab="events">Events</button>
+          </div>
+
+          <div class="table-wrap">
+            <div id="notifList"></div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      /* =========================================
+       NOTIFICATIONS PAGE
+    ========================================= */
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_SHELL.renderSidebar("notifications");
+        window.PS_SHELL.renderTopbar("Notifications");
+
+        // Load from storage or demo
+        let notifications = PS.store.get(
+          "notifications",
+          window.PS_DATA.DEMO_NOTIFICATIONS,
+        );
+        let activeTab = "all";
+
+        const iconMap = {
+          success:
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>',
+          info: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+          warning:
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+          error:
+            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>',
+        };
+
+        function render() {
+          let list = [...notifications];
+          if (activeTab === "unread") list = list.filter((n) => !n.read);
+          else if (activeTab === "payments")
+            list = list.filter(
+              (n) =>
+                n.title.toLowerCase().includes("deposit") ||
+                n.title.toLowerCase().includes("withdraw") ||
+                n.title.toLowerCase().includes("transaction"),
+            );
+          else if (activeTab === "events")
+            list = list.filter(
+              (n) =>
+                n.title.toLowerCase().includes("event") ||
+                n.title.toLowerCase().includes("ticket"),
+            );
+
+          const wrap = document.getElementById("notifList");
+          if (list.length === 0) {
+            wrap.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/></svg>
+              </div>
+              <h3 class="empty-state-title">No notifications</h3>
+              <p class="empty-state-text">You're all caught up!</p>
+            </div>`;
+            return;
+          }
+
+          wrap.innerHTML = list
+            .map(
+              (n) => `
+          <div class="notification-item ${n.read ? "" : "is-unread"}" data-id="${n.id}">
+            <div class="notification-icon ${n.type}">${iconMap[n.type] || iconMap.info}</div>
+            <div class="notification-body">
+              <div class="notification-title">${n.title}</div>
+              <div class="notification-text">${n.text}</div>
+              <div class="notification-time">${n.time}</div>
+            </div>
+          </div>
+        `,
+            )
+            .join("");
+
+          wrap.querySelectorAll(".notification-item").forEach((item) => {
+            item.addEventListener("click", () => {
+              const id = item.dataset.id;
+              const n = notifications.find((x) => x.id === id);
+              if (n) n.read = true;
+              PS.store.set("notifications", notifications);
+              render();
+            });
+          });
+        }
+
+        document.querySelectorAll(".tab").forEach((tab) => {
+          tab.addEventListener("click", () => {
+            document
+              .querySelectorAll(".tab")
+              .forEach((t) => t.classList.remove("is-active"));
+            tab.classList.add("is-active");
+            activeTab = tab.dataset.tab;
+            render();
+          });
+        });
+
+        document.getElementById("markAllBtn").addEventListener("click", () => {
+          notifications.forEach((n) => (n.read = true));
+          PS.store.set("notifications", notifications);
+          render();
+          PS.toast("All notifications marked as read", "success");
+        });
+
+        render();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payments — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Payments</h2>
+              <p class="page-subtitle">All your transactions in one place.</p>
+            </div>
+          </div>
+
+          <section class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Total in</span
+                ><span class="stat-icon success"
+                  ><svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M12 19V5M5 12l7-7 7 7" /></svg
+                ></span>
+              </div>
+              <div class="stat-value" data-money="250000">₦250,000.00</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Total out</span
+                ><span class="stat-icon error"
+                  ><svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M12 5v14M5 12l7 7 7-7" /></svg
+                ></span>
+              </div>
+              <div class="stat-value" data-money="150000">₦150,000.00</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Pending</span
+                ><span class="stat-icon warning"
+                  ><svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 6v6l4 2" /></svg
+                ></span>
+              </div>
+              <div class="stat-value" data-money="15000">₦15,000.00</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Transactions</span
+                ><span class="stat-icon info"
+                  ><svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M3 3v18h18" />
+                    <path d="m19 9-5 5-4-4-3 3" /></svg
+                ></span>
+              </div>
+              <div class="stat-value">8</div>
+            </div>
+          </section>
+
+          <!-- Filters -->
+          <div class="filter-bar">
+            <div class="filter-search">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input
+                class="form-input"
+                type="search"
+                id="paySearch"
+                placeholder="Search transactions…"
+              />
+            </div>
+            <select
+              class="form-select"
+              id="payType"
+              style="width: auto; min-width: 160px"
+            >
+              <option value="">All types</option>
+              <option>Deposit</option>
+              <option>Withdrawal</option>
+              <option>Ticket Purchase</option>
+              <option>Ticket Revenue</option>
+              <option>Advertisement</option>
+              <option>Refund</option>
+            </select>
+            <select
+              class="form-select"
+              id="payStatus"
+              style="width: auto; min-width: 150px"
+            >
+              <option value="">All statuses</option>
+              <option>Completed</option>
+              <option>Pending</option>
+              <option>Failed</option>
+              <option>Cancelled</option>
+              <option>Refunded</option>
+            </select>
+            <select
+              class="form-select"
+              id="paySort"
+              style="width: auto; min-width: 160px"
+            >
+              <option value="date-desc">Newest first</option>
+              <option value="date-asc">Oldest first</option>
+              <option value="amount-desc">Highest amount</option>
+              <option value="amount-asc">Lowest amount</option>
+            </select>
+          </div>
+
+          <div class="table-wrap">
+            <div class="table-scroll">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Transaction</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="payTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="payEmpty" style="display: none"></div>
+        </main>
+      </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      /* =========================================
+       PAYMENTS PAGE
+       Full filtering, sorting, and detail view.
+    ========================================= */
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_SHELL.renderSidebar("payments");
+        window.PS_SHELL.renderTopbar("Payments");
+
+        const tbody = document.getElementById("payTableBody");
+        const searchEl = document.getElementById("paySearch");
+        const typeEl = document.getElementById("payType");
+        const statusEl = document.getElementById("payStatus");
+        const sortEl = document.getElementById("paySort");
+
+        function render() {
+          const q = searchEl.value.toLowerCase();
+          let list = [...window.PS_DATA.DEMO_TRANSACTIONS];
+          if (q)
+            list = list.filter(
+              (t) =>
+                t.description.toLowerCase().includes(q) ||
+                t.id.toLowerCase().includes(q) ||
+                t.type.toLowerCase().includes(q),
+            );
+          if (typeEl.value) list = list.filter((t) => t.type === typeEl.value);
+          if (statusEl.value)
+            list = list.filter(
+              (t) => t.status.toLowerCase() === statusEl.value.toLowerCase(),
+            );
+
+          const sort = sortEl.value;
+          if (sort === "date-desc")
+            list.sort((a, b) => new Date(b.date) - new Date(a.date));
+          else if (sort === "date-asc")
+            list.sort((a, b) => new Date(a.date) - new Date(b.date));
+          else if (sort === "amount-desc")
+            list.sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
+          else if (sort === "amount-asc")
+            list.sort((a, b) => Math.abs(a.amount) - Math.abs(b.amount));
+
+          const cur = PS.getCurrency();
+
+          if (list.length === 0) {
+            tbody.innerHTML = "";
+            document.getElementById("payEmpty").style.display = "block";
+            document.getElementById("payEmpty").innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+              </div>
+              <h3 class="empty-state-title">No transactions found</h3>
+              <p class="empty-state-text">Try adjusting your filters.</p>
+            </div>`;
+            return;
+          }
+          document.getElementById("payEmpty").style.display = "none";
+
+          tbody.innerHTML = list
+            .map((tx) => {
+              const isIn = tx.amount > 0;
+              const statusClass = {
+                completed: "badge-success",
+                pending: "badge-warning",
+                failed: "badge-error",
+                cancelled: "badge-neutral",
+                refunded: "badge-info",
+              }[tx.status];
+              return `
+            <tr>
+              <td data-label="Transaction">
+                <div class="flex items-center gap-3">
+                  <div class="tx-icon ${isIn ? "in" : "out"}" style="width:34px;height:34px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">${isIn ? '<path d="M12 19V5M5 12l7-7 7 7"/>' : '<path d="M12 5v14M5 12l7 7 7-7"/>'}</svg>
+                  </div>
+                  <div>
+                    <div class="fw-semibold text-sm">${tx.description}</div>
+                    <div class="text-xs text-muted mono">${tx.id}</div>
+                  </div>
+                </div>
+              </td>
+              <td data-label="Type"><span class="badge badge-neutral">${tx.type}</span></td>
+              <td data-label="Amount"><span class="fw-bold ${isIn ? "text-success" : ""}">${PS.formatMoney(tx.amount, cur)}</span></td>
+              <td data-label="Status"><span class="badge ${statusClass}">${tx.status}</span></td>
+              <td data-label="Date"><span class="text-sm text-muted">${PS.formatDateTime(tx.date)}</span></td>
+            </tr>`;
+            })
+            .join("");
+        }
+
+        [searchEl, typeEl, statusEl, sortEl].forEach((el) =>
+          el.addEventListener("input", render),
+        );
+        document.addEventListener("ps:currencychange", render);
+        render();
+      });
+    </script>
+  </body>
+</html>

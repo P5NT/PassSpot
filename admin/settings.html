@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Platform Settings — Admin — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Platform settings</h2>
+              <p class="page-subtitle">
+                Configure fees, limits, and platform-wide behavior.
+              </p>
+            </div>
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 220px 1fr;
+              gap: var(--space-8);
+            "
+            id="settingsGrid"
+          >
+            <!-- SETTINGS NAV -->
+            <nav
+              class="sidebar-section"
+              style="
+                position: sticky;
+                top: calc(var(--header-height) + var(--space-4));
+                height: fit-content;
+              "
+            >
+              <div class="sidebar-nav">
+                <button
+                  class="sidebar-link is-active"
+                  data-admin-section="fees"
+                >
+                  Fees & Pricing
+                </button>
+                <button class="sidebar-link" data-admin-section="limits">
+                  Limits
+                </button>
+                <button class="sidebar-link" data-admin-section="categories">
+                  Categories
+                </button>
+                <button class="sidebar-link" data-admin-section="notifications">
+                  Notifications
+                </button>
+                <button class="sidebar-link" data-admin-section="maintenance">
+                  Maintenance
+                </button>
+              </div>
+            </nav>
+
+            <div id="adminSettingsContent"></div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+      /* =========================================
+       ADMIN SETTINGS PAGE
+       Platform-wide configuration UI. All
+       values are stored in localStorage for
+       the demo, but real settings must live
+       on the backend.
+    ========================================= */
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_ADMIN.renderSidebar("settings");
+        window.PS_ADMIN.renderTopbar("Platform settings");
+
+        // Load or seed default settings
+        const settings = PS.store.get("admin_settings", {
+          platformFee: 5,
+          serviceFee: 2,
+          minWithdrawal: 5000,
+          maxWithdrawal: 500000,
+          minDeposit: 100,
+          maxDeposit: 1000000,
+          emailNotif: true,
+          maintenanceMode: false,
+          allowNewSignups: true,
+        });
+
+        // ---------- Section templates ----------
+        const sections = {
+          fees: `
+          <div class="card">
+            <h3 class="card-title mb-4">Fees & pricing</h3>
+            <div class="form-group">
+              <label class="form-label">Platform fee (%)</label>
+              <div class="input-group">
+                <input class="form-input" type="number" id="setPlatformFee" min="0" max="20" step="0.1" value="${settings.platformFee}">
+                <span class="input-suffix">%</span>
+              </div>
+              <span class="form-hint">Percentage taken from each ticket sale.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Service fee (%)</label>
+              <div class="input-group">
+                <input class="form-input" type="number" id="setServiceFee" min="0" max="10" step="0.1" value="${settings.serviceFee}">
+                <span class="input-suffix">%</span>
+              </div>
+              <span class="form-hint">Charged to the buyer at checkout.</span>
+            </div>
+            <button class="btn btn-primary" id="saveFees">Save fees</button>
+          </div>
+        `,
+          limits: `
+          <div class="card">
+            <h3 class="card-title mb-4">Limits</h3>
+            <div class="auth-form-row">
+              <div class="form-group">
+                <label class="form-label">Min withdrawal (₦)</label>
+                <input class="form-input" type="number" id="setMinWithdrawal" value="${settings.minWithdrawal}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Max withdrawal (₦)</label>
+                <input class="form-input" type="number" id="setMaxWithdrawal" value="${settings.maxWithdrawal}">
+              </div>
+            </div>
+            <div class="auth-form-row">
+              <div class="form-group">
+                <label class="form-label">Min deposit (₦)</label>
+                <input class="form-input" type="number" id="setMinDeposit" value="${settings.minDeposit}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Max deposit (₦)</label>
+                <input class="form-input" type="number" id="setMaxDeposit" value="${settings.maxDeposit}">
+              </div>
+            </div>
+            <button class="btn btn-primary" id="saveLimits">Save limits</button>
+          </div>
+        `,
+          categories: `
+          <div class="card">
+            <h3 class="card-title mb-4">Event categories</h3>
+            <p class="text-sm text-muted mb-4">Manage the categories available to organizers.</p>
+            <div class="flex gap-2" style="flex-wrap:wrap;margin-bottom:var(--space-4);">
+              ${window.PS_DATA.EVENT_CATEGORIES.map(
+                (c) => `
+                <span class="badge badge-primary" style="padding:6px 12px;">
+                  ${c}
+                  <button type="button" data-remove-cat="${c}" style="background:none;border:none;color:inherit;cursor:pointer;margin-left:6px;">✕</button>
+                </span>
+              `,
+              ).join("")}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Add new category</label>
+              <div class="flex gap-2">
+                <input class="form-input" type="text" id="newCategoryInput" placeholder="e.g. Wellness">
+                <button class="btn btn-primary" id="addCategoryBtn">Add</button>
+              </div>
+            </div>
+          </div>
+        `,
+          notifications: `
+          <div class="card">
+            <h3 class="card-title mb-4">Platform notifications</h3>
+            <label class="checkbox mb-4" style="display:flex;">
+              <input type="checkbox" id="setEmailNotif" ${settings.emailNotif ? "checked" : ""}>
+              <span>
+                <strong>Email notifications</strong><br>
+                <span class="text-xs text-muted">Send transactional emails to users (deposits, purchases, withdrawals).</span>
+              </span>
+            </label>
+            <button class="btn btn-primary" id="saveNotifs">Save preferences</button>
+          </div>
+        `,
+          maintenance: `
+          <div class="card">
+            <h3 class="card-title mb-4">Maintenance & access</h3>
+            <label class="checkbox mb-4" style="display:flex;">
+              <input type="checkbox" id="setMaintenance" ${settings.maintenanceMode ? "checked" : ""}>
+              <span>
+                <strong>Maintenance mode</strong><br>
+                <span class="text-xs text-muted">Temporarily disable public access to Pass Spot.</span>
+              </span>
+            </label>
+            <label class="checkbox mb-4" style="display:flex;">
+              <input type="checkbox" id="setAllowSignups" ${settings.allowNewSignups ? "checked" : ""}>
+              <span>
+                <strong>Allow new signups</strong><br>
+                <span class="text-xs text-muted">Let new users create Pass Spot accounts.</span>
+              </span>
+            </label>
+            <button class="btn btn-primary" id="saveMaintenance">Save</button>
+          </div>
+        `,
+        };
+
+        // ---------- Render + bind section ----------
+        function renderSection(key) {
+          document.getElementById("adminSettingsContent").innerHTML =
+            sections[key];
+          bindSection(key);
+        }
+
+        function bindSection(key) {
+          if (key === "fees") {
+            document
+              .getElementById("saveFees")
+              .addEventListener("click", () => {
+                settings.platformFee =
+                  parseFloat(document.getElementById("setPlatformFee").value) ||
+                  0;
+                settings.serviceFee =
+                  parseFloat(document.getElementById("setServiceFee").value) ||
+                  0;
+                PS.store.set("admin_settings", settings);
+                PS.toast("Fees updated", "success");
+              });
+          }
+
+          if (key === "limits") {
+            document
+              .getElementById("saveLimits")
+              .addEventListener("click", () => {
+                settings.minWithdrawal =
+                  parseFloat(
+                    document.getElementById("setMinWithdrawal").value,
+                  ) || 0;
+                settings.maxWithdrawal =
+                  parseFloat(
+                    document.getElementById("setMaxWithdrawal").value,
+                  ) || 0;
+                settings.minDeposit =
+                  parseFloat(document.getElementById("setMinDeposit").value) ||
+                  0;
+                settings.maxDeposit =
+                  parseFloat(document.getElementById("setMaxDeposit").value) ||
+                  0;
+                PS.store.set("admin_settings", settings);
+                PS.toast("Limits updated", "success");
+              });
+          }
+
+          if (key === "categories") {
+            // Remove a category (visual only, we don't mutate the shared array)
+            document.querySelectorAll("[data-remove-cat]").forEach((btn) => {
+              btn.addEventListener("click", () => {
+                btn.parentElement.remove();
+                PS.toast(`Category "${btn.dataset.removeCat}" removed`, "info");
+              });
+            });
+            // Add category (visual only)
+            document
+              .getElementById("addCategoryBtn")
+              .addEventListener("click", () => {
+                const inp = document.getElementById("newCategoryInput");
+                const val = inp.value.trim();
+                if (!val) {
+                  PS.toast("Enter a category name", "error");
+                  return;
+                }
+                const span = document.createElement("span");
+                span.className = "badge badge-primary";
+                span.style.padding = "6px 12px";
+                span.innerHTML = `${val}<button type="button" style="background:none;border:none;color:inherit;cursor:pointer;margin-left:6px;">✕</button>`;
+                inp
+                  .closest(".card")
+                  .querySelector(".flex.gap-2")
+                  .appendChild(span);
+                inp.value = "";
+                PS.toast(`Category "${val}" added`, "success");
+              });
+          }
+
+          if (key === "notifications") {
+            document
+              .getElementById("saveNotifs")
+              .addEventListener("click", () => {
+                settings.emailNotif =
+                  document.getElementById("setEmailNotif").checked;
+                PS.store.set("admin_settings", settings);
+                PS.toast("Notification preferences saved", "success");
+              });
+          }
+
+          if (key === "maintenance") {
+            document
+              .getElementById("saveMaintenance")
+              .addEventListener("click", () => {
+                settings.maintenanceMode =
+                  document.getElementById("setMaintenance").checked;
+                settings.allowNewSignups =
+                  document.getElementById("setAllowSignups").checked;
+                PS.store.set("admin_settings", settings);
+                PS.toast("Maintenance settings saved", "success");
+              });
+          }
+        }
+
+        // ---------- Section tabs ----------
+        document.querySelectorAll("[data-admin-section]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            document
+              .querySelectorAll("[data-admin-section]")
+              .forEach((b) => b.classList.remove("is-active"));
+            btn.classList.add("is-active");
+            renderSection(btn.dataset.adminSection);
+          });
+        });
+
+        // Initial render
+        renderSection("fees");
+      });
+    </script>
+  </body>
+</html>

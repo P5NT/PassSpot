@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advertisements — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Advertisements</h2>
+              <p class="page-subtitle">
+                Promote your events to the right audience.
+              </p>
+            </div>
+            <div class="page-actions">
+              <a href="create-ad.html" class="btn btn-primary">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                New campaign
+              </a>
+            </div>
+          </div>
+
+          <section class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Active campaigns</span
+                ><span class="stat-icon success">📊</span>
+              </div>
+              <div class="stat-value" id="statActive">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Total impressions</span
+                ><span class="stat-icon info">👁</span>
+              </div>
+              <div class="stat-value" id="statImpressions">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Total clicks</span
+                ><span class="stat-icon warning">🖱</span>
+              </div>
+              <div class="stat-value" id="statClicks">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Total spent</span
+                ><span class="stat-icon">💰</span>
+              </div>
+              <div class="stat-value" id="statSpent">₦0.00</div>
+            </div>
+          </section>
+
+          <div class="tabs">
+            <button class="tab is-active" data-status="all">All</button>
+            <button class="tab" data-status="active">Active</button>
+            <button class="tab" data-status="pending">Pending</button>
+            <button class="tab" data-status="completed">Completed</button>
+            <button class="tab" data-status="rejected">Rejected</button>
+          </div>
+
+          <div style="display: grid; gap: var(--space-4)" id="adsList"></div>
+        </main>
+      </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      /* =========================================
+       ADVERTISEMENTS PAGE
+    ========================================= */
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_SHELL.renderSidebar("ads");
+        window.PS_SHELL.renderTopbar("Advertisements");
+
+        let activeStatus = "all";
+
+        function renderStats() {
+          const ads = window.PS_DATA.DEMO_ADS;
+          const active = ads.filter((a) => a.status === "active").length;
+          const impressions = ads.reduce((s, a) => s + a.impressions, 0);
+          const clicks = ads.reduce((s, a) => s + a.clicks, 0);
+          const spent = ads.reduce((s, a) => s + a.spent, 0);
+
+          document.getElementById("statActive").textContent = active;
+          document.getElementById("statImpressions").textContent =
+            impressions.toLocaleString();
+          document.getElementById("statClicks").textContent =
+            clicks.toLocaleString();
+          document.getElementById("statSpent").textContent = PS.formatMoney(
+            spent,
+            PS.getCurrency(),
+          );
+        }
+
+        function renderAds() {
+          const wrap = document.getElementById("adsList");
+          let list = [...window.PS_DATA.DEMO_ADS];
+          if (activeStatus !== "all")
+            list = list.filter((a) => a.status === activeStatus);
+
+          if (list.length === 0) {
+            wrap.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11h18v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6zM7 11V7a5 5 0 0110 0v4"/></svg>
+              </div>
+              <h3 class="empty-state-title">No campaigns</h3>
+              <p class="empty-state-text">Create your first ad campaign to promote your events.</p>
+              <a href="create-ad.html" class="btn btn-primary">Create campaign</a>
+            </div>`;
+            return;
+          }
+
+          const cur = PS.getCurrency();
+          const statusClass = {
+            active: "badge-success",
+            pending: "badge-warning",
+            completed: "badge-neutral",
+            rejected: "badge-error",
+            draft: "badge-info",
+          };
+
+          wrap.innerHTML = list
+            .map((ad) => {
+              const pct = ad.budget > 0 ? (ad.spent / ad.budget) * 100 : 0;
+              return `
+            <div class="card card-hover" onclick="window.location.href='ad-details.html?id=${ad.id}'" style="cursor:pointer;">
+              <div class="card-header">
+                <div>
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="badge ${statusClass[ad.status]}">${ad.status}</span>
+                    <span class="text-xs text-muted">${ad.id}</span>
+                  </div>
+                  <h3 class="card-title">${ad.eventTitle}</h3>
+                  <p class="card-subtitle">${ad.objective}</p>
+                </div>
+                <div style="text-align:right;">
+                  <div class="text-xs text-muted">Budget</div>
+                  <div class="fw-bold" data-money="${ad.budget}">${PS.formatMoney(ad.budget, cur)}</div>
+                </div>
+              </div>
+
+              <div class="progress mb-2"><div class="progress-bar" style="width:${pct}%;"></div></div>
+              <div class="flex justify-between text-xs text-muted mb-4">
+                <span data-money="${ad.spent}">${PS.formatMoney(ad.spent, cur)} spent</span>
+                <span>${pct.toFixed(1)}%</span>
+              </div>
+
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-3);padding-top:var(--space-4);border-top:1px solid var(--border-color);">
+                <div>
+                  <div class="text-xs text-muted">Impressions</div>
+                  <div class="fw-bold text-sm">${ad.impressions.toLocaleString()}</div>
+                </div>
+                <div>
+                  <div class="text-xs text-muted">Clicks</div>
+                  <div class="fw-bold text-sm">${ad.clicks.toLocaleString()}</div>
+                </div>
+                <div>
+                  <div class="text-xs text-muted">CTR</div>
+                  <div class="fw-bold text-sm">${ad.ctr}%</div>
+                </div>
+                <div>
+                  <div class="text-xs text-muted">Dates</div>
+                  <div class="fw-bold text-xs">${ad.startDate} → ${ad.endDate}</div>
+                </div>
+              </div>
+            </div>`;
+            })
+            .join("");
+        }
+
+        document.querySelectorAll("[data-status]").forEach((tab) => {
+          tab.addEventListener("click", () => {
+            document
+              .querySelectorAll("[data-status]")
+              .forEach((t) => t.classList.remove("is-active"));
+            tab.classList.add("is-active");
+            activeStatus = tab.dataset.status;
+            renderAds();
+          });
+        });
+
+        document.addEventListener("ps:currencychange", () => {
+          renderStats();
+          renderAds();
+        });
+        renderStats();
+        renderAds();
+      });
+    </script>
+  </body>
+</html>

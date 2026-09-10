@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Log in — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="auth-layout">
+      <!-- =========================================
+         FORM PANEL
+    ========================================= -->
+      <div class="auth-panel">
+        <div class="auth-form-wrap">
+          <a href="index.html" class="brand mb-6" style="display: inline-block"
+            >Pass<span class="brand-accent">Spot</span></a
+          >
+
+          <h1 class="auth-heading">Welcome back</h1>
+          <p class="auth-subheading">Log in to your Pass Spot account.</p>
+
+          <form id="loginForm" novalidate>
+            <!-- Email -->
+            <div class="form-group">
+              <label class="form-label" for="loginEmail">
+                Email address <span class="required">*</span>
+              </label>
+              <input
+                class="form-input"
+                type="email"
+                id="loginEmail"
+                name="email"
+                placeholder="you@example.com"
+                autocomplete="email"
+                required
+              />
+              <span class="form-error"></span>
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+              <label class="form-label" for="loginPassword">
+                Password <span class="required">*</span>
+              </label>
+              <div class="password-field">
+                <input
+                  class="form-input"
+                  type="password"
+                  id="loginPassword"
+                  name="password"
+                  placeholder="Enter your password"
+                  autocomplete="current-password"
+                  required
+                />
+                <button
+                  type="button"
+                  class="password-toggle"
+                  aria-label="Show password"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </button>
+              </div>
+              <span class="form-error"></span>
+            </div>
+
+            <div
+              class="flex items-center justify-between mb-6"
+              style="flex-wrap: wrap; gap: 12px"
+            >
+              <label class="checkbox">
+                <input type="checkbox" name="remember" />
+                <span>Remember me</span>
+              </label>
+              <a
+                href="#"
+                style="
+                  font-size: var(--fs-sm);
+                  color: var(--primary-color);
+                  font-weight: 600;
+                "
+                >Forgot password?</a
+              >
+            </div>
+
+            <button
+              type="submit"
+              class="btn btn-primary btn-lg btn-block"
+              id="loginBtn"
+            >
+              Log in
+            </button>
+          </form>
+
+          <p class="auth-footer-link">
+            Don't have an account? <a href="signup.html">Sign up</a>
+          </p>
+
+          <div class="info-panel mt-6">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4M12 8h.01" />
+            </svg>
+            <span
+              >Demo: any valid email and 8+ character password will work.</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================
+         VISUAL PANEL
+    ========================================= -->
+      <div class="auth-visual">
+        <div class="auth-visual-content">
+          <h2 class="auth-visual-title">
+            Everything events.<br />One platform.
+          </h2>
+          <p class="auth-visual-text">
+            Discover, buy, create, and manage — Pass Spot is built for Nigeria's
+            vibrant event scene.
+          </p>
+
+          <div class="auth-visual-points">
+            <div class="auth-visual-point">
+              <span class="auth-visual-point-icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </span>
+              Discover events across all 36 states + FCT
+            </div>
+            <div class="auth-visual-point">
+              <span class="auth-visual-point-icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </span>
+              Buy tickets with your Pass Spot wallet
+            </div>
+            <div class="auth-visual-point">
+              <span class="auth-visual-point-icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+              </span>
+              Create and manage events in minutes
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      /* =========================================
+       LOGIN PAGE LOGIC
+       Client-side validation only.
+       Real authentication must be backend.
+    ========================================= */
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("loginForm");
+        const email = document.getElementById("loginEmail");
+        const password = document.getElementById("loginPassword");
+        const btn = document.getElementById("loginBtn");
+
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          let valid = true;
+
+          // Email validation
+          PS.clearFieldError(email);
+          if (!email.value.trim()) {
+            PS.setFieldError(email, "Please enter your email address.");
+            valid = false;
+          } else if (!PS.validateEmail(email.value.trim())) {
+            PS.setFieldError(email, "Please enter a valid email address.");
+            valid = false;
+          }
+
+          // Password validation
+          PS.clearFieldError(password);
+          if (!password.value) {
+            PS.setFieldError(password, "Please enter your password.");
+            valid = false;
+          } else if (password.value.length < 8) {
+            PS.setFieldError(
+              password,
+              "Password must be at least 8 characters.",
+            );
+            valid = false;
+          }
+
+          if (!valid) return;
+
+          // Simulate login
+          btn.classList.add("is-loading");
+          btn.disabled = true;
+          setTimeout(() => {
+            PS.session.login({
+              name: email.value.split("@")[0].replace(/\./g, " "),
+              email: email.value.trim(),
+              role: "attendee",
+            });
+            PS.toast("Welcome back to Pass Spot", "success");
+            setTimeout(() => {
+              window.location.href = "dashboard.html";
+            }, 600);
+          }, 900);
+        });
+
+        // Clear errors on input
+        [email, password].forEach((f) => {
+          f.addEventListener("input", () => PS.clearFieldError(f));
+        });
+      });
+    </script>
+  </body>
+</html>

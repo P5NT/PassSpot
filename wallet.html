@@ -1,0 +1,191 @@
+<!-- Same shell pattern -->
+<main class="page-content">
+  <div class="page-header">
+    <div>
+      <h2 class="page-title">Wallet</h2>
+      <p class="page-subtitle">
+        Manage your Pass Spot balance and transactions.
+      </p>
+    </div>
+    <div class="page-actions">
+      <a href="deposits.html" class="btn btn-primary">Deposit</a>
+      <a href="withdrawals.html" class="btn btn-secondary">Withdraw</a>
+    </div>
+  </div>
+
+  <section class="balance-hero">
+    <div class="balance-hero-content">
+      <div class="balance-label">Wallet Balance</div>
+      <div class="balance-amount" id="walletBalance">₦125,000.00</div>
+      <div class="balance-split">
+        <div class="balance-split-item">
+          <span class="balance-split-label">Available</span
+          ><span class="balance-split-value" id="walletAvailable"
+            >₦110,000.00</span
+          >
+        </div>
+        <div class="balance-split-item">
+          <span class="balance-split-label">Pending</span
+          ><span class="balance-split-value" id="walletPending"
+            >₦15,000.00</span
+          >
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="tabs">
+    <button class="tab is-active" data-tab="all">All</button>
+    <button class="tab" data-tab="Deposit">Deposits</button>
+    <button class="tab" data-tab="Withdrawal">Withdrawals</button>
+    <button class="tab" data-tab="Ticket Purchase">Ticket Purchases</button>
+    <button class="tab" data-tab="Ticket Revenue">Revenue</button>
+    <button class="tab" data-tab="Advertisement">Ad Spend</button>
+    <button class="tab" data-tab="Refund">Refunds</button>
+  </div>
+
+  <div class="filter-bar">
+    <div class="filter-search">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.35-4.35" />
+      </svg>
+      <input
+        class="form-input"
+        type="search"
+        id="txSearch"
+        placeholder="Search transactions…"
+      />
+    </div>
+    <select
+      class="form-select"
+      id="txStatus"
+      style="width: auto; min-width: 150px"
+    >
+      <option value="">All statuses</option>
+      <option>Completed</option>
+      <option>Pending</option>
+      <option>Failed</option>
+      <option>Cancelled</option>
+      <option>Refunded</option>
+    </select>
+  </div>
+
+  <div class="table-wrap">
+    <div class="tx-list" id="txList"></div>
+  </div>
+</main>
+
+<script src="js/data.js"></script>
+<script src="js/script.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    window.PS_SHELL.renderSidebar("wallet");
+    window.PS_SHELL.renderTopbar("Wallet");
+
+    let activeTab = "all";
+    let activeStatus = "";
+    let activeSearch = "";
+
+    function renderBalance() {
+      const c = PS.getCurrency();
+      const bal = PS.wallet.getBalance();
+      const pending = 15000;
+      document.getElementById("walletBalance").textContent = PS.formatMoney(
+        bal,
+        c,
+      );
+      document.getElementById("walletAvailable").textContent = PS.formatMoney(
+        bal - pending,
+        c,
+      );
+      document.getElementById("walletPending").textContent = PS.formatMoney(
+        pending,
+        c,
+      );
+    }
+
+    function renderTx() {
+      let list = [...window.PS_DATA.DEMO_TRANSACTIONS];
+      if (activeTab !== "all") list = list.filter((t) => t.type === activeTab);
+      if (activeStatus)
+        list = list.filter(
+          (t) => t.status.toLowerCase() === activeStatus.toLowerCase(),
+        );
+      if (activeSearch)
+        list = list.filter(
+          (t) =>
+            t.description.toLowerCase().includes(activeSearch) ||
+            t.id.toLowerCase().includes(activeSearch) ||
+            t.type.toLowerCase().includes(activeSearch),
+        );
+
+      const wrap = document.getElementById("txList");
+      if (list.length === 0) {
+        wrap.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><h3 class="empty-state-title">No transactions</h3><p class="empty-state-text">Transactions matching your filters will appear here.</p></div>`;
+        return;
+      }
+
+      const c = PS.getCurrency();
+      wrap.innerHTML = list
+        .map((tx) => {
+          const isIn = tx.amount > 0;
+          const statusClass = {
+            completed: "badge-success",
+            pending: "badge-warning",
+            failed: "badge-error",
+            cancelled: "badge-neutral",
+            refunded: "badge-info",
+          }[tx.status];
+          return `
+        <div class="tx-row">
+          <div class="tx-icon ${isIn ? "in" : "out"}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">${isIn ? '<path d="M12 19V5M5 12l7-7 7 7"/>' : '<path d="M12 5v14M5 12l7 7 7-7"/>'}</svg>
+          </div>
+          <div class="tx-main">
+            <div class="tx-title">${tx.description}</div>
+            <div class="tx-meta">${tx.type} · ${PS.formatDateTime(tx.date)} · ${tx.id}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+            <div class="tx-amount ${isIn ? "in" : "out"}">${PS.formatMoney(tx.amount, c)}</div>
+            <span class="badge ${statusClass}">${tx.status}</span>
+          </div>
+        </div>`;
+        })
+        .join("");
+    }
+
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document
+          .querySelectorAll(".tab")
+          .forEach((t) => t.classList.remove("is-active"));
+        tab.classList.add("is-active");
+        activeTab = tab.dataset.tab;
+        renderTx();
+      });
+    });
+    document.getElementById("txStatus").addEventListener("change", (e) => {
+      activeStatus = e.target.value;
+      renderTx();
+    });
+    document.getElementById("txSearch").addEventListener("input", (e) => {
+      activeSearch = e.target.value.toLowerCase();
+      renderTx();
+    });
+    document.addEventListener("ps:currencychange", () => {
+      renderBalance();
+      renderTx();
+    });
+
+    renderBalance();
+    renderTx();
+  });
+</script>

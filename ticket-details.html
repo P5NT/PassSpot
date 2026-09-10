@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ticket — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content" id="ticketContent"></main>
+      </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      /* =========================================
+       TICKET DETAILS PAGE
+       Digital ticket with QR placeholder.
+    ========================================= */
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_SHELL.renderSidebar("tickets");
+        window.PS_SHELL.renderTopbar("Ticket");
+
+        const params = new URLSearchParams(window.location.search);
+        const ticketId = params.get("id") || window.PS_DATA.DEMO_TICKETS[0].id;
+        const ticket =
+          window.PS_DATA.DEMO_TICKETS.find((t) => t.id === ticketId) ||
+          window.PS_DATA.DEMO_TICKETS[0];
+        const ev =
+          window.PS_DATA.DEMO_EVENTS.find((e) => e.id === ticket.eventId) || {};
+
+        document.getElementById("ticketContent").innerHTML = `
+        <div class="flex items-center gap-2 mb-4">
+          <a href="my-tickets.html" class="btn btn-ghost btn-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            Back to tickets
+          </a>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-8);max-width:1000px;" id="ticketGrid">
+          <!-- Digital Ticket -->
+          <div>
+            <div class="ticket-card" style="max-width:none;">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <div style="font-family:var(--font-display);font-size:var(--fs-lg);font-weight:700;letter-spacing:-0.02em;">PassSpot</div>
+                  <div style="font-size:11px;opacity:0.7;text-transform:uppercase;letter-spacing:0.1em;">Digital Ticket</div>
+                </div>
+                <span class="badge" style="background:rgba(255,255,255,0.2);color:#fff;">${ticket.status === "valid" ? "Valid" : ticket.status}</span>
+              </div>
+
+              <div class="ticket-event-name">${ticket.eventTitle}</div>
+              <div class="ticket-type">${ticket.ticketType} admission</div>
+
+              <div class="ticket-qr" aria-label="QR code">
+                <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                  <path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z"/>
+                </svg>
+              </div>
+
+              <div class="ticket-divider"></div>
+
+              <div class="ticket-meta-grid">
+                <div>
+                  <div class="ticket-meta-label">Date</div>
+                  <div class="ticket-meta-value">${PS.formatDate(ticket.date)}</div>
+                </div>
+                <div>
+                  <div class="ticket-meta-label">Time</div>
+                  <div class="ticket-meta-value">${PS.formatTime(ticket.date)}</div>
+                </div>
+                <div>
+                  <div class="ticket-meta-label">Attendee</div>
+                  <div class="ticket-meta-value">${ticket.attendee}</div>
+                </div>
+                <div>
+                  <div class="ticket-meta-label">Type</div>
+                  <div class="ticket-meta-value">${ticket.ticketType}</div>
+                </div>
+              </div>
+
+              <div class="ticket-divider"></div>
+
+              <div style="font-size:11px;opacity:0.75;">Venue</div>
+              <div style="font-size:var(--fs-sm);font-weight:600;margin-top:2px;">${ticket.venue}</div>
+
+              <div class="ticket-id">${ticket.id}</div>
+            </div>
+
+            <div class="flex gap-3 mt-4" style="flex-wrap:wrap;">
+              <button class="btn btn-primary" id="downloadBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                Download
+              </button>
+              <button class="btn btn-secondary" id="shareBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+                Share
+              </button>
+              <button class="btn btn-ghost" id="copyBtn">Copy ID</button>
+            </div>
+          </div>
+
+          <!-- Details -->
+          <div>
+            <div class="card mb-4">
+              <h3 class="card-title mb-4">Event information</h3>
+              <div class="summary-row"><span class="text-muted text-sm">Event</span><span class="fw-semibold text-sm">${ticket.eventTitle}</span></div>
+              <div class="summary-row"><span class="text-muted text-sm">Category</span><span class="fw-semibold text-sm">${ev.category || "—"}</span></div>
+              <div class="summary-row"><span class="text-muted text-sm">Venue</span><span class="fw-semibold text-sm">${ticket.venue}</span></div>
+              <div class="summary-row"><span class="text-muted text-sm">Date</span><span class="fw-semibold text-sm">${PS.formatDate(ticket.date)}</span></div>
+              <div class="summary-row"><span class="text-muted text-sm">Time</span><span class="fw-semibold text-sm">${PS.formatTime(ticket.date)}</span></div>
+            </div>
+
+            <div class="card mb-4">
+              <h3 class="card-title mb-4">Payment details</h3>
+              <div class="summary-row"><span class="text-muted text-sm">Ticket type</span><span class="fw-semibold text-sm">${ticket.ticketType}</span></div>
+              <div class="summary-row"><span class="text-muted text-sm">Price paid</span><span class="fw-semibold text-sm" data-money="${ticket.price}">${PS.formatMoney(ticket.price, PS.getCurrency())}</span></div>
+              <div class="summary-row"><span class="text-muted text-sm">Purchased</span><span class="fw-semibold text-sm">${PS.formatDateTime(ticket.purchasedAt)}</span></div>
+              <div class="summary-row"><span class="text-muted text-sm">Ticket ID</span><span class="mono fw-semibold text-sm">${ticket.id}</span></div>
+            </div>
+
+            ${
+              ticket.status === "valid"
+                ? `
+              <div class="card">
+                <h3 class="card-title mb-3">Need to cancel?</h3>
+                <p class="text-sm text-muted mb-4">Refund eligibility depends on the organizer's policy.</p>
+                <button class="btn btn-secondary btn-block" id="cancelTicketBtn">Request cancellation</button>
+              </div>
+            `
+                : ""
+            }
+          </div>
+        </div>
+      `;
+
+        // Download simulation
+        document.getElementById("downloadBtn").addEventListener("click", () => {
+          PS.toast("Ticket downloaded to your device", "success");
+        });
+
+        // Share
+        document
+          .getElementById("shareBtn")
+          .addEventListener("click", async () => {
+            const text = `${ticket.eventTitle} — ${ticket.id}`;
+            if (navigator.share) {
+              try {
+                await navigator.share({ title: ticket.eventTitle, text });
+              } catch {}
+            } else {
+              navigator.clipboard?.writeText(text);
+              PS.toast("Ticket details copied to clipboard", "success");
+            }
+          });
+
+        // Copy ID
+        document.getElementById("copyBtn").addEventListener("click", () => {
+          navigator.clipboard?.writeText(ticket.id);
+          PS.toast("Ticket ID copied", "success");
+        });
+
+        // Cancel ticket
+        document
+          .getElementById("cancelTicketBtn")
+          ?.addEventListener("click", () => {
+            if (confirm("Request cancellation for this ticket?")) {
+              PS.toast("Cancellation requested — processing", "info");
+            }
+          });
+
+        document.addEventListener("ps:currencychange", () => {
+          PS.qsa("[data-money]").forEach((el) => {
+            const base = parseFloat(el.dataset.money);
+            el.textContent = PS.formatMoney(base, PS.getCurrency());
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

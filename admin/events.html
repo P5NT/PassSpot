@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Events — Admin</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Events</h2>
+              <p class="page-subtitle">All events on the platform.</p>
+            </div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="filter-search">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input
+                class="form-input"
+                type="search"
+                id="evSearch"
+                placeholder="Search events…"
+              />
+            </div>
+            <select
+              class="form-select"
+              id="evStatus"
+              style="width: auto; min-width: 150px"
+            >
+              <option value="">All statuses</option>
+              <option>Published</option>
+              <option>Pending</option>
+              <option>Suspended</option>
+            </select>
+          </div>
+
+          <div class="table-wrap">
+            <div class="table-scroll">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Event</th>
+                    <th>Organizer</th>
+                    <th>Location</th>
+                    <th>Revenue</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="eventsBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.PS_ADMIN?.renderSidebar) {
+          window.PS_ADMIN.renderSidebar("events");
+          window.PS_ADMIN.renderTopbar("Events");
+        } else {
+          document.getElementById("appSidebar").innerHTML =
+            `<div class="sidebar-brand"><a href="dashboard.html" class="brand">Pass<span class="brand-accent">Spot</span></a></div>`;
+          document.getElementById("appTopbar").innerHTML =
+            `<h1 class="topbar-title">Events</h1>`;
+        }
+
+        const tbody = document.getElementById("eventsBody");
+        const searchEl = document.getElementById("evSearch");
+        const statusEl = document.getElementById("evStatus");
+
+        function render() {
+          let list = [...window.PS_DATA.DEMO_EVENTS];
+          const q = searchEl.value.toLowerCase();
+          if (q)
+            list = list.filter(
+              (e) =>
+                e.title.toLowerCase().includes(q) ||
+                e.organizer.toLowerCase().includes(q),
+            );
+
+          const cur = PS.getCurrency();
+          tbody.innerHTML = list
+            .map((ev) => {
+              const revenue = ev.price * ev.sold;
+              return `
+            <tr>
+              <td data-label="Event">
+                <div class="flex items-center gap-3">
+                  <div style="font-size:20px;">${ev.emoji}</div>
+                  <div><div class="fw-semibold text-sm">${ev.title}</div><div class="text-xs text-muted">${ev.category}</div></div>
+                </div>
+              </td>
+              <td data-label="Organizer"><span class="text-sm">${ev.organizer}</span></td>
+              <td data-label="Location"><span class="text-sm text-muted">${ev.city}, ${ev.state.replace(" (FCT)", "")}</span></td>
+              <td data-label="Revenue"><span class="fw-bold" data-money="${revenue}">${PS.formatMoney(revenue, cur)}</span></td>
+              <td data-label="Status"><span class="badge badge-success">Published</span></td>
+              <td data-label="Actions">
+                <div class="table-actions">
+                  <button class="btn btn-sm btn-secondary" onclick="PS.toast('Suspend not available in demo','info')">Suspend</button>
+                </div>
+              </td>
+            </tr>`;
+            })
+            .join("");
+        }
+
+        [searchEl, statusEl].forEach((el) =>
+          el.addEventListener("input", render),
+        );
+        document.addEventListener("ps:currencychange", render);
+        render();
+      });
+    </script>
+  </body>
+</html>

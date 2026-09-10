@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Users — Admin — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Users</h2>
+              <p class="page-subtitle">
+                Manage attendee and organizer accounts.
+              </p>
+            </div>
+          </div>
+
+          <div class="filter-bar">
+            <div class="filter-search">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input
+                class="form-input"
+                type="search"
+                id="userSearch"
+                placeholder="Search users by name or email…"
+              />
+            </div>
+            <select
+              class="form-select"
+              id="userType"
+              style="width: auto; min-width: 150px"
+            >
+              <option value="">All types</option>
+              <option>Attendee</option>
+              <option>Organizer</option>
+            </select>
+            <select
+              class="form-select"
+              id="userStatus"
+              style="width: auto; min-width: 150px"
+            >
+              <option value="">All statuses</option>
+              <option>Active</option>
+              <option>Suspended</option>
+            </select>
+          </div>
+
+          <div class="table-wrap">
+            <div class="table-scroll">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="usersBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Suspend/Activate Modal -->
+    <div class="modal-overlay" id="userModal">
+      <div class="modal modal-sm">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title" id="userModalTitle">Confirm</h3>
+            <p class="modal-subtitle" id="userModalSub">Are you sure?</p>
+          </div>
+          <button class="modal-close" onclick="PS.closeModal('userModal')">
+            ✕
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="PS.closeModal('userModal')"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-danger" id="confirmUserAction">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+      /* =========================================
+       ADMIN USERS PAGE
+    ========================================= */
+      window.PS_ADMIN = window.PS_ADMIN || {};
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // Load admin shell (defined in dashboard)
+        if (window.PS_ADMIN.renderSidebar) {
+          window.PS_ADMIN.renderSidebar("users");
+          window.PS_ADMIN.renderTopbar("Users");
+        } else {
+          // Fallback: inline renderer
+          document.getElementById("appSidebar").innerHTML =
+            `<div class="sidebar-brand"><a href="dashboard.html" class="brand">Pass<span class="brand-accent">Spot</span></a></div><div class="sidebar-footer"><a href="dashboard.html" class="sidebar-link is-active">← Dashboard</a></div>`;
+          document.getElementById("appTopbar").innerHTML =
+            `<h1 class="topbar-title">Users</h1>`;
+        }
+
+        const demoUsers = [
+          {
+            id: "u1",
+            name: "Ada Okafor",
+            email: "ada.okafor@example.com",
+            type: "Attendee",
+            status: "Active",
+            joined: "2025-11-05",
+          },
+          {
+            id: "u2",
+            name: "Emeka Nwosu",
+            email: "emeka@example.com",
+            type: "Organizer",
+            status: "Active",
+            joined: "2025-10-12",
+          },
+          {
+            id: "u3",
+            name: "Fatima Bello",
+            email: "fatima.b@example.com",
+            type: "Attendee",
+            status: "Active",
+            joined: "2025-09-22",
+          },
+          {
+            id: "u4",
+            name: "Chidi Okeke",
+            email: "chidi@example.com",
+            type: "Organizer",
+            status: "Suspended",
+            joined: "2025-08-14",
+          },
+          {
+            id: "u5",
+            name: "Ngozi Adeyemi",
+            email: "ngozi@example.com",
+            type: "Attendee",
+            status: "Active",
+            joined: "2025-07-01",
+          },
+          {
+            id: "u6",
+            name: "Tunde Bakare",
+            email: "tunde@example.com",
+            type: "Organizer",
+            status: "Active",
+            joined: "2025-06-18",
+          },
+        ];
+
+        const tbody = document.getElementById("usersBody");
+        const searchEl = document.getElementById("userSearch");
+        const typeEl = document.getElementById("userType");
+        const statusEl = document.getElementById("userStatus");
+
+        function render() {
+          let list = [...demoUsers];
+          const q = searchEl.value.toLowerCase();
+          if (q)
+            list = list.filter(
+              (u) =>
+                u.name.toLowerCase().includes(q) ||
+                u.email.toLowerCase().includes(q),
+            );
+          if (typeEl.value) list = list.filter((u) => u.type === typeEl.value);
+          if (statusEl.value)
+            list = list.filter((u) => u.status === statusEl.value);
+
+          if (list.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state" style="padding:var(--space-8);"><h3 class="empty-state-title">No users found</h3><p class="empty-state-text">Try different filters.</p></div></td></tr>`;
+            return;
+          }
+
+          tbody.innerHTML = list
+            .map(
+              (u) => `
+          <tr>
+            <td data-label="User">
+              <div class="flex items-center gap-3">
+                <span class="avatar avatar-sm">${u.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")}</span>
+                <div>
+                  <div class="fw-semibold text-sm">${u.name}</div>
+                  <div class="text-xs text-muted">${u.email}</div>
+                </div>
+              </div>
+            </td>
+            <td data-label="Type"><span class="badge ${u.type === "Organizer" ? "badge-primary" : "badge-neutral"}">${u.type}</span></td>
+            <td data-label="Status"><span class="badge ${u.status === "Active" ? "badge-success" : "badge-error"}">${u.status}</span></td>
+            <td data-label="Joined"><span class="text-sm text-muted">${u.joined}</span></td>
+            <td data-label="Actions">
+              <div class="table-actions">
+                <button class="btn btn-sm btn-secondary" data-action="${u.status === "Active" ? "suspend" : "activate"}" data-id="${u.id}">${u.status === "Active" ? "Suspend" : "Activate"}</button>
+                <button class="btn btn-sm btn-ghost" data-action="delete" data-id="${u.id}" style="color:var(--error-color);">Delete</button>
+              </div>
+            </td>
+          </tr>
+        `,
+            )
+            .join("");
+
+          tbody.querySelectorAll("[data-action]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const u = demoUsers.find((x) => x.id === btn.dataset.id);
+              const action = btn.dataset.action;
+              if (action === "delete") {
+                document.getElementById("userModalTitle").textContent =
+                  "Delete user?";
+                document.getElementById("userModalSub").textContent =
+                  `${u.name} will be permanently removed.`;
+              } else {
+                document.getElementById("userModalTitle").textContent =
+                  `${action === "suspend" ? "Suspend" : "Activate"} user?`;
+                document.getElementById("userModalSub").textContent =
+                  `${u.name} will be ${action === "suspend" ? "suspended" : "activated"}.`;
+              }
+              document.getElementById("confirmUserAction").onclick = () => {
+                if (action === "suspend") u.status = "Suspended";
+                else if (action === "activate") u.status = "Active";
+                PS.closeModal("userModal");
+                PS.toast(
+                  `User ${action === "delete" ? "deleted" : "updated"}`,
+                  "success",
+                );
+                render();
+              };
+              PS.openModal("userModal");
+            });
+          });
+        }
+
+        [searchEl, typeEl, statusEl].forEach((el) =>
+          el.addEventListener("input", render),
+        );
+        render();
+      });
+    </script>
+  </body>
+</html>

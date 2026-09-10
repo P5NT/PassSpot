@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Settings</h2>
+              <p class="page-subtitle">
+                Manage your account, appearance, and preferences.
+              </p>
+            </div>
+          </div>
+
+          <!-- Settings navigation -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 220px 1fr;
+              gap: var(--space-8);
+            "
+            id="settingsGrid"
+          >
+            <nav
+              class="sidebar-section"
+              style="
+                position: sticky;
+                top: calc(var(--header-height) + var(--space-4));
+                height: fit-content;
+              "
+            >
+              <div class="sidebar-nav">
+                <button class="sidebar-link is-active" data-section="account">
+                  Account
+                </button>
+                <button class="sidebar-link" data-section="appearance">
+                  Appearance
+                </button>
+                <button class="sidebar-link" data-section="notifications">
+                  Notifications
+                </button>
+                <button class="sidebar-link" data-section="currency">
+                  Currency
+                </button>
+                <button class="sidebar-link" data-section="location">
+                  Location
+                </button>
+                <button class="sidebar-link" data-section="security">
+                  Security
+                </button>
+                <button class="sidebar-link" data-section="privacy">
+                  Privacy
+                </button>
+              </div>
+            </nav>
+
+            <div id="settingsContent"></div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      /* =========================================
+       SETTINGS PAGE
+       Tabbed sections with local persistence.
+    ========================================= */
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_SHELL.renderSidebar("settings");
+        window.PS_SHELL.renderTopbar("Settings");
+
+        const prefs = PS.store.get("preferences", {
+          emailNotif: true,
+          pushNotif: true,
+          marketingNotif: false,
+          currency: PS.getCurrency(),
+          theme: document.documentElement.getAttribute("data-theme"),
+          state: "Lagos",
+          city: "Ikeja",
+          publicProfile: true,
+        });
+
+        const user = PS.session.getUser();
+
+        const sections = {
+          account: `
+          <div class="card">
+            <h3 class="card-title mb-4">Account</h3>
+            <div class="form-group">
+              <label class="form-label">Full name</label>
+              <input class="form-input" type="text" id="setName" value="${user.name}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input class="form-input" type="email" id="setEmail" value="${user.email}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input class="form-input" type="tel" id="setPhone" value="${user.phone || "+234 801 234 5678"}">
+            </div>
+            <button class="btn btn-primary" id="saveAccount">Save changes</button>
+          </div>
+        `,
+          appearance: `
+          <div class="card">
+            <h3 class="card-title mb-4">Appearance</h3>
+            <div class="summary-row"><span class="text-muted text-sm">Theme</span>
+              <div class="currency-switch">
+                <button data-theme-pick="light" class="${prefs.theme === "light" ? "is-active" : ""}">☀️ Light</button>
+                <button data-theme-pick="dark" class="${prefs.theme === "dark" ? "is-active" : ""}">🌙 Dark</button>
+              </div>
+            </div>
+            <p class="text-xs text-muted mt-3">Your theme preference is saved to this device.</p>
+          </div>
+        `,
+          notifications: `
+          <div class="card">
+            <h3 class="card-title mb-4">Notifications</h3>
+            <label class="checkbox mb-4" style="display:flex;">
+              <input type="checkbox" id="prefEmail" ${prefs.emailNotif ? "checked" : ""}>
+              <span><strong>Email notifications</strong><br><span class="text-xs text-muted">Receive updates via email.</span></span>
+            </label>
+            <label class="checkbox mb-4" style="display:flex;">
+              <input type="checkbox" id="prefPush" ${prefs.pushNotif ? "checked" : ""}>
+              <span><strong>Platform notifications</strong><br><span class="text-xs text-muted">Get notified inside Pass Spot.</span></span>
+            </label>
+            <label class="checkbox" style="display:flex;">
+              <input type="checkbox" id="prefMarketing" ${prefs.marketingNotif ? "checked" : ""}>
+              <span><strong>Marketing</strong><br><span class="text-xs text-muted">Promotions and product updates.</span></span>
+            </label>
+            <button class="btn btn-primary mt-6" id="saveNotif">Save preferences</button>
+          </div>
+        `,
+          currency: `
+          <div class="card">
+            <h3 class="card-title mb-4">Display currency</h3>
+            <p class="text-sm text-muted mb-4">Choose the currency used for displaying prices and balances. Base values are stored in NGN.</p>
+            <div class="radio-cards" style="grid-template-columns:1fr 1fr;">
+              <label class="radio-card">
+                <input type="radio" name="prefCur" value="NGN" ${PS.getCurrency() === "NGN" ? "checked" : ""}>
+                <div class="radio-card-content">
+                  <div class="radio-card-title">₦ NGN</div>
+                  <div class="radio-card-desc">Nigerian Naira</div>
+                </div>
+              </label>
+              <label class="radio-card">
+                <input type="radio" name="prefCur" value="USD" ${PS.getCurrency() === "USD" ? "checked" : ""}>
+                <div class="radio-card-content">
+                  <div class="radio-card-title">$ USD</div>
+                  <div class="radio-card-desc">US Dollar</div>
+                </div>
+              </label>
+            </div>
+            <div class="info-panel mt-4">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              <span>Demo exchange rate: $1 = ₦1,500</span>
+            </div>
+          </div>
+        `,
+          location: `
+          <div class="card">
+            <h3 class="card-title mb-4">Your location</h3>
+            <div class="form-group">
+              <label class="form-label">State</label>
+              <select class="form-select" id="setState"></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">City</label>
+              <select class="form-select" id="setCity"></select>
+            </div>
+            <button class="btn btn-primary" id="saveLocation">Save location</button>
+          </div>
+        `,
+          security: `
+          <div class="card">
+            <h3 class="card-title mb-4">Security</h3>
+            <div class="form-group">
+              <label class="form-label">Current password</label>
+              <div class="password-field">
+                <input class="form-input" type="password" id="curPass" placeholder="••••••••">
+                <button type="button" class="password-toggle">👁</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">New password</label>
+              <div class="password-field">
+                <input class="form-input" type="password" id="newPass" placeholder="At least 8 characters" data-strength-for="setStrength">
+                <button type="button" class="password-toggle">👁</button>
+              </div>
+              <div class="password-strength" id="setStrength" data-strength="0">
+                <span class="password-strength-bar"></span><span class="password-strength-bar"></span>
+                <span class="password-strength-bar"></span><span class="password-strength-bar"></span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm new password</label>
+              <input class="form-input" type="password" id="confPass">
+            </div>
+            <button class="btn btn-primary" id="savePassword">Update password</button>
+          </div>
+        `,
+          privacy: `
+          <div class="card">
+            <h3 class="card-title mb-4">Privacy</h3>
+            <label class="checkbox mb-4" style="display:flex;">
+              <input type="checkbox" id="prefPublic" ${prefs.publicProfile ? "checked" : ""}>
+              <span><strong>Public profile</strong><br><span class="text-xs text-muted">Allow organizers to see your name on attendee lists.</span></span>
+            </label>
+            <div class="info-panel warning mt-4">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/></svg>
+              <span>Real privacy enforcement requires a backend. This is a demo control.</span>
+            </div>
+            <button class="btn btn-danger mt-6" id="deleteAccount">Delete account</button>
+          </div>
+        `,
+        };
+
+        function renderSection(key) {
+          document.getElementById("settingsContent").innerHTML = sections[key];
+          bindSection(key);
+        }
+
+        function bindSection(key) {
+          if (key === "account") {
+            document
+              .getElementById("saveAccount")
+              .addEventListener("click", () => {
+                const name = document.getElementById("setName").value.trim();
+                const email = document.getElementById("setEmail").value.trim();
+                if (!name || !PS.validateEmail(email)) {
+                  PS.toast("Please enter valid details", "error");
+                  return;
+                }
+                PS.session.login({ ...user, name, email });
+                PS.toast("Account updated", "success");
+              });
+          }
+          if (key === "appearance") {
+            document.querySelectorAll("[data-theme-pick]").forEach((btn) => {
+              btn.addEventListener("click", () => {
+                const theme = btn.dataset.themePick;
+                document.documentElement.setAttribute("data-theme", theme);
+                PS.store.set("theme", theme);
+                PS.updateThemeIcon(theme);
+                prefs.theme = theme;
+                PS.store.set("preferences", prefs);
+                renderSection("appearance");
+                PS.toast(`Theme set to ${theme}`, "success");
+              });
+            });
+          }
+          if (key === "notifications") {
+            document
+              .getElementById("saveNotif")
+              .addEventListener("click", () => {
+                prefs.emailNotif = document.getElementById("prefEmail").checked;
+                prefs.pushNotif = document.getElementById("prefPush").checked;
+                prefs.marketingNotif =
+                  document.getElementById("prefMarketing").checked;
+                PS.store.set("preferences", prefs);
+                PS.toast("Notification preferences saved", "success");
+              });
+          }
+          if (key === "currency") {
+            document.querySelectorAll('input[name="prefCur"]').forEach((r) => {
+              r.addEventListener("change", () => {
+                PS.setCurrency(r.value);
+                prefs.currency = r.value;
+                PS.store.set("preferences", prefs);
+              });
+            });
+          }
+          if (key === "location") {
+            const stateSel = document.getElementById("setState");
+            const citySel = document.getElementById("setCity");
+            window.PS_DATA.NIGERIAN_STATES.forEach((s) => {
+              const o = document.createElement("option");
+              o.value = s;
+              o.textContent = s;
+              if (s === prefs.state) o.selected = true;
+              stateSel.appendChild(o);
+            });
+            function fillCities() {
+              const cities =
+                window.PS_DATA.NIGERIAN_CITIES[stateSel.value] || [];
+              citySel.innerHTML = "";
+              cities.forEach((c) => {
+                const o = document.createElement("option");
+                o.value = c;
+                o.textContent = c;
+                if (c === prefs.city) o.selected = true;
+                citySel.appendChild(o);
+              });
+            }
+            fillCities();
+            stateSel.addEventListener("change", fillCities);
+            document
+              .getElementById("saveLocation")
+              .addEventListener("click", () => {
+                prefs.state = stateSel.value;
+                prefs.city = citySel.value;
+                PS.store.set("preferences", prefs);
+                PS.toast("Location updated", "success");
+              });
+          }
+          if (key === "security") {
+            document
+              .getElementById("savePassword")
+              .addEventListener("click", () => {
+                const np = document.getElementById("newPass").value;
+                const cp = document.getElementById("confPass").value;
+                if (np.length < 8) {
+                  PS.toast("Password must be at least 8 characters", "error");
+                  return;
+                }
+                if (np !== cp) {
+                  PS.toast("Passwords do not match", "error");
+                  return;
+                }
+                PS.toast("Password updated (demo only)", "success");
+              });
+          }
+          if (key === "privacy") {
+            document
+              .getElementById("deleteAccount")
+              .addEventListener("click", () => {
+                if (confirm("Are you sure? This cannot be undone.")) {
+                  PS.toast(
+                    "Account deletion requires backend support",
+                    "warning",
+                  );
+                }
+              });
+          }
+        }
+
+        document.querySelectorAll("[data-section]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            document
+              .querySelectorAll("[data-section]")
+              .forEach((b) => b.classList.remove("is-active"));
+            btn.classList.add("is-active");
+            renderSection(btn.dataset.section);
+          });
+        });
+
+        renderSection("account");
+      });
+    </script>
+  </body>
+</html>

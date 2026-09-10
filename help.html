@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Help Center — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Help Center</h2>
+              <p class="page-subtitle">
+                Answers to common questions and how to reach us.
+              </p>
+            </div>
+          </div>
+
+          <!-- Search -->
+          <div class="filter-search mb-6" style="max-width: 560px">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input
+              class="form-input"
+              type="search"
+              id="helpSearch"
+              placeholder="Search for help…"
+            />
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: var(--space-5);
+              margin-bottom: var(--space-8);
+            "
+            id="helpGrid"
+          >
+            <div class="feature-card">
+              <div class="feature-icon">🎟️</div>
+              <h3 class="feature-title">Buying tickets</h3>
+              <p class="feature-desc">
+                How to purchase, use, and manage your tickets.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">📣</div>
+              <h3 class="feature-title">Creating events</h3>
+              <p class="feature-desc">
+                Publish events and start selling tickets.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">💰</div>
+              <h3 class="feature-title">Wallet & payments</h3>
+              <p class="feature-desc">
+                Deposits, withdrawals, and transaction help.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">📊</div>
+              <h3 class="feature-title">Advertisements</h3>
+              <p class="feature-desc">
+                Promote your events to targeted audiences.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🔒</div>
+              <h3 class="feature-title">Account & security</h3>
+              <p class="feature-desc">
+                Profile, password, and privacy settings.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">📞</div>
+              <h3 class="feature-title">Contact support</h3>
+              <p class="feature-desc">Reach our team for personalized help.</p>
+            </div>
+          </div>
+
+          <div class="card mb-6">
+            <h3 class="card-title mb-4">Frequently asked questions</h3>
+
+            <details
+              style="
+                padding: var(--space-4) 0;
+                border-bottom: 1px solid var(--border-color);
+              "
+            >
+              <summary
+                style="
+                  cursor: pointer;
+                  font-weight: 600;
+                  font-size: var(--fs-sm);
+                "
+              >
+                How do I buy a ticket?
+              </summary>
+              <p
+                class="text-sm text-muted mt-3"
+                style="line-height: var(--lh-relaxed)"
+              >
+                Find an event on the Discover page, open its details, select
+                your ticket type and quantity, then confirm the purchase with
+                your Pass Spot wallet balance.
+              </p>
+            </details>
+
+            <details
+              style="
+                padding: var(--space-4) 0;
+                border-bottom: 1px solid var(--border-color);
+              "
+            >
+              <summary
+                style="
+                  cursor: pointer;
+                  font-weight: 600;
+                  font-size: var(--fs-sm);
+                "
+              >
+                How do I fund my wallet?
+              </summary>
+              <p
+                class="text-sm text-muted mt-3"
+                style="line-height: var(--lh-relaxed)"
+              >
+                Go to Wallet → Deposit. Enter an amount, choose your payment
+                method, and confirm. In this prototype, deposits are simulated.
+              </p>
+            </details>
+
+            <details
+              style="
+                padding: var(--space-4) 0;
+                border-bottom: 1px solid var(--border-color);
+              "
+            >
+              <summary
+                style="
+                  cursor: pointer;
+                  font-weight: 600;
+                  font-size: var(--fs-sm);
+                "
+              >
+                How do I withdraw earnings?
+              </summary>
+              <p
+                class="text-sm text-muted mt-3"
+                style="line-height: var(--lh-relaxed)"
+              >
+                Organizers can go to Withdrawals, select their bank, enter the
+                amount (up to the available balance), and submit a request.
+              </p>
+            </details>
+
+            <details style="padding: var(--space-4) 0">
+              <summary
+                style="
+                  cursor: pointer;
+                  font-weight: 600;
+                  font-size: var(--fs-sm);
+                "
+              >
+                Is my payment secure?
+              </summary>
+              <p
+                class="text-sm text-muted mt-3"
+                style="line-height: var(--lh-relaxed)"
+              >
+                In the production version, all payments are processed by
+                licensed Nigerian payment providers with bank-grade encryption.
+                This frontend prototype does not process real payments.
+              </p>
+            </details>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title mb-4">Still need help?</h3>
+            <p class="text-sm text-muted mb-4">
+              Send us a message and we'll get back to you within 24 hours.
+            </p>
+            <div class="flex gap-3" style="flex-wrap: wrap">
+              <button
+                class="btn btn-primary"
+                onclick="
+                  PS.toast(
+                    'Support form is not available in the prototype',
+                    'info',
+                  )
+                "
+              >
+                Contact support
+              </button>
+              <button
+                class="btn btn-secondary"
+                onclick="PS.toast('Live chat coming soon', 'info')"
+              >
+                Live chat
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_SHELL.renderSidebar("help");
+        window.PS_SHELL.renderTopbar("Help");
+
+        const search = document.getElementById("helpSearch");
+        search.addEventListener("input", () => {
+          const q = search.value.toLowerCase();
+          document
+            .querySelectorAll("#helpGrid .feature-card")
+            .forEach((card) => {
+              const text = card.textContent.toLowerCase();
+              card.style.display = !q || text.includes(q) ? "" : "none";
+            });
+        });
+      });
+    </script>
+  </body>
+</html>

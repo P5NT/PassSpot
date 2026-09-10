@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Event — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Create a new event</h2>
+              <p class="page-subtitle">
+                Publish your event and start selling tickets in minutes.
+              </p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-secondary" id="saveDraftBtn">
+                Save draft
+              </button>
+            </div>
+          </div>
+
+          <form id="eventForm" novalidate>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1.6fr 1fr;
+                gap: var(--space-8);
+              "
+              id="formGrid"
+            >
+              <!-- LEFT: Form -->
+              <div>
+                <!-- BASIC INFO -->
+                <div class="card mb-6">
+                  <h3 class="card-title mb-4">Basic information</h3>
+
+                  <div class="form-group">
+                    <label class="form-label" for="eventTitle"
+                      >Event title <span class="required">*</span></label
+                    >
+                    <input
+                      class="form-input"
+                      type="text"
+                      id="eventTitle"
+                      placeholder="e.g. Lagos Music Festival 2025"
+                      required
+                    />
+                    <span class="form-error"></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="eventCategory"
+                      >Category <span class="required">*</span></label
+                    >
+                    <select class="form-select" id="eventCategory" required>
+                      <option value="">Select a category</option>
+                    </select>
+                    <span class="form-error"></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="eventDescription"
+                      >Description <span class="required">*</span></label
+                    >
+                    <textarea
+                      class="form-textarea"
+                      id="eventDescription"
+                      placeholder="Tell attendees about your event…"
+                      required
+                    ></textarea>
+                    <span class="form-error"></span>
+                  </div>
+                </div>
+
+                <!-- LOCATION -->
+                <div class="card mb-6">
+                  <h3 class="card-title mb-4">Location</h3>
+
+                  <div class="auth-form-row">
+                    <div class="form-group">
+                      <label class="form-label" for="eventState"
+                        >State <span class="required">*</span></label
+                      >
+                      <select class="form-select" id="eventState" required>
+                        <option value="">Select state</option>
+                      </select>
+                      <span class="form-error"></span>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="eventCity"
+                        >City <span class="required">*</span></label
+                      >
+                      <select
+                        class="form-select"
+                        id="eventCity"
+                        required
+                        disabled
+                      >
+                        <option value="">Select state first</option>
+                      </select>
+                      <span class="form-error"></span>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="eventVenue"
+                      >Venue name <span class="required">*</span></label
+                    >
+                    <input
+                      class="form-input"
+                      type="text"
+                      id="eventVenue"
+                      placeholder="e.g. Eko Convention Centre"
+                      required
+                    />
+                    <span class="form-error"></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="eventAddress"
+                      >Street address</label
+                    >
+                    <input
+                      class="form-input"
+                      type="text"
+                      id="eventAddress"
+                      placeholder="Optional — helps attendees find you"
+                    />
+                  </div>
+                </div>
+
+                <!-- DATE & TIME -->
+                <div class="card mb-6">
+                  <h3 class="card-title mb-4">Date & time</h3>
+                  <div class="auth-form-row">
+                    <div class="form-group">
+                      <label class="form-label" for="eventDate"
+                        >Event date <span class="required">*</span></label
+                      >
+                      <input
+                        class="form-input"
+                        type="date"
+                        id="eventDate"
+                        required
+                      />
+                      <span class="form-error"></span>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="eventTime"
+                        >Start time <span class="required">*</span></label
+                      >
+                      <input
+                        class="form-input"
+                        type="time"
+                        id="eventTime"
+                        required
+                      />
+                      <span class="form-error"></span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- TICKETS -->
+                <div class="card mb-6">
+                  <div class="flex justify-between items-center mb-4">
+                    <h3 class="card-title">Ticket types</h3>
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm"
+                      id="addTicketType"
+                    >
+                      + Add type
+                    </button>
+                  </div>
+                  <div id="ticketTypesList"></div>
+                </div>
+              </div>
+
+              <!-- RIGHT: Preview + submit -->
+              <div>
+                <div
+                  class="card"
+                  style="
+                    position: sticky;
+                    top: calc(var(--header-height) + var(--space-4));
+                  "
+                >
+                  <h3 class="card-title mb-3">Preview</h3>
+                  <div
+                    class="event-card"
+                    style="
+                      box-shadow: none;
+                      border: 1px solid var(--border-color);
+                    "
+                  >
+                    <div class="event-card-media">
+                      <div
+                        class="event-card-media-placeholder"
+                        id="previewEmoji"
+                      >
+                        🎫
+                      </div>
+                    </div>
+                    <div class="event-card-body">
+                      <div class="event-card-date" id="previewDate">Date</div>
+                      <div class="event-card-title" id="previewTitle">
+                        Event title
+                      </div>
+                      <div class="event-card-meta">
+                        <div class="event-card-meta-row">
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                          >
+                            <path
+                              d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"
+                            />
+                            <circle cx="12" cy="10" r="3" />
+                          </svg>
+                          <span id="previewLocation">Location</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="divider"></div>
+
+                  <div class="flex flex-col gap-3">
+                    <label class="checkbox">
+                      <input type="checkbox" id="enableAds" />
+                      <span>Create an ad campaign after publishing</span>
+                    </label>
+                    <label class="checkbox">
+                      <input type="checkbox" id="agreeTerms" required />
+                      <span>I confirm the event details are accurate</span>
+                    </label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    class="btn btn-primary btn-lg btn-block mt-6"
+                    id="publishBtn"
+                  >
+                    Publish event
+                  </button>
+                  <p class="text-xs text-muted mt-3" style="text-align: center">
+                    Your event will be visible to attendees immediately.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </form>
+        </main>
+      </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      /* =========================================
+       CREATE EVENT PAGE
+    ========================================= */
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_SHELL.renderSidebar("myEvents");
+        window.PS_SHELL.renderTopbar("Create event");
+
+        // Populate categories
+        const catSel = document.getElementById("eventCategory");
+        window.PS_DATA.EVENT_CATEGORIES.forEach((c) => {
+          const o = document.createElement("option");
+          o.value = c;
+          o.textContent = c;
+          catSel.appendChild(o);
+        });
+
+        // Populate states
+        const stateSel = document.getElementById("eventState");
+        window.PS_DATA.NIGERIAN_STATES.forEach((s) => {
+          const o = document.createElement("option");
+          o.value = s;
+          o.textContent = s;
+          stateSel.appendChild(o);
+        });
+
+        // Cascade state → city
+        const citySel = document.getElementById("eventCity");
+        stateSel.addEventListener("change", () => {
+          const cities = window.PS_DATA.NIGERIAN_CITIES[stateSel.value] || [];
+          citySel.innerHTML = '<option value="">Select city</option>';
+          citySel.disabled = !stateSel.value;
+          cities.forEach((c) => {
+            const o = document.createElement("option");
+            o.value = c;
+            o.textContent = c;
+            citySel.appendChild(o);
+          });
+          updatePreview();
+        });
+        citySel.addEventListener("change", updatePreview);
+
+        // Emoji mapping per category
+        const emojiMap = {
+          Music: "🎵",
+          Concert: "🎤",
+          Sports: "🏆",
+          Football: "⚽",
+          Comedy: "😂",
+          Business: "💼",
+          Technology: "💻",
+          Education: "📚",
+          Conference: "🎤",
+          Networking: "🤝",
+          Fashion: "👗",
+          Food: "🍲",
+          Religion: "🙏",
+          Art: "🎨",
+          Culture: "🎭",
+          Entertainment: "🎬",
+          Festival: "🎉",
+          Lifestyle: "✨",
+          Family: "👨‍👩‍👧",
+          Community: "🏘️",
+        };
+
+        // =========================================
+        // TICKET TYPES
+        // =========================================
+        let ticketTypeCounter = 0;
+        const ticketTypes = [];
+
+        function addTicketType(defaults = {}) {
+          const id = `tt_${++ticketTypeCounter}`;
+          ticketTypes.push({ id, ...defaults });
+          renderTicketTypes();
+        }
+
+        function renderTicketTypes() {
+          const wrap = document.getElementById("ticketTypesList");
+          wrap.innerHTML = ticketTypes
+            .map(
+              (tt, idx) => `
+          <div class="card" style="padding:var(--space-4);margin-bottom:var(--space-3);background:var(--surface-muted);" data-tt="${tt.id}">
+            <div class="flex justify-between items-center mb-3">
+              <span class="fw-semibold text-sm">Ticket type ${idx + 1}</span>
+              ${ticketTypes.length > 1 ? `<button type="button" class="btn btn-ghost btn-sm" data-remove="${tt.id}" style="color:var(--error-color);">Remove</button>` : ""}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Name</label>
+              <input class="form-input" type="text" data-field="name" data-tt-id="${tt.id}" value="${tt.name || ""}" placeholder="e.g. Regular, VIP">
+            </div>
+            <div class="auth-form-row">
+              <div class="form-group">
+                <label class="form-label">Price (₦)</label>
+                <input class="form-input" type="number" min="0" data-field="price" data-tt-id="${tt.id}" value="${tt.price || ""}" placeholder="0">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Quantity available</label>
+                <input class="form-input" type="number" min="1" data-field="qty" data-tt-id="${tt.id}" value="${tt.qty || ""}" placeholder="100">
+              </div>
+            </div>
+          </div>
+        `,
+            )
+            .join("");
+
+          // Bind field changes
+          wrap.querySelectorAll("input[data-tt-id]").forEach((inp) => {
+            inp.addEventListener("input", () => {
+              const tt = ticketTypes.find((t) => t.id === inp.dataset.ttId);
+              if (tt) tt[inp.dataset.field] = inp.value;
+            });
+          });
+          wrap.querySelectorAll("[data-remove]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const idx = ticketTypes.findIndex(
+                (t) => t.id === btn.dataset.remove,
+              );
+              if (idx >= 0) ticketTypes.splice(idx, 1);
+              renderTicketTypes();
+            });
+          });
+        }
+
+        // Seed with one default ticket type
+        addTicketType({ name: "Regular", price: 5000, qty: 100 });
+
+        document
+          .getElementById("addTicketType")
+          .addEventListener("click", () => {
+            addTicketType({ name: "", price: "", qty: "" });
+          });
+
+        // =========================================
+        // LIVE PREVIEW
+        // =========================================
+        function updatePreview() {
+          const title =
+            document.getElementById("eventTitle").value.trim() || "Event title";
+          const cat = document.getElementById("eventCategory").value;
+          const date = document.getElementById("eventDate").value;
+          const time = document.getElementById("eventTime").value;
+          const city = citySel.value;
+          const state = stateSel.value;
+
+          document.getElementById("previewTitle").textContent = title;
+          document.getElementById("previewEmoji").textContent =
+            emojiMap[cat] || "🎫";
+
+          if (date) {
+            const d = new Date(date + "T" + (time || "00:00"));
+            document.getElementById("previewDate").textContent =
+              d.toLocaleDateString("en-NG", {
+                weekday: "short",
+                day: "numeric",
+                month: "short",
+              });
+          } else {
+            document.getElementById("previewDate").textContent = "Date";
+          }
+
+          if (city && state) {
+            document.getElementById("previewLocation").textContent =
+              `${city}, ${state.replace(" (FCT)", "")}`;
+          } else {
+            document.getElementById("previewLocation").textContent = "Location";
+          }
+        }
+
+        ["eventTitle", "eventCategory", "eventDate", "eventTime"].forEach(
+          (id) => {
+            document
+              .getElementById(id)
+              .addEventListener("input", updatePreview);
+            document
+              .getElementById(id)
+              .addEventListener("change", updatePreview);
+          },
+        );
+
+        // =========================================
+        // VALIDATION & SUBMIT
+        // =========================================
+        document.getElementById("eventForm").addEventListener("submit", (e) => {
+          e.preventDefault();
+          let valid = true;
+          const fields = [
+            "eventTitle",
+            "eventCategory",
+            "eventDescription",
+            "eventState",
+            "eventCity",
+            "eventVenue",
+            "eventDate",
+            "eventTime",
+          ];
+
+          fields.forEach((id) => {
+            const el = document.getElementById(id);
+            PS.clearFieldError(el);
+            if (!el.value.trim()) {
+              PS.setFieldError(el, "This field is required.");
+              valid = false;
+            }
+          });
+
+          if (!document.getElementById("agreeTerms").checked) {
+            PS.toast("Please confirm the event details are accurate.", "error");
+            valid = false;
+          }
+
+          if (ticketTypes.length === 0) {
+            PS.toast("Add at least one ticket type.", "error");
+            valid = false;
+          }
+
+          if (!valid) return;
+
+          const btn = document.getElementById("publishBtn");
+          btn.classList.add("is-loading");
+          btn.disabled = true;
+
+          // Create the event in demo data
+          const id = "evt_" + Date.now().toString().slice(-6);
+          const newEvent = {
+            id,
+            title: document.getElementById("eventTitle").value.trim(),
+            category: document.getElementById("eventCategory").value,
+            state: stateSel.value,
+            city: citySel.value,
+            venue: document.getElementById("eventVenue").value.trim(),
+            address: document.getElementById("eventAddress").value.trim(),
+            date:
+              document.getElementById("eventDate").value +
+              "T" +
+              document.getElementById("eventTime").value,
+            price: parseInt(ticketTypes[0]?.price) || 0,
+            sold: 0,
+            capacity: ticketTypes.reduce(
+              (sum, t) => sum + (parseInt(t.qty) || 0),
+              0,
+            ),
+            organizer: PS.session.getUser().name,
+            emoji:
+              emojiMap[document.getElementById("eventCategory").value] || "🎫",
+          };
+          window.PS_DATA.DEMO_EVENTS.push(newEvent);
+
+          setTimeout(() => {
+            PS.toast("Event published successfully!", "success");
+            if (document.getElementById("enableAds").checked) {
+              setTimeout(() => {
+                window.location.href = "create-ad.html?eventId=" + id;
+              }, 700);
+            } else {
+              setTimeout(() => {
+                window.location.href = "my-events.html";
+              }, 700);
+            }
+          }, 1000);
+        });
+
+        // Save draft
+        document
+          .getElementById("saveDraftBtn")
+          .addEventListener("click", () => {
+            PS.toast("Draft saved to local storage", "info");
+          });
+      });
+    </script>
+  </body>
+</html>

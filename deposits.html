@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deposit Funds — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <!-- Sidebar (rendered by JS) -->
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+
+      <div class="main-area">
+        <!-- Topbar (rendered by JS) -->
+        <header class="topbar" id="appTopbar"></header>
+
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Deposit funds</h2>
+              <p class="page-subtitle">Add money to your Pass Spot wallet.</p>
+            </div>
+            <div class="page-actions">
+              <a href="wallet.html" class="btn btn-secondary">Back to wallet</a>
+            </div>
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1.5fr 1fr;
+              gap: var(--space-8);
+            "
+            id="depGrid"
+          >
+            <!-- =========================================
+               DEPOSIT FORM
+          ========================================= -->
+            <form id="depositForm" class="card" novalidate>
+              <div class="form-group">
+                <label class="form-label" for="depositAmount">
+                  Amount <span class="required">*</span>
+                </label>
+                <div class="input-group">
+                  <span class="input-prefix" id="depSymbol">₦</span>
+                  <input
+                    class="form-input"
+                    type="number"
+                    id="depositAmount"
+                    min="100"
+                    step="50"
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                <span class="form-error"></span>
+                <div class="flex gap-2 mt-3" style="flex-wrap: wrap">
+                  <button type="button" class="filter-chip" data-quick="5000">
+                    ₦5,000
+                  </button>
+                  <button type="button" class="filter-chip" data-quick="10000">
+                    ₦10,000
+                  </button>
+                  <button type="button" class="filter-chip" data-quick="50000">
+                    ₦50,000
+                  </button>
+                  <button type="button" class="filter-chip" data-quick="100000">
+                    ₦100,000
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"
+                  >Payment method <span class="required">*</span></label
+                >
+                <div class="radio-cards" style="grid-template-columns: 1fr">
+                  <label class="radio-card">
+                    <input
+                      type="radio"
+                      name="method"
+                      value="Bank Transfer"
+                      checked
+                    />
+                    <div class="radio-card-content">
+                      <div class="radio-card-title">🏦 Bank Transfer</div>
+                      <div class="radio-card-desc">
+                        Transfer from any Nigerian bank
+                      </div>
+                    </div>
+                  </label>
+                  <label class="radio-card">
+                    <input type="radio" name="method" value="Card" />
+                    <div class="radio-card-content">
+                      <div class="radio-card-title">💳 Card</div>
+                      <div class="radio-card-desc">
+                        Debit / credit card — Visa, Mastercard, Verve
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                class="btn btn-primary btn-lg btn-block"
+                id="depositBtn"
+              >
+                Continue to confirm
+              </button>
+            </form>
+
+            <!-- =========================================
+               DEPOSIT SUMMARY SIDEBAR
+          ========================================= -->
+            <div>
+              <div class="card mb-4">
+                <h3 class="card-title mb-4">Deposit summary</h3>
+                <div class="summary-row">
+                  <span class="text-muted text-sm">Amount</span>
+                  <span class="fw-semibold text-sm" id="sumAmt">₦0.00</span>
+                </div>
+                <div class="summary-row">
+                  <span class="text-muted text-sm">Fee</span>
+                  <span class="fw-semibold text-sm">₦0.00</span>
+                </div>
+                <div class="summary-row total">
+                  <span>Total</span>
+                  <span id="sumTotal">₦0.00</span>
+                </div>
+                <div class="divider"></div>
+                <div class="summary-row">
+                  <span class="text-muted text-sm">New balance</span>
+                  <span class="fw-semibold text-sm" id="sumNewBalance"
+                    >₦0.00</span
+                  >
+                </div>
+              </div>
+
+              <div class="card">
+                <h3 class="card-title mb-3">Need help?</h3>
+                <p
+                  class="text-xs text-muted"
+                  style="line-height: var(--lh-relaxed)"
+                >
+                  Deposits are processed instantly in this demo. In production,
+                  bank transfers may take a few minutes to reflect depending on
+                  your provider.
+                </p>
+                <a href="help.html" class="btn btn-secondary btn-sm mt-3"
+                  >Visit help center</a
+                >
+              </div>
+
+              <div class="info-panel warning mt-4">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path
+                    d="M10.29 3.86 1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
+                  />
+                  <path d="M12 9v4M12 17h.01" />
+                </svg>
+                <span
+                  >Demo only — no real money will be charged or
+                  transferred.</span
+                >
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- =========================================
+       CONFIRMATION MODAL
+  ========================================= -->
+    <div class="modal-overlay" id="depositModal">
+      <div class="modal modal-sm">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title">Confirm deposit</h3>
+            <p class="modal-subtitle">Review your deposit details.</p>
+          </div>
+          <button
+            class="modal-close"
+            onclick="PS.closeModal('depositModal')"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="summary-row">
+            <span>Amount</span
+            ><span class="fw-bold" id="confirmAmount">₦0.00</span>
+          </div>
+          <div class="summary-row">
+            <span>Method</span><span id="confirmMethod">—</span>
+          </div>
+          <div class="summary-row total">
+            <span>Total</span><span id="confirmTotal">₦0.00</span>
+          </div>
+
+          <div
+            id="processingState"
+            style="display: none; text-align: center; padding: var(--space-6)"
+          >
+            <div
+              class="skeleton"
+              style="
+                height: 60px;
+                border-radius: 50%;
+                width: 60px;
+                margin: 0 auto var(--space-4);
+              "
+            ></div>
+            <p class="text-sm text-muted">Processing your deposit…</p>
+          </div>
+        </div>
+        <div class="modal-footer" id="depositModalFooter">
+          <button
+            class="btn btn-secondary"
+            onclick="PS.closeModal('depositModal')"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="confirmDeposit">
+            Confirm deposit
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      /* =========================================
+       DEPOSIT PAGE LOGIC
+       Frontend-only deposit simulation.
+    ========================================= */
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_SHELL.renderSidebar("wallet");
+        window.PS_SHELL.renderTopbar("Deposit");
+
+        const amountEl = document.getElementById("depositAmount");
+
+        // =========================================
+        // UPDATE SUMMARY (runs on input + currency change)
+        // =========================================
+        function updateSummary() {
+          const cur = PS.getCurrency();
+          const amt = parseFloat(amountEl.value) || 0;
+          document.getElementById("sumAmt").textContent = PS.formatMoney(
+            amt,
+            cur,
+          );
+          document.getElementById("sumTotal").textContent = PS.formatMoney(
+            amt,
+            cur,
+          );
+          document.getElementById("sumNewBalance").textContent = PS.formatMoney(
+            PS.wallet.getBalance() + amt,
+            cur,
+          );
+        }
+
+        amountEl.addEventListener("input", updateSummary);
+        document.addEventListener("ps:currencychange", updateSummary);
+
+        // Quick-amount chips
+        document.querySelectorAll("[data-quick]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            amountEl.value = btn.dataset.quick;
+            updateSummary();
+          });
+        });
+
+        updateSummary();
+
+        // =========================================
+        // SUBMIT → show confirmation modal
+        // =========================================
+        document
+          .getElementById("depositForm")
+          .addEventListener("submit", (e) => {
+            e.preventDefault();
+            const amount = parseFloat(amountEl.value);
+            PS.clearFieldError(amountEl);
+
+            if (!amount || amount <= 0) {
+              PS.setFieldError(amountEl, "Please enter a valid amount.");
+              return;
+            }
+            if (amount < 100) {
+              PS.setFieldError(amountEl, "Minimum deposit is ₦100.");
+              return;
+            }
+
+            const cur = PS.getCurrency();
+            document.getElementById("confirmAmount").textContent =
+              PS.formatMoney(amount, cur);
+            document.getElementById("confirmTotal").textContent =
+              PS.formatMoney(amount, cur);
+            document.getElementById("confirmMethod").textContent =
+              document.querySelector('input[name="method"]:checked').value;
+
+            PS.openModal("depositModal");
+          });
+
+        // =========================================
+        // CONFIRM → simulate processing → success
+        // =========================================
+        document
+          .getElementById("confirmDeposit")
+          .addEventListener("click", (e) => {
+            const btn = e.currentTarget;
+            btn.classList.add("is-loading");
+            btn.disabled = true;
+            document.getElementById("processingState").style.display = "block";
+
+            setTimeout(() => {
+              const amount = parseFloat(amountEl.value);
+              PS.wallet.add(amount);
+              PS.closeModal("depositModal");
+
+              PS.toast(
+                `Deposit of ${PS.formatMoney(amount, PS.getCurrency())} successful`,
+                "success",
+              );
+
+              // Reset form and hide processing state
+              document.getElementById("depositForm").reset();
+              document.getElementById("processingState").style.display = "none";
+              btn.classList.remove("is-loading");
+              btn.disabled = false;
+              updateSummary();
+
+              // Update header wallet chip
+              const headerBal = document.getElementById("headerBalance");
+              if (headerBal) {
+                headerBal.textContent = PS.formatMoney(
+                  PS.wallet.getBalance(),
+                  PS.getCurrency(),
+                );
+              }
+            }, 1400);
+          });
+      });
+    </script>
+  </body>
+</html>

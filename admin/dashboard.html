@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Admin dashboard</h2>
+              <p class="page-subtitle">Platform overview and health metrics.</p>
+            </div>
+          </div>
+
+          <section class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Total users</span
+                ><span class="stat-icon">👥</span>
+              </div>
+              <div class="stat-value">24,518</div>
+              <div class="stat-change up">↑ 8.4% this month</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Organizers</span
+                ><span class="stat-icon info">📣</span>
+              </div>
+              <div class="stat-value">842</div>
+              <div class="stat-change up">↑ 12 this week</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Active events</span
+                ><span class="stat-icon warning">🎫</span>
+              </div>
+              <div class="stat-value">318</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Tickets sold</span
+                ><span class="stat-icon success">✅</span>
+              </div>
+              <div class="stat-value">94,201</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Gross revenue</span
+                ><span class="stat-icon">💰</span>
+              </div>
+              <div class="stat-value" data-money="48200000">₦48,200,000.00</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Platform revenue</span
+                ><span class="stat-icon success">📈</span>
+              </div>
+              <div class="stat-value" data-money="2410000">₦2,410,000.00</div>
+              <div class="stat-change up">5% fee</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Pending withdrawals</span
+                ><span class="stat-icon warning">⏳</span>
+              </div>
+              <div class="stat-value">18</div>
+              <a
+                href="withdrawals.html"
+                class="text-xs text-primary-color fw-semibold"
+                >Review →</a
+              >
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Active ads</span
+                ><span class="stat-icon info">📊</span>
+              </div>
+              <div class="stat-value">62</div>
+            </div>
+          </section>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 2fr 1fr;
+              gap: var(--space-5);
+              margin-bottom: var(--space-6);
+            "
+            id="adminDashGrid"
+          >
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3 class="chart-title">Platform revenue</h3>
+                <span class="badge badge-success">+24.8%</span>
+              </div>
+              <div class="bar-chart" id="platformChart"></div>
+            </div>
+
+            <div class="card">
+              <h3 class="card-title mb-4">Recent activity</h3>
+              <div class="tx-list">
+                <div class="tx-row" style="padding: var(--space-3)">
+                  <div
+                    class="notification-icon success"
+                    style="width: 32px; height: 32px"
+                  >
+                    ✓
+                  </div>
+                  <div class="tx-main">
+                    <div class="tx-title text-sm">Event approved</div>
+                    <div class="tx-meta">Lagos Music Festival · 2 min ago</div>
+                  </div>
+                </div>
+                <div class="tx-row" style="padding: var(--space-3)">
+                  <div
+                    class="notification-icon"
+                    style="width: 32px; height: 32px"
+                  >
+                    💰
+                  </div>
+                  <div class="tx-main">
+                    <div class="tx-title text-sm">Withdrawal requested</div>
+                    <div class="tx-meta">₦250,000 · 12 min ago</div>
+                  </div>
+                </div>
+                <div class="tx-row" style="padding: var(--space-3)">
+                  <div
+                    class="notification-icon info"
+                    style="width: 32px; height: 32px"
+                  >
+                    👤
+                  </div>
+                  <div class="tx-main">
+                    <div class="tx-title text-sm">New organizer</div>
+                    <div class="tx-meta">SoundWave NG · 34 min ago</div>
+                  </div>
+                </div>
+                <div class="tx-row" style="padding: var(--space-3)">
+                  <div
+                    class="notification-icon warning"
+                    style="width: 32px; height: 32px"
+                  >
+                    ⚠
+                  </div>
+                  <div class="tx-main">
+                    <div class="tx-title text-sm">Ad pending review</div>
+                    <div class="tx-meta">AD-002 · 1 hour ago</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="card-title mb-4">Pending actions</h3>
+            <div class="table-scroll">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Details</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td data-label="Type">
+                      <span class="badge badge-warning">Withdrawal</span>
+                    </td>
+                    <td data-label="Details">₦250,000 — GTBank ****1234</td>
+                    <td data-label="Date">2 min ago</td>
+                    <td data-label="Action">
+                      <a href="withdrawals.html" class="btn btn-sm btn-primary"
+                        >Review</a
+                      >
+                    </td>
+                  </tr>
+                  <tr>
+                    <td data-label="Type">
+                      <span class="badge badge-info">Ad approval</span>
+                    </td>
+                    <td data-label="Details">Tech Founders Summit campaign</td>
+                    <td data-label="Date">15 min ago</td>
+                    <td data-label="Action">
+                      <a
+                        href="advertisements.html"
+                        class="btn btn-sm btn-primary"
+                        >Review</a
+                      >
+                    </td>
+                  </tr>
+                  <tr>
+                    <td data-label="Type">
+                      <span class="badge badge-warning">Withdrawal</span>
+                    </td>
+                    <td data-label="Details">₦85,000 — Access Bank ****5678</td>
+                    <td data-label="Date">1 hour ago</td>
+                    <td data-label="Action">
+                      <a href="withdrawals.html" class="btn btn-sm btn-primary"
+                        >Review</a
+                      >
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+      /* =========================================
+       ADMIN SHELL RENDERER
+    ========================================= */
+      window.PS_ADMIN = {
+        renderSidebar(active) {
+          const sidebar = document.getElementById("appSidebar");
+          if (!sidebar) return;
+          const links = {
+            dashboard: { href: "dashboard.html", label: "Dashboard" },
+            users: { href: "users.html", label: "Users" },
+            events: { href: "events.html", label: "Events" },
+            tickets: { href: "tickets.html", label: "Tickets" },
+            transactions: { href: "transactions.html", label: "Transactions" },
+            withdrawals: { href: "withdrawals.html", label: "Withdrawals" },
+            advertisements: {
+              href: "advertisements.html",
+              label: "Advertisements",
+            },
+            reports: { href: "reports.html", label: "Reports" },
+            audit: { href: "audit-logs.html", label: "Audit Logs" },
+            settings: { href: "settings.html", label: "Settings" },
+          };
+          sidebar.innerHTML = `
+          <div class="sidebar-brand"><a href="dashboard.html" class="brand">Pass<span class="brand-accent">Spot</span> <span class="badge badge-error" style="font-size:10px;">ADMIN</span></a></div>
+          <nav class="sidebar-section">
+            <div class="sidebar-section-label">Platform</div>
+            <div class="sidebar-nav">
+              ${Object.entries(links)
+                .map(
+                  ([k, l]) => `
+                <a href="${l.href}" class="sidebar-link ${active === k ? "is-active" : ""}">${l.label}</a>
+              `,
+                )
+                .join("")}
+            </div>
+          </nav>
+          <div class="sidebar-footer">
+            <a href="../dashboard.html" class="sidebar-link">← Exit admin</a>
+          </div>
+        `;
+        },
+        renderTopbar(title) {
+          const topbar = document.getElementById("appTopbar");
+          if (!topbar) return;
+          topbar.innerHTML = `
+          <button class="icon-btn" data-sidebar-toggle aria-label="Menu" style="display:none;" id="mobileMenuBtn">☰</button>
+          <h1 class="topbar-title">${title}</h1>
+          <div class="topbar-actions">
+            <div class="currency-switch">
+              <button type="button" data-currency-switch="NGN" class="${PS.getCurrency() === "NGN" ? "is-active" : ""}">₦ NGN</button>
+              <button type="button" data-currency-switch="USD" class="${PS.getCurrency() === "USD" ? "is-active" : ""}">$ USD</button>
+            </div>
+            <button class="icon-btn" id="themeToggle" aria-label="Toggle theme"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+            <span class="avatar">AD</span>
+          </div>
+        `;
+          if (window.innerWidth <= 860)
+            document.getElementById("mobileMenuBtn").style.display = "flex";
+          window.addEventListener("resize", () => {
+            document.getElementById("mobileMenuBtn").style.display =
+              window.innerWidth <= 860 ? "flex" : "none";
+          });
+        },
+      };
+
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_ADMIN.renderSidebar("dashboard");
+        window.PS_ADMIN.renderTopbar("Admin dashboard");
+
+        const data = [55, 72, 68, 84, 91, 78, 96, 88];
+        const max = Math.max(...data);
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug"];
+        document.getElementById("platformChart").innerHTML = data
+          .map(
+            (v, i) => `
+        <div class="bar-chart-col">
+          <div class="bar-chart-bar" style="height:${(v / max) * 100}%;"></div>
+          <span class="bar-chart-label">${months[i]}</span>
+        </div>
+      `,
+          )
+          .join("");
+
+        document.addEventListener("ps:currencychange", () => {
+          PS.qsa("[data-money]").forEach((el) => {
+            el.textContent = PS.formatMoney(
+              parseFloat(el.dataset.money),
+              PS.getCurrency(),
+            );
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
