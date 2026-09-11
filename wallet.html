@@ -1,191 +1,534 @@
-<!-- Same shell pattern -->
-<main class="page-content">
-  <div class="page-header">
-    <div>
-      <h2 class="page-title">Wallet</h2>
-      <p class="page-subtitle">
-        Manage your Pass Spot balance and transactions.
-      </p>
-    </div>
-    <div class="page-actions">
-      <a href="deposits.html" class="btn btn-primary">Deposit</a>
-      <a href="withdrawals.html" class="btn btn-secondary">Withdraw</a>
-    </div>
-  </div>
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wallet — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <!-- Sidebar (rendered by JS) -->
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
 
-  <section class="balance-hero">
-    <div class="balance-hero-content">
-      <div class="balance-label">Wallet Balance</div>
-      <div class="balance-amount" id="walletBalance">₦125,000.00</div>
-      <div class="balance-split">
-        <div class="balance-split-item">
-          <span class="balance-split-label">Available</span
-          ><span class="balance-split-value" id="walletAvailable"
-            >₦110,000.00</span
+      <div class="main-area">
+        <!-- Topbar (rendered by JS) -->
+        <header class="topbar" id="appTopbar"></header>
+
+        <main class="page-content">
+          <!-- =========================================
+             PAGE HEADER
+        ========================================= -->
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Wallet</h2>
+              <p class="page-subtitle">
+                Manage your Pass Spot balance and transactions.
+              </p>
+            </div>
+            <div class="page-actions">
+              <a href="deposits.html" class="btn btn-primary">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                Deposit
+              </a>
+              <a href="withdrawals.html" class="btn btn-secondary">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+                Withdraw
+              </a>
+            </div>
+          </div>
+
+          <!-- =========================================
+             BALANCE HERO
+             Shows balance, available, pending, and
+             a currency switcher integrated for quick
+             access without leaving the page.
+        ========================================= -->
+          <section class="balance-hero">
+            <div class="balance-hero-content">
+              <div
+                class="flex justify-between items-start"
+                style="gap: var(--space-4); flex-wrap: wrap"
+              >
+                <div>
+                  <div class="balance-label">Wallet Balance</div>
+                  <div class="balance-amount" id="walletBalance">
+                    ₦125,000.00
+                  </div>
+                </div>
+
+                <!-- Currency switcher (mirrors the header one) -->
+                <div
+                  class="currency-switch"
+                  role="group"
+                  aria-label="Currency"
+                  style="background: rgba(255, 255, 255, 0.15)"
+                >
+                  <button
+                    type="button"
+                    data-currency-switch="NGN"
+                    class="is-active"
+                    style="color: #fff"
+                  >
+                    ₦ NGN
+                  </button>
+                  <button
+                    type="button"
+                    data-currency-switch="USD"
+                    style="color: #fff"
+                  >
+                    $ USD
+                  </button>
+                </div>
+              </div>
+
+              <div class="balance-split">
+                <div class="balance-split-item">
+                  <span class="balance-split-label">Available</span>
+                  <span class="balance-split-value" id="walletAvailable"
+                    >₦110,000.00</span
+                  >
+                </div>
+                <div class="balance-split-item">
+                  <span class="balance-split-label">Pending</span>
+                  <span class="balance-split-value" id="walletPending"
+                    >₦15,000.00</span
+                  >
+                </div>
+                <div class="balance-split-item">
+                  <span class="balance-split-label">Total in</span>
+                  <span class="balance-split-value" id="walletTotalIn"
+                    >₦250,000.00</span
+                  >
+                </div>
+                <div class="balance-split-item">
+                  <span class="balance-split-label">Total out</span>
+                  <span class="balance-split-value" id="walletTotalOut"
+                    >₦150,000.00</span
+                  >
+                </div>
+              </div>
+
+              <div class="balance-actions">
+                <a href="deposits.html" class="btn btn-white">Add funds</a>
+                <a href="withdrawals.html" class="btn btn-secondary"
+                  >Withdraw</a
+                >
+                <a href="payments.html" class="btn btn-secondary"
+                  >All payments</a
+                >
+              </div>
+            </div>
+          </section>
+
+          <!-- =========================================
+             QUICK STATS
+        ========================================= -->
+          <section class="stats-grid" style="margin-top: var(--space-6)">
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Transactions this month</span>
+                <span class="stat-icon">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M3 3v18h18" />
+                    <path d="m19 9-5 5-4-4-3 3" />
+                  </svg>
+                </span>
+              </div>
+              <div class="stat-value" id="statMonthTx">8</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Money in</span>
+                <span class="stat-icon success">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M12 19V5M5 12l7-7 7 7" />
+                  </svg>
+                </span>
+              </div>
+              <div class="stat-value" id="statMoneyIn" data-money="250000">
+                ₦250,000.00
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Money out</span>
+                <span class="stat-icon error">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M12 5v14M5 12l7 7 7-7" />
+                  </svg>
+                </span>
+              </div>
+              <div class="stat-value" id="statMoneyOut" data-money="150000">
+                ₦150,000.00
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Pending</span>
+                <span class="stat-icon warning">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 6v6l4 2" />
+                  </svg>
+                </span>
+              </div>
+              <div class="stat-value" id="statPending" data-money="15000">
+                ₦15,000.00
+              </div>
+            </div>
+          </section>
+
+          <!-- =========================================
+             TRANSACTION HISTORY
+             Tabs filter by type; search + status
+             filter are functional via JS.
+        ========================================= -->
+          <div
+            class="flex justify-between items-center mt-8 mb-4"
+            style="flex-wrap: wrap; gap: var(--space-4)"
           >
-        </div>
-        <div class="balance-split-item">
-          <span class="balance-split-label">Pending</span
-          ><span class="balance-split-value" id="walletPending"
-            >₦15,000.00</span
-          >
-        </div>
+            <div>
+              <h3 class="section-title" style="font-size: var(--fs-xl)">
+                Transaction history
+              </h3>
+              <p class="section-subtitle">
+                All activity on your Pass Spot wallet.
+              </p>
+            </div>
+          </div>
+
+          <div class="tabs">
+            <button class="tab is-active" data-tab="all">All</button>
+            <button class="tab" data-tab="Deposit">Deposits</button>
+            <button class="tab" data-tab="Withdrawal">Withdrawals</button>
+            <button class="tab" data-tab="Ticket Purchase">
+              Ticket Purchases
+            </button>
+            <button class="tab" data-tab="Ticket Revenue">Revenue</button>
+            <button class="tab" data-tab="Advertisement">Ad Spend</button>
+            <button class="tab" data-tab="Refund">Refunds</button>
+          </div>
+
+          <div class="filter-bar">
+            <div class="filter-search">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input
+                class="form-input"
+                type="search"
+                id="txSearch"
+                placeholder="Search transactions by ID, description, or type…"
+              />
+            </div>
+            <select
+              class="form-select"
+              id="txStatus"
+              style="width: auto; min-width: 160px"
+            >
+              <option value="">All statuses</option>
+              <option>Completed</option>
+              <option>Pending</option>
+              <option>Failed</option>
+              <option>Cancelled</option>
+              <option>Refunded</option>
+            </select>
+            <select
+              class="form-select"
+              id="txSort"
+              style="width: auto; min-width: 160px"
+            >
+              <option value="date-desc">Newest first</option>
+              <option value="date-asc">Oldest first</option>
+              <option value="amount-desc">Highest amount</option>
+              <option value="amount-asc">Lowest amount</option>
+            </select>
+          </div>
+
+          <div class="table-wrap">
+            <div class="tx-list" id="txList"></div>
+          </div>
+        </main>
       </div>
     </div>
-  </section>
 
-  <div class="tabs">
-    <button class="tab is-active" data-tab="all">All</button>
-    <button class="tab" data-tab="Deposit">Deposits</button>
-    <button class="tab" data-tab="Withdrawal">Withdrawals</button>
-    <button class="tab" data-tab="Ticket Purchase">Ticket Purchases</button>
-    <button class="tab" data-tab="Ticket Revenue">Revenue</button>
-    <button class="tab" data-tab="Advertisement">Ad Spend</button>
-    <button class="tab" data-tab="Refund">Refunds</button>
-  </div>
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      /* =========================================
+       WALLET PAGE LOGIC
+       Handles balance display, stat totals,
+       transaction filtering, searching, and
+       sorting — all client-side.
+    ========================================= */
+      document.addEventListener("DOMContentLoaded", () => {
+        // Inject the shared app shell
+        window.PS_SHELL.renderSidebar("wallet");
+        window.PS_SHELL.renderTopbar("Wallet");
 
-  <div class="filter-bar">
-    <div class="filter-search">
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.35-4.35" />
-      </svg>
-      <input
-        class="form-input"
-        type="search"
-        id="txSearch"
-        placeholder="Search transactions…"
-      />
-    </div>
-    <select
-      class="form-select"
-      id="txStatus"
-      style="width: auto; min-width: 150px"
-    >
-      <option value="">All statuses</option>
-      <option>Completed</option>
-      <option>Pending</option>
-      <option>Failed</option>
-      <option>Cancelled</option>
-      <option>Refunded</option>
-    </select>
-  </div>
+        // ---------- Local state ----------
+        let activeTab = "all";
+        let activeStatus = "";
+        let activeSearch = "";
+        let activeSort = "date-desc";
 
-  <div class="table-wrap">
-    <div class="tx-list" id="txList"></div>
-  </div>
-</main>
+        // Pending amount is a fixed demo value
+        const PENDING = 15000;
 
-<script src="js/data.js"></script>
-<script src="js/script.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    window.PS_SHELL.renderSidebar("wallet");
-    window.PS_SHELL.renderTopbar("Wallet");
+        // ---------- Balance rendering ----------
+        function renderBalance() {
+          const cur = PS.getCurrency();
+          const balance = PS.wallet.getBalance();
 
-    let activeTab = "all";
-    let activeStatus = "";
-    let activeSearch = "";
+          document.getElementById("walletBalance").textContent = PS.formatMoney(
+            balance,
+            cur,
+          );
+          document.getElementById("walletAvailable").textContent =
+            PS.formatMoney(balance - PENDING, cur);
+          document.getElementById("walletPending").textContent = PS.formatMoney(
+            PENDING,
+            cur,
+          );
 
-    function renderBalance() {
-      const c = PS.getCurrency();
-      const bal = PS.wallet.getBalance();
-      const pending = 15000;
-      document.getElementById("walletBalance").textContent = PS.formatMoney(
-        bal,
-        c,
-      );
-      document.getElementById("walletAvailable").textContent = PS.formatMoney(
-        bal - pending,
-        c,
-      );
-      document.getElementById("walletPending").textContent = PS.formatMoney(
-        pending,
-        c,
-      );
-    }
+          // Compute total in / total out from demo transactions
+          const allTx = window.PS_DATA.DEMO_TRANSACTIONS;
+          const totalIn = allTx
+            .filter((t) => t.amount > 0)
+            .reduce((s, t) => s + t.amount, 0);
+          const totalOut = allTx
+            .filter((t) => t.amount < 0)
+            .reduce((s, t) => s + Math.abs(t.amount), 0);
 
-    function renderTx() {
-      let list = [...window.PS_DATA.DEMO_TRANSACTIONS];
-      if (activeTab !== "all") list = list.filter((t) => t.type === activeTab);
-      if (activeStatus)
-        list = list.filter(
-          (t) => t.status.toLowerCase() === activeStatus.toLowerCase(),
-        );
-      if (activeSearch)
-        list = list.filter(
-          (t) =>
-            t.description.toLowerCase().includes(activeSearch) ||
-            t.id.toLowerCase().includes(activeSearch) ||
-            t.type.toLowerCase().includes(activeSearch),
-        );
+          document.getElementById("walletTotalIn").textContent = PS.formatMoney(
+            totalIn,
+            cur,
+          );
+          document.getElementById("walletTotalOut").textContent =
+            PS.formatMoney(totalOut, cur);
 
-      const wrap = document.getElementById("txList");
-      if (list.length === 0) {
-        wrap.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><h3 class="empty-state-title">No transactions</h3><p class="empty-state-text">Transactions matching your filters will appear here.</p></div>`;
-        return;
-      }
+          // Sync header wallet chip
+          const headerBal = document.getElementById("headerBalance");
+          if (headerBal) headerBal.textContent = PS.formatMoney(balance, cur);
 
-      const c = PS.getCurrency();
-      wrap.innerHTML = list
-        .map((tx) => {
-          const isIn = tx.amount > 0;
+          // Sync stat cards
+          document.getElementById("statMonthTx").textContent = allTx.length;
+          document.getElementById("statMoneyIn").textContent = PS.formatMoney(
+            totalIn,
+            cur,
+          );
+          document.getElementById("statMoneyOut").textContent = PS.formatMoney(
+            totalOut,
+            cur,
+          );
+          document.getElementById("statPending").textContent = PS.formatMoney(
+            PENDING,
+            cur,
+          );
+        }
+
+        // ---------- Transaction list rendering ----------
+        function renderTransactions() {
+          const listEl = document.getElementById("txList");
+          let list = [...window.PS_DATA.DEMO_TRANSACTIONS];
+
+          // Type filter via tabs
+          if (activeTab !== "all") {
+            list = list.filter((t) => t.type === activeTab);
+          }
+
+          // Status filter
+          if (activeStatus) {
+            list = list.filter(
+              (t) => t.status.toLowerCase() === activeStatus.toLowerCase(),
+            );
+          }
+
+          // Search
+          if (activeSearch) {
+            list = list.filter(
+              (t) =>
+                t.description.toLowerCase().includes(activeSearch) ||
+                t.id.toLowerCase().includes(activeSearch) ||
+                t.type.toLowerCase().includes(activeSearch),
+            );
+          }
+
+          // Sort
+          if (activeSort === "date-desc")
+            list.sort((a, b) => new Date(b.date) - new Date(a.date));
+          else if (activeSort === "date-asc")
+            list.sort((a, b) => new Date(a.date) - new Date(b.date));
+          else if (activeSort === "amount-desc")
+            list.sort((a, b) => Math.abs(b.amount) - Math.abs(a.amount));
+          else if (activeSort === "amount-asc")
+            list.sort((a, b) => Math.abs(a.amount) - Math.abs(b.amount));
+
+          // Empty state
+          if (list.length === 0) {
+            listEl.innerHTML = `
+            <div class="empty-state" style="padding:var(--space-12) var(--space-6);">
+              <div class="empty-state-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 9a3 3 0 010-6h20a3 3 0 010 6M2 15a3 3 0 000 6h20a3 3 0 000-6M2 9v6M22 9v6"/>
+                </svg>
+              </div>
+              <h3 class="empty-state-title">No transactions found</h3>
+              <p class="empty-state-text">
+                ${
+                  activeSearch || activeStatus || activeTab !== "all"
+                    ? "Try adjusting your filters or search."
+                    : "Your transaction history will appear here."
+                }
+              </p>
+              <a href="deposits.html" class="btn btn-primary">Make a deposit</a>
+            </div>`;
+            return;
+          }
+
+          // Render rows
+          const cur = PS.getCurrency();
           const statusClass = {
             completed: "badge-success",
             pending: "badge-warning",
             failed: "badge-error",
             cancelled: "badge-neutral",
             refunded: "badge-info",
-          }[tx.status];
-          return `
-        <div class="tx-row">
-          <div class="tx-icon ${isIn ? "in" : "out"}">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">${isIn ? '<path d="M12 19V5M5 12l7-7 7 7"/>' : '<path d="M12 5v14M5 12l7 7 7-7"/>'}</svg>
-          </div>
-          <div class="tx-main">
-            <div class="tx-title">${tx.description}</div>
-            <div class="tx-meta">${tx.type} · ${PS.formatDateTime(tx.date)} · ${tx.id}</div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-            <div class="tx-amount ${isIn ? "in" : "out"}">${PS.formatMoney(tx.amount, c)}</div>
-            <span class="badge ${statusClass}">${tx.status}</span>
-          </div>
-        </div>`;
-        })
-        .join("");
-    }
+          };
 
-    document.querySelectorAll(".tab").forEach((tab) => {
-      tab.addEventListener("click", () => {
-        document
-          .querySelectorAll(".tab")
-          .forEach((t) => t.classList.remove("is-active"));
-        tab.classList.add("is-active");
-        activeTab = tab.dataset.tab;
-        renderTx();
+          listEl.innerHTML = list
+            .map((tx) => {
+              const isIn = tx.amount > 0;
+              return `
+            <div class="tx-row" onclick="window.location.href='payments.html?id=${tx.id}'">
+              <div class="tx-icon ${isIn ? "in" : "out"}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  ${isIn ? '<path d="M12 19V5M5 12l7-7 7 7"/>' : '<path d="M12 5v14M5 12l7 7 7-7"/>'}
+                </svg>
+              </div>
+              <div class="tx-main">
+                <div class="tx-title">${tx.description}</div>
+                <div class="tx-meta">
+                  ${tx.type} · ${PS.formatDateTime(tx.date)} · <span class="mono">${tx.id}</span>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                <div class="tx-amount ${isIn ? "in" : "out"}">
+                  ${PS.formatMoney(tx.amount, cur)}
+                </div>
+                <span class="badge ${statusClass[tx.status] || "badge-neutral"}">${tx.status}</span>
+              </div>
+            </div>`;
+            })
+            .join("");
+        }
+
+        // ---------- Tab switching ----------
+        document.querySelectorAll(".tab").forEach((tab) => {
+          tab.addEventListener("click", () => {
+            document
+              .querySelectorAll(".tab")
+              .forEach((t) => t.classList.remove("is-active"));
+            tab.classList.add("is-active");
+            activeTab = tab.dataset.tab;
+            renderTransactions();
+          });
+        });
+
+        // ---------- Filters ----------
+        document.getElementById("txStatus").addEventListener("change", (e) => {
+          activeStatus = e.target.value;
+          renderTransactions();
+        });
+
+        document.getElementById("txSearch").addEventListener("input", (e) => {
+          activeSearch = e.target.value.trim().toLowerCase();
+          renderTransactions();
+        });
+
+        document.getElementById("txSort").addEventListener("change", (e) => {
+          activeSort = e.target.value;
+          renderTransactions();
+        });
+
+        // ---------- React to currency changes ----------
+        document.addEventListener("ps:currencychange", () => {
+          renderBalance();
+          renderTransactions();
+        });
+
+        // ---------- Initial render ----------
+        renderBalance();
+        renderTransactions();
       });
-    });
-    document.getElementById("txStatus").addEventListener("change", (e) => {
-      activeStatus = e.target.value;
-      renderTx();
-    });
-    document.getElementById("txSearch").addEventListener("input", (e) => {
-      activeSearch = e.target.value.toLowerCase();
-      renderTx();
-    });
-    document.addEventListener("ps:currencychange", () => {
-      renderBalance();
-      renderTx();
-    });
-
-    renderBalance();
-    renderTx();
-  });
-</script>
+    </script>
+  </body>
+</html>
