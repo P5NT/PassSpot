@@ -1493,7 +1493,7 @@ h5 {
   font-weight: var(--fw-semibold);
 }
 
-.sidebar-link.is-active::before {
+/* .sidebar-link.is-active::before {
   content: "";
   position: absolute;
   left: -var(--space-4);
@@ -1503,7 +1503,7 @@ h5 {
   height: 20px;
   background-color: var(--primary-color);
   border-radius: var(--radius-full);
-}
+} */
 
 .sidebar-link svg {
   flex-shrink: 0;
