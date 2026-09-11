@@ -3413,3 +3413,1050 @@ h5 {
     flex: 1;
   }
 }
+
+/* =========================================
+   31. RESPONSIVE BREAKPOINTS
+   Media queries tuned for:
+   - 1280px : large tablet / small laptop
+   - 768px  : tablet portrait
+   - 540px  : large phone landscape
+   - 375px  : standard phone (iPhone SE / 12 mini)
+   - 320px  : small phone (older devices)
+========================================= */
+
+/* =========================================
+   ≤ 1280px — Small laptops & large tablets
+   Tighten grids and container padding.
+========================================= */
+@media (max-width: 1280px) {
+  :root {
+    --container-max: 1100px;
+    --sidebar-width: 240px;
+  }
+
+  /* Feature grid: 3 → 2 columns */
+  .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Stats: 4 → 3 columns */
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Footer: 4 → 3 columns */
+  .footer-grid {
+    grid-template-columns: 2fr 1fr 1fr;
+  }
+
+  /* Hero: tighten gap */
+  .hero-grid {
+    gap: var(--space-12);
+  }
+
+  .hero-visual {
+    height: 460px;
+  }
+
+  .hero-card {
+    width: 260px;
+  }
+
+  /* Event details two-column stack feels cramped — shrink side */
+  #eventGrid {
+    grid-template-columns: 1.4fr 1fr !important;
+    gap: var(--space-6) !important;
+  }
+
+  /* Ad creation & form grid */
+  #adGrid,
+  #formGrid,
+  #depGrid,
+  #wdGrid,
+  #settingsGrid,
+  #adminDashGrid,
+  #reportChartsGrid,
+  #analyticsGrid,
+  #profileGrid,
+  #adDetailGrid,
+  #ticketGrid,
+  #adDetailGrid {
+    gap: var(--space-5) !important;
+  }
+}
+
+/* =========================================
+   ≤ 1024px — Tablet landscape
+   Two-column layouts collapse.
+========================================= */
+@media (max-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-10);
+  }
+
+  .hero-visual {
+    height: 420px;
+    max-width: 560px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .auth-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-visual {
+    display: none;
+  }
+
+  /* Multi-column dashboard layouts stack */
+  #eventGrid,
+  #adGrid,
+  #formGrid,
+  #depGrid,
+  #wdGrid,
+  #settingsGrid,
+  #adminDashGrid,
+  #reportChartsGrid,
+  #analyticsGrid,
+  #profileGrid,
+  #adDetailGrid,
+  #ticketGrid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Admin settings nav stacks too */
+  #settingsGrid > nav {
+    position: static !important;
+    height: auto !important;
+  }
+}
+
+/* =========================================
+   ≤ 768px — Tablet portrait
+   Sidebar becomes a drawer, topbar compresses.
+========================================= */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 260px;
+    --header-height: 64px;
+    --fs-4xl: 2.25rem;
+    --fs-3xl: 1.875rem;
+  }
+
+  /* ---- Site (marketing) header ---- */
+  .site-nav {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: flex;
+  }
+
+  .site-header .header-actions .btn {
+    display: none;
+  }
+
+  .site-header .header-actions .icon-btn,
+  .site-header .header-actions .menu-toggle {
+    display: flex;
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    padding: var(--space-12) 0 var(--space-10);
+  }
+
+  .hero-title {
+    font-size: clamp(2rem, 6vw, 2.75rem);
+  }
+
+  .hero-subtitle {
+    font-size: var(--fs-base);
+  }
+
+  .hero-visual {
+    height: 360px;
+  }
+
+  .hero-card {
+    width: 220px;
+    padding: var(--space-3);
+  }
+
+  .hero-card-1 {
+    right: 20px;
+  }
+  .hero-card-2 {
+    top: 130px;
+  }
+  .hero-card-3 {
+    bottom: 0;
+  }
+
+  /* ---- Section headers ---- */
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .section-title {
+    font-size: var(--fs-2xl);
+  }
+
+  /* ---- Feature grid ---- */
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* ---- Stats grid ---- */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* ---- Footer ---- */
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .footer-grid > :first-child {
+    grid-column: span 2;
+  }
+
+  /* ---- App shell (authenticated) ---- */
+  .app-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 100;
+    transform: translateX(-100%);
+    width: 280px;
+    box-shadow: var(--shadow-xl);
+  }
+
+  .sidebar.is-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    display: block;
+    pointer-events: none;
+  }
+
+  .sidebar-overlay.is-open {
+    pointer-events: auto;
+  }
+
+  /* ---- Topbar on tablet ---- */
+  .topbar {
+    padding: 0 var(--space-4);
+    gap: var(--space-2);
+  }
+
+  .topbar-title {
+    font-size: var(--fs-md);
+  }
+
+  .topbar-search {
+    display: none;
+  }
+
+  .wallet-chip-info {
+    display: none;
+  }
+
+  .wallet-chip {
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+  }
+
+  /* Hide currency switcher in topbar on tablet */
+  .topbar-actions .currency-switch {
+    display: none;
+  }
+
+  /* Show mobile menu button */
+  #mobileMenuBtn {
+    display: flex !important;
+  }
+
+  /* ---- Page content padding ---- */
+  .page-content {
+    padding: var(--space-5) var(--space-4) var(--space-12);
+  }
+
+  .page-title {
+    font-size: var(--fs-2xl);
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+
+  .page-actions {
+    width: 100%;
+  }
+
+  /* ---- Balance hero ---- */
+  .balance-hero {
+    padding: var(--space-6);
+  }
+
+  .balance-amount {
+    font-size: 1.875rem;
+  }
+
+  .balance-split {
+    gap: var(--space-5);
+    flex-wrap: wrap;
+  }
+
+  .balance-actions {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .balance-actions .btn {
+    width: 100%;
+  }
+
+  /* ---- Event grid ---- */
+  .event-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+
+  /* ---- Filter bar ---- */
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-bar .form-select,
+  .filter-bar .form-input,
+  .filter-search {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* ---- Tabs ---- */
+  .tabs {
+    margin-inline: calc(-1 * var(--space-4));
+    padding-inline: var(--space-4);
+  }
+
+  /* ---- Stepper (create-ad) ---- */
+  .stepper {
+    gap: var(--space-1);
+  }
+
+  .step-label {
+    display: none;
+  }
+
+  .step-divider {
+    min-width: 12px;
+  }
+
+  /* ---- Modal ---- */
+  .modal-overlay {
+    padding: var(--space-4);
+  }
+
+  .modal {
+    max-height: 92vh;
+  }
+
+  /* ---- Ticket card ---- */
+  .ticket-card {
+    max-width: 100%;
+  }
+}
+
+/* =========================================
+   ≤ 540px — Large phone (landscape)
+   Compact spacing, stack everything.
+========================================= */
+@media (max-width: 540px) {
+  :root {
+    --header-height: 60px;
+    --space-8: 1.75rem;
+    --space-10: 2rem;
+    --space-12: 2.5rem;
+    --space-16: 3rem;
+  }
+
+  .container {
+    padding-inline: var(--space-4);
+  }
+
+  /* ---- Typography ---- */
+  h1 {
+    font-size: var(--fs-3xl);
+  }
+  h2 {
+    font-size: var(--fs-2xl);
+  }
+  h3 {
+    font-size: var(--fs-xl);
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    padding: var(--space-10) 0 var(--space-8);
+  }
+
+  .hero-title {
+    font-size: clamp(1.75rem, 7vw, 2.25rem);
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .hero-stats {
+    flex-direction: column;
+    gap: var(--space-4);
+    padding-top: var(--space-5);
+  }
+
+  .hero-stat-value {
+    font-size: var(--fs-xl);
+  }
+
+  /* Hero visual: scale down cards */
+  .hero-visual {
+    height: 300px;
+  }
+
+  .hero-card {
+    width: 180px;
+    padding: var(--space-3);
+  }
+
+  .hero-card-1 {
+    top: 0;
+    right: 0;
+  }
+  .hero-card-2 {
+    top: 100px;
+    left: 0;
+  }
+  .hero-card-3 {
+    bottom: 0;
+    right: 0;
+  }
+
+  /* ---- Stats grid ---- */
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .stat-value {
+    font-size: var(--fs-xl);
+  }
+
+  /* ---- Footer ---- */
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .footer-grid > :first-child {
+    grid-column: auto;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  /* ---- Feature cards ---- */
+  .feature-card {
+    padding: var(--space-5);
+  }
+
+  /* ---- Event cards ---- */
+  .event-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* ---- Balance hero ---- */
+  .balance-amount {
+    font-size: 1.75rem;
+  }
+
+  .balance-split {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  /* ---- Page header ---- */
+  .page-title {
+    font-size: var(--fs-xl);
+  }
+
+  .page-actions .btn {
+    flex: 1;
+  }
+
+  /* ---- Tables → Cards ---- */
+  .table thead {
+    display: none;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+    width: 100%;
+  }
+
+  .table tr {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .table tr:last-child {
+    border-bottom: none;
+  }
+
+  .table td {
+    padding: var(--space-1) 0;
+    border: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-4);
+    text-align: right;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    font-weight: var(--fw-semibold);
+    color: var(--text-secondary);
+    font-size: var(--fs-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+    text-align: left;
+  }
+
+  .table-actions {
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  /* ---- Modals: bottom sheet feel ---- */
+  .modal-overlay {
+    padding: var(--space-3);
+    align-items: flex-end;
+  }
+
+  .modal {
+    max-height: 90vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  }
+
+  /* ---- Toasts ---- */
+  .toast-container {
+    left: var(--space-4);
+    right: var(--space-4);
+    bottom: var(--space-4);
+    max-width: none;
+    width: auto;
+  }
+
+  /* ---- Auth forms ---- */
+  .auth-panel {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .auth-heading {
+    font-size: var(--fs-2xl);
+  }
+
+  .auth-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .radio-cards {
+    grid-template-columns: 1fr;
+  }
+
+  /* ---- Wallet chip in header ---- */
+  .wallet-chip {
+    width: 36px;
+    height: 36px;
+  }
+
+  .topbar-actions {
+    gap: var(--space-1);
+  }
+
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* ---- Tab bar: horizontal scroll ---- */
+  .tabs {
+    margin-inline: calc(-1 * var(--space-4));
+    padding-inline: var(--space-4);
+    scrollbar-width: none;
+  }
+
+  .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* ---- Category chips: horizontal scroll ---- */
+  .category-scroll {
+    margin-inline: calc(-1 * var(--space-4));
+    padding-inline: var(--space-4);
+  }
+
+  /* ---- Section titles ---- */
+  .section-title {
+    font-size: var(--fs-xl);
+  }
+
+  /* ---- Ticket card adjustments ---- */
+  .ticket-card::before,
+  .ticket-card::after {
+    display: none;
+  }
+
+  .ticket-qr {
+    width: 140px;
+    height: 140px;
+  }
+
+  /* ---- Balance actions stack ---- */
+  .balance-actions {
+    flex-direction: column;
+  }
+
+  /* ---- Stepper compact ---- */
+  .step {
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .step-number {
+    width: 26px;
+    height: 26px;
+    font-size: 0.6875rem;
+  }
+}
+
+/* =========================================
+   ≤ 375px — Standard phone (iPhone SE, 12 mini)
+   Tighten further, single column everything.
+========================================= */
+@media (max-width: 375px) {
+  :root {
+    --space-4: 0.875rem;
+    --space-5: 1rem;
+    --space-6: 1.25rem;
+    --space-8: 1.5rem;
+    --fs-3xl: 1.5rem;
+    --fs-2xl: 1.375rem;
+    --fs-xl: 1.125rem;
+  }
+
+  body {
+    font-size: 0.9375rem;
+  }
+
+  .container {
+    padding-inline: var(--space-3);
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    padding: var(--space-8) 0;
+  }
+
+  .hero-title {
+    font-size: 1.625rem;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-subtitle {
+    font-size: var(--fs-sm);
+  }
+
+  .hero-eyebrow {
+    font-size: 0.6875rem;
+  }
+
+  .hero-visual {
+    height: 260px;
+  }
+
+  .hero-card {
+    width: 160px;
+    padding: var(--space-2);
+  }
+
+  .hero-card-2 {
+    top: 80px;
+  }
+
+  /* ---- Headings ---- */
+  .page-title {
+    font-size: var(--fs-xl);
+  }
+
+  .section-title {
+    font-size: var(--fs-lg);
+  }
+
+  .modal-title {
+    font-size: var(--fs-md);
+  }
+
+  /* ---- Cards ---- */
+  .card {
+    padding: var(--space-4);
+  }
+
+  .feature-card {
+    padding: var(--space-4);
+  }
+
+  .stat-card {
+    padding: var(--space-4);
+  }
+
+  /* ---- Balance hero ---- */
+  .balance-hero {
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+  }
+
+  .balance-amount {
+    font-size: 1.5rem;
+  }
+
+  .balance-split-value {
+    font-size: var(--fs-base);
+  }
+
+  /* ---- Topbar ---- */
+  .topbar {
+    padding: 0 var(--space-3);
+    gap: var(--space-1);
+  }
+
+  .topbar-title {
+    font-size: var(--fs-sm);
+  }
+
+  .icon-btn,
+  .wallet-chip {
+    width: 34px;
+    height: 34px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: var(--fs-xs);
+  }
+
+  /* ---- Buttons ---- */
+  .btn {
+    padding-inline: var(--space-4);
+  }
+
+  .btn-lg {
+    height: 46px;
+    padding-inline: var(--space-6);
+    font-size: var(--fs-sm);
+  }
+
+  .btn-sm {
+    height: 30px;
+    padding-inline: var(--space-2);
+    font-size: 0.6875rem;
+  }
+
+  /* ---- Page content ---- */
+  .page-content {
+    padding: var(--space-4) var(--space-3) var(--space-10);
+  }
+
+  /* ---- Tables ---- */
+  .table td {
+    font-size: var(--fs-xs);
+  }
+
+  /* ---- Filter bar ---- */
+  .filter-chip {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--fs-xs);
+  }
+
+  /* ---- Modals ---- */
+  .modal-header,
+  .modal-body {
+    padding: var(--space-5);
+  }
+
+  .modal-footer {
+    padding: var(--space-4) var(--space-5);
+  }
+
+  /* ---- Balance actions ---- */
+  .balance-actions .btn {
+    height: 40px;
+  }
+
+  /* ---- Ticket ---- */
+  .ticket-qr {
+    width: 120px;
+    height: 120px;
+    padding: var(--space-3);
+  }
+
+  .ticket-event-name {
+    font-size: var(--fs-lg);
+  }
+
+  /* ---- Toast ---- */
+  .toast {
+    padding: var(--space-3);
+  }
+
+  /* ---- Stepper ---- */
+  .step-divider {
+    display: none;
+  }
+
+  .stepper {
+    justify-content: space-between;
+  }
+}
+
+/* =========================================
+   ≤ 320px — Small phones (older devices)
+   Absolute minimum viable layout.
+========================================= */
+@media (max-width: 320px) {
+  :root {
+    --space-4: 0.75rem;
+    --space-5: 0.875rem;
+    --space-6: 1rem;
+    --fs-base: 0.9375rem;
+  }
+
+  body {
+    font-size: 0.875rem;
+  }
+
+  .container {
+    padding-inline: var(--space-3);
+  }
+
+  /* ---- Hero ---- */
+  .hero {
+    padding: var(--space-6) 0;
+  }
+
+  .hero-title {
+    font-size: 1.375rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.8125rem;
+  }
+
+  .hero-visual {
+    display: none;
+  }
+
+  .hero-stat-value {
+    font-size: var(--fs-lg);
+  }
+
+  /* ---- Headings ---- */
+  .page-title {
+    font-size: var(--fs-lg);
+  }
+
+  .section-title {
+    font-size: var(--fs-base);
+  }
+
+  h1 {
+    font-size: var(--fs-2xl);
+  }
+  h2 {
+    font-size: var(--fs-xl);
+  }
+  h3 {
+    font-size: var(--fs-lg);
+  }
+
+  /* ---- Cards ---- */
+  .card,
+  .feature-card,
+  .stat-card {
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+  }
+
+  /* ---- Balance hero ---- */
+  .balance-hero {
+    padding: var(--space-4);
+  }
+
+  .balance-amount {
+    font-size: 1.375rem;
+  }
+
+  /* ---- Topbar ---- */
+  .topbar {
+    padding: 0 var(--space-2);
+  }
+
+  .topbar-title {
+    font-size: var(--fs-xs);
+  }
+
+  .icon-btn,
+  .wallet-chip {
+    width: 32px;
+    height: 32px;
+  }
+
+  .avatar {
+    width: 30px;
+    height: 30px;
+    font-size: 0.625rem;
+  }
+
+  /* ---- Buttons ---- */
+  .btn {
+    padding-inline: var(--space-3);
+    font-size: var(--fs-xs);
+  }
+
+  .btn-lg {
+    height: 42px;
+    padding-inline: var(--space-5);
+  }
+
+  /* ---- Page content ---- */
+  .page-content {
+    padding: var(--space-3) var(--space-2) var(--space-8);
+  }
+
+  /* ---- Forms ---- */
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding-inline: var(--space-3);
+    font-size: var(--fs-xs);
+  }
+
+  .form-label {
+    font-size: var(--fs-xs);
+  }
+
+  /* ---- Tables ---- */
+  .table td {
+    font-size: 0.6875rem;
+    padding: 2px 0;
+  }
+
+  .table td::before {
+    font-size: 0.625rem;
+  }
+
+  /* ---- Modals ---- */
+  .modal-header,
+  .modal-body {
+    padding: var(--space-4);
+  }
+
+  .modal-footer {
+    padding: var(--space-3) var(--space-4);
+    flex-direction: column-reverse;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+  }
+
+  /* ---- Toasts ---- */
+  .toast-container {
+    left: var(--space-2);
+    right: var(--space-2);
+    bottom: var(--space-2);
+  }
+
+  .toast-title {
+    font-size: 0.8125rem;
+  }
+
+  .toast-message {
+    font-size: 0.6875rem;
+  }
+
+  /* ---- Ticket ---- */
+  .ticket-card {
+    padding: var(--space-4);
+  }
+
+  .ticket-qr {
+    width: 100px;
+    height: 100px;
+  }
+
+  .ticket-meta-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+
+  /* ---- Stats ---- */
+  .stat-value {
+    font-size: var(--fs-lg);
+  }
+
+  /* ---- Balance split ---- */
+  .balance-split-item {
+    width: 100%;
+  }
+
+  /* ---- Filter chips ---- */
+  .filter-chip {
+    font-size: 0.6875rem;
+    padding: 4px var(--space-2);
+  }
+
+  /* ---- Tabs ---- */
+  .tab {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--fs-xs);
+  }
+}
