@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PassSpot — Dashboard</title>
+    <title>Dashboard — Pass Spot</title>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
@@ -18,727 +18,16 @@
   </head>
   <body>
     <div class="app-layout">
-      <!-- =========================================
-         SIDEBAR
-    ========================================= -->
-      <aside class="sidebar">
-        <div class="sidebar-brand">
-          <a href="dashboard.html" class="brand"
-            >Pass<span class="brand-accent">Spot</span></a
-          >
-        </div>
-
-        <nav class="sidebar-section">
-          <div class="sidebar-section-label">Main</div>
-          <div class="sidebar-nav">
-            <a href="dashboard.html" class="sidebar-link is-active">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <rect x="3" y="3" width="7" height="9" />
-                <rect x="14" y="3" width="7" height="5" />
-                <rect x="14" y="12" width="7" height="9" />
-                <rect x="3" y="16" width="7" height="5" />
-              </svg>
-              Dashboard
-            </a>
-            <a href="events.html" class="sidebar-link">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
-              Discover
-            </a>
-            <a href="my-tickets.html" class="sidebar-link">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path
-                  d="M2 9a3 3 0 010-6h20a3 3 0 010 6M2 15a3 3 0 000 6h20a3 3 0 000-6M2 9v6M22 9v6"
-                />
-              </svg>
-              My Tickets
-            </a>
-            <a href="my-events.html" class="sidebar-link">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <rect x="3" y="4" width="18" height="18" rx="2" />
-                <path d="M16 2v4M8 2v4M3 10h18" />
-              </svg>
-              My Events
-            </a>
-          </div>
-        </nav>
-
-        <nav class="sidebar-section">
-          <div class="sidebar-section-label">Finance</div>
-          <div class="sidebar-nav">
-            <a href="wallet.html" class="sidebar-link">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <rect x="2" y="5" width="20" height="14" rx="2" />
-                <path d="M2 10h20" />
-              </svg>
-              Wallet
-            </a>
-            <a href="payments.html" class="sidebar-link">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path
-                  d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"
-                />
-              </svg>
-              Payments
-            </a>
-            <a href="advertisements.html" class="sidebar-link">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path
-                  d="M3 11h18v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6zM7 11V7a5 5 0 0110 0v4"
-                />
-              </svg>
-              Advertisements
-            </a>
-          </div>
-        </nav>
-
-        <nav class="sidebar-section">
-          <div class="sidebar-section-label">Account</div>
-          <div class="sidebar-nav">
-            <a href="analytics.html" class="sidebar-link">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M3 3v18h18" />
-                <path d="m19 9-5 5-4-4-3 3" />
-              </svg>
-              Analytics
-            </a>
-            <a href="notifications.html" class="sidebar-link">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9" />
-                <path d="M10.3 21a1.94 1.94 0 003.4 0" />
-              </svg>
-              Notifications
-              <span class="badge badge-primary">2</span>
-            </a>
-            <a href="profile.html" class="sidebar-link">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-              Profile
-            </a>
-            <a href="settings.html" class="sidebar-link">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="12" cy="12" r="3" />
-                <path
-                  d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
-                />
-              </svg>
-              Settings
-            </a>
-            <a href="help.html" class="sidebar-link">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01" />
-              </svg>
-              Help
-            </a>
-          </div>
-        </nav>
-
-        <div class="sidebar-footer">
-          <button class="sidebar-link" id="logoutBtn" style="width: 100%">
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path
-                d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"
-              />
-            </svg>
-            Log out
-          </button>
-        </div>
-      </aside>
-
-      <!-- Mobile overlay for sidebar -->
+      <aside class="sidebar" id="appSidebar"></aside>
       <div class="sidebar-overlay"></div>
 
-      <!-- =========================================
-         MAIN AREA
-    ========================================= -->
       <div class="main-area">
-        <!-- Topbar -->
-        <header class="topbar">
-          <button
-            class="icon-btn"
-            data-sidebar-toggle
-            aria-label="Open menu"
-            style="display: none"
-            id="mobileMenuBtn"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-            >
-              <path d="M3 6h18M3 12h18M3 18h18" />
-            </svg>
-          </button>
+        <header class="topbar" id="appTopbar"></header>
 
-          <h1 class="topbar-title">Dashboard</h1>
-
-          <!-- Search -->
-          <div class="topbar-search">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-            <input
-              class="form-input"
-              type="search"
-              placeholder="Search events, tickets…"
-              id="globalSearch"
-              aria-label="Search"
-            />
-            <div class="search-results" id="searchResults"></div>
-          </div>
-
-          <div class="topbar-actions">
-            <!-- Wallet balance chip with currency switcher -->
-            <a href="wallet.html" class="wallet-chip" title="Go to Wallet">
-              <span class="wallet-chip-icon">
-                <svg
-                  width="14"
-                  height="14"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <rect x="2" y="5" width="20" height="14" rx="2" />
-                  <path d="M2 10h20" />
-                </svg>
-              </span>
-              <span class="wallet-chip-info">
-                <span class="wallet-chip-label">Wallet</span>
-                <span class="wallet-chip-value" id="headerBalance"
-                  >₦125,000.00</span
-                >
-              </span>
-            </a>
-
-            <!-- Currency switcher -->
-            <div class="currency-switch" role="group" aria-label="Currency">
-              <button
-                type="button"
-                data-currency-switch="NGN"
-                class="is-active"
-              >
-                ₦ NGN
-              </button>
-              <button type="button" data-currency-switch="USD">$ USD</button>
-            </div>
-
-            <!-- Theme toggle -->
-            <button class="icon-btn" id="themeToggle" aria-label="Toggle theme">
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <circle cx="12" cy="12" r="4" />
-                <path
-                  d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
-                />
-              </svg>
-            </button>
-
-            <!-- Notifications -->
-            <a
-              href="notifications.html"
-              class="icon-btn"
-              aria-label="Notifications"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              >
-                <path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9" />
-                <path d="M10.3 21a1.94 1.94 0 003.4 0" />
-              </svg>
-              <span class="dot-badge"></span>
-            </a>
-
-            <!-- Profile -->
-            <div class="dropdown">
-              <button
-                class="avatar-dropdown"
-                data-dropdown-toggle
-                aria-label="Profile menu"
-              >
-                <span class="avatar" id="userAvatar">AO</span>
-              </button>
-              <div class="dropdown-menu">
-                <div class="dropdown-header">
-                  <div class="fw-semibold text-sm" id="userName">
-                    Ada Okafor
-                  </div>
-                  <div class="text-xs text-muted" id="userEmail">
-                    ada.okafor@example.com
-                  </div>
-                </div>
-                <a href="profile.html" class="dropdown-item">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
-                    <circle cx="12" cy="7" r="4" />
-                  </svg>
-                  Profile
-                </a>
-                <a href="settings.html" class="dropdown-item">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <circle cx="12" cy="12" r="3" />
-                    <path
-                      d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"
-                    />
-                  </svg>
-                  Settings
-                </a>
-                <div class="dropdown-divider"></div>
-                <button class="dropdown-item danger" id="logoutBtn2">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"
-                    />
-                  </svg>
-                  Log out
-                </button>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <!-- =========================================
-           PAGE CONTENT
-      ========================================= -->
-        <main class="page-content">
-          <!-- Welcome -->
-          <div class="page-header">
-            <div>
-              <h2 class="page-title">
-                Welcome back, <span id="welcomeName">Ada</span> 👋
-              </h2>
-              <p class="page-subtitle">
-                Here's what's happening with your Pass Spot account.
-              </p>
-            </div>
-            <div class="page-actions">
-              <a href="events.html" class="btn btn-secondary">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.35-4.35" />
-                </svg>
-                Discover events
-              </a>
-              <a href="create-event.html" class="btn btn-primary">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                >
-                  <path d="M12 5v14M5 12h14" />
-                </svg>
-                Create event
-              </a>
-            </div>
-          </div>
-
-          <!-- Wallet balance hero -->
-          <section class="balance-hero">
-            <div class="balance-hero-content">
-              <div class="balance-label">Wallet Balance</div>
-              <div class="balance-amount" id="heroBalance">₦125,000.00</div>
-
-              <div class="balance-split">
-                <div class="balance-split-item">
-                  <span class="balance-split-label">Available</span>
-                  <span class="balance-split-value" id="heroAvailable"
-                    >₦110,000.00</span
-                  >
-                </div>
-                <div class="balance-split-item">
-                  <span class="balance-split-label">Pending</span>
-                  <span class="balance-split-value" id="heroPending"
-                    >₦15,000.00</span
-                  >
-                </div>
-                <div class="balance-split-item">
-                  <span class="balance-split-label">Currency</span>
-                  <span class="balance-split-value" id="heroCurrency">NGN</span>
-                </div>
-              </div>
-
-              <div class="balance-actions">
-                <a href="deposits.html" class="btn btn-white">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                  >
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
-                  Deposit
-                </a>
-                <a href="withdrawals.html" class="btn btn-secondary">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    stroke-linecap="round"
-                  >
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                  Withdraw
-                </a>
-                <a href="wallet.html" class="btn btn-secondary"
-                  >View transactions</a
-                >
-              </div>
-            </div>
-          </section>
-
-          <!-- Stats grid -->
-          <section class="stats-grid">
-            <div class="stat-card">
-              <div class="stat-card-head">
-                <span class="stat-label">Tickets Purchased</span>
-                <span class="stat-icon">
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path
-                      d="M2 9a3 3 0 010-6h20a3 3 0 010 6M2 15a3 3 0 000 6h20a3 3 0 000-6M2 9v6M22 9v6"
-                    />
-                  </svg>
-                </span>
-              </div>
-              <div class="stat-value">3</div>
-              <div class="stat-change up">↑ 1 this month</div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-card-head">
-                <span class="stat-label">Total Spent</span>
-                <span class="stat-icon warning">
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path
-                      d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"
-                    />
-                  </svg>
-                </span>
-              </div>
-              <div class="stat-value" data-money="90000">₦90,000.00</div>
-              <div class="stat-change up">Across 3 events</div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-card-head">
-                <span class="stat-label">Events Attended</span>
-                <span class="stat-icon success">
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path d="M20 6 9 17l-5-5" />
-                  </svg>
-                </span>
-              </div>
-              <div class="stat-value">1</div>
-              <div class="stat-change up">2 upcoming</div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-card-head">
-                <span class="stat-label">Favorite Events</span>
-                <span class="stat-icon error">
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <path
-                      d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"
-                    />
-                  </svg>
-                </span>
-              </div>
-              <div class="stat-value" id="favCount">0</div>
-              <div class="stat-change">Saved events</div>
-            </div>
-          </section>
-
-          <!-- Upcoming events -->
-          <section class="mt-8">
-            <div class="section-header">
-              <div>
-                <h3 class="section-title" style="font-size: var(--fs-xl)">
-                  Your upcoming events
-                </h3>
-                <p class="section-subtitle">
-                  Events you've purchased tickets for.
-                </p>
-              </div>
-              <a href="my-tickets.html" class="btn btn-ghost btn-sm"
-                >View all tickets →</a
-              >
-            </div>
-
-            <div class="event-grid" id="upcomingEvents"></div>
-          </section>
-
-          <!-- Recommended events -->
-          <section class="mt-8">
-            <div class="section-header">
-              <div>
-                <h3 class="section-title" style="font-size: var(--fs-xl)">
-                  Recommended for you
-                </h3>
-                <p class="section-subtitle">
-                  Trending events based on your interests.
-                </p>
-              </div>
-              <a href="events.html" class="btn btn-ghost btn-sm"
-                >Explore all →</a
-              >
-            </div>
-
-            <div class="event-grid" id="recommendedEvents"></div>
-          </section>
-
-          <!-- Recent transactions -->
-          <section class="mt-8">
-            <div class="section-header">
-              <div>
-                <h3 class="section-title" style="font-size: var(--fs-xl)">
-                  Recent activity
-                </h3>
-                <p class="section-subtitle">
-                  Your last few wallet transactions.
-                </p>
-              </div>
-              <a href="wallet.html" class="btn btn-ghost btn-sm">View all →</a>
-            </div>
-
-            <div class="table-wrap">
-              <div class="tx-list" id="recentTransactions"></div>
-            </div>
-          </section>
-        </main>
+        <main class="page-content" id="dashContent"></main>
       </div>
     </div>
 
-    <!-- =========================================
-       LOGOUT CONFIRMATION MODAL
-  ========================================= -->
     <div class="modal-overlay" id="logoutModal">
       <div class="modal modal-sm">
         <div class="modal-header">
@@ -751,17 +40,7 @@
             onclick="PS.closeModal('logoutModal')"
             aria-label="Close"
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-            >
-              <path d="M18 6 6 18M6 6l12 12" />
-            </svg>
+            ✕
           </button>
         </div>
         <div class="modal-footer">
@@ -779,182 +58,440 @@
     <script src="js/data.js"></script>
     <script src="js/script.js"></script>
     <script>
-      /* =========================================
-       DASHBOARD PAGE LOGIC
-    ========================================= */
       document.addEventListener("DOMContentLoaded", () => {
+        window.PS_SHELL.renderSidebar("dashboard");
+        window.PS_SHELL.renderTopbar("Dashboard");
+
         const user = PS.session.getUser();
-
-        // Populate user info
-        document.getElementById("welcomeName").textContent =
-          user.name.split(" ")[0];
-        document.getElementById("userName").textContent = user.name;
-        document.getElementById("userEmail").textContent = user.email;
-        document.getElementById("userAvatar").textContent = user.name
-          .split(" ")
-          .map((n) => n[0])
-          .join("")
-          .slice(0, 2)
-          .toUpperCase();
+        const isOrganizer = PS.session.isOrganizer();
+        const firstName = user.name.split(" ")[0];
+        const content = document.getElementById("dashContent");
 
         // =========================================
-        // WALLET BALANCE DISPLAY
-        // Re-renders whenever currency changes.
+        // DASHBOARD LAYOUT — ROLE-AWARE
+        // Attendee sees buy-side stats and focus.
+        // Organizer sees sales-side stats and focus.
         // =========================================
-        function renderBalance() {
-          const currency = PS.getCurrency();
+        if (isOrganizer) {
+          renderOrganizerDashboard();
+        } else {
+          renderAttendeeDashboard();
+        }
+
+        // =========================================
+        // ATTENDEE DASHBOARD
+        // =========================================
+        function renderAttendeeDashboard() {
+          content.innerHTML = `
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Welcome back, ${firstName} 👋</h2>
+              <p class="page-subtitle">Here's what's happening with your Pass Spot account.</p>
+            </div>
+            <div class="page-actions">
+              <a href="events.html" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                Discover events
+              </a>
+            </div>
+          </div>
+
+          <section class="balance-hero">
+            <div class="balance-hero-content">
+              <div class="balance-label">Wallet Balance</div>
+              <div class="balance-amount" id="heroBalance">—</div>
+              <div class="balance-split">
+                <div class="balance-split-item">
+                  <span class="balance-split-label">Available</span>
+                  <span class="balance-split-value" id="heroAvailable">—</span>
+                </div>
+                <div class="balance-split-item">
+                  <span class="balance-split-label">Pending</span>
+                  <span class="balance-split-value" id="heroPending">—</span>
+                </div>
+              </div>
+              <div class="balance-actions">
+                <a href="deposits.html" class="btn btn-white">Deposit</a>
+                <a href="wallet.html" class="btn btn-secondary">View transactions</a>
+              </div>
+            </div>
+          </section>
+
+          <section class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Tickets Purchased</span>
+                <span class="stat-icon">🎫</span>
+              </div>
+              <div class="stat-value">${window.PS_DATA.DEMO_TICKETS.length}</div>
+              <div class="stat-change up">↑ 1 this month</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Total Spent</span>
+                <span class="stat-icon warning">💰</span>
+              </div>
+              <div class="stat-value" data-money="90000">—</div>
+              <div class="stat-change up">Across 3 events</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Events Attended</span>
+                <span class="stat-icon success">✅</span>
+              </div>
+              <div class="stat-value">1</div>
+              <div class="stat-change up">2 upcoming</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Favorite Events</span>
+                <span class="stat-icon error">❤</span>
+              </div>
+              <div class="stat-value" id="favCount">0</div>
+              <div class="stat-change">Saved events</div>
+            </div>
+          </section>
+
+          <section class="mt-8">
+            <div class="section-header">
+              <div>
+                <h3 class="section-title" style="font-size:var(--fs-xl);">Your upcoming events</h3>
+                <p class="section-subtitle">Events you've purchased tickets for.</p>
+              </div>
+              <a href="my-tickets.html" class="btn btn-ghost btn-sm">View all tickets →</a>
+            </div>
+            <div class="event-grid" id="upcomingEvents"></div>
+          </section>
+
+          <section class="mt-8">
+            <div class="section-header">
+              <div>
+                <h3 class="section-title" style="font-size:var(--fs-xl);">Recommended for you</h3>
+                <p class="section-subtitle">Trending events based on your interests.</p>
+              </div>
+              <a href="events.html" class="btn btn-ghost btn-sm">Explore all →</a>
+            </div>
+            <div class="event-grid" id="recommendedEvents"></div>
+          </section>
+
+          <section class="mt-8">
+            <div class="section-header">
+              <div>
+                <h3 class="section-title" style="font-size:var(--fs-xl);">Recent activity</h3>
+                <p class="section-subtitle">Your last few wallet transactions.</p>
+              </div>
+              <a href="wallet.html" class="btn btn-ghost btn-sm">View all →</a>
+            </div>
+            <div class="table-wrap">
+              <div class="tx-list" id="recentTransactions"></div>
+            </div>
+          </section>
+        `;
+
+          bindAttendeeLogic();
+        }
+
+        // =========================================
+        // ORGANIZER DASHBOARD
+        // =========================================
+        function renderOrganizerDashboard() {
+          const myEvents = window.PS_DATA.DEMO_EVENTS.slice(0, 6);
+          const totalSold = myEvents.reduce((s, e) => s + e.sold, 0);
+          const grossRevenue = myEvents.reduce(
+            (s, e) => s + e.price * e.sold,
+            0,
+          );
+          const netProceeds = grossRevenue * 0.95;
+
+          content.innerHTML = `
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Welcome back, ${firstName} 👋</h2>
+              <p class="page-subtitle">Here's how your events are performing.</p>
+            </div>
+            <div class="page-actions">
+              <a href="create-event.html" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+                Create event
+              </a>
+            </div>
+          </div>
+
+          <section class="balance-hero">
+            <div class="balance-hero-content">
+              <div class="balance-label">Net Proceeds (available)</div>
+              <div class="balance-amount" data-money="${netProceeds}">—</div>
+              <div class="balance-split">
+                <div class="balance-split-item">
+                  <span class="balance-split-label">Gross Sales</span>
+                  <span class="balance-split-value" data-money="${grossRevenue}">—</span>
+                </div>
+                <div class="balance-split-item">
+                  <span class="balance-split-label">Tickets Sold</span>
+                  <span class="balance-split-value">${totalSold.toLocaleString()}</span>
+                </div>
+                <div class="balance-split-item">
+                  <span class="balance-split-label">Events</span>
+                  <span class="balance-split-value">${myEvents.length}</span>
+                </div>
+              </div>
+              <div class="balance-actions">
+                <a href="withdrawals.html" class="btn btn-white">Withdraw earnings</a>
+                <a href="analytics.html" class="btn btn-secondary">View analytics</a>
+              </div>
+            </div>
+          </section>
+
+          <section class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Gross Revenue</span>
+                <span class="stat-icon success">💰</span>
+              </div>
+              <div class="stat-value" data-money="${grossRevenue}">—</div>
+              <div class="stat-change up">↑ 18.2% vs last period</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Tickets Sold</span>
+                <span class="stat-icon">🎫</span>
+              </div>
+              <div class="stat-value">${totalSold.toLocaleString()}</div>
+              <div class="stat-change up">↑ 12.4%</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Pending Proceeds</span>
+                <span class="stat-icon warning">⏳</span>
+              </div>
+              <div class="stat-value" data-money="150000">—</div>
+              <div class="stat-change">Awaiting settlement</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Active Ads</span>
+                <span class="stat-icon info">📊</span>
+              </div>
+              <div class="stat-value">1</div>
+              <div class="stat-change">
+                <a href="advertisements.html" style="color:inherit;">Manage →</a>
+              </div>
+            </div>
+          </section>
+
+          <section class="mt-8">
+            <div class="section-header">
+              <div>
+                <h3 class="section-title" style="font-size:var(--fs-xl);">Your events</h3>
+                <p class="section-subtitle">Track sales and performance.</p>
+              </div>
+              <a href="my-events.html" class="btn btn-ghost btn-sm">Manage all →</a>
+            </div>
+            <div class="event-grid" id="myEventsGrid"></div>
+          </section>
+
+          <section class="mt-8">
+            <div class="section-header">
+              <div>
+                <h3 class="section-title" style="font-size:var(--fs-xl);">Recent activity</h3>
+                <p class="section-subtitle">Latest transactions on your account.</p>
+              </div>
+              <a href="wallet.html" class="btn btn-ghost btn-sm">View all →</a>
+            </div>
+            <div class="table-wrap">
+              <div class="tx-list" id="recentTransactions"></div>
+            </div>
+          </section>
+        `;
+
+          bindOrganizerLogic(myEvents);
+        }
+
+        // =========================================
+        // SHARED: WALLET BALANCE DISPLAY
+        // =========================================
+        function renderWalletDisplays() {
+          const cur = PS.getCurrency();
           const balance = PS.wallet.getBalance();
-          // Demo: available is balance - pending, pending is a fixed demo value
           const pending = 15000;
           const available = balance - pending;
 
-          document.getElementById("headerBalance").textContent = PS.formatMoney(
-            balance,
-            currency,
-          );
-          document.getElementById("heroBalance").textContent = PS.formatMoney(
-            balance,
-            currency,
-          );
-          document.getElementById("heroAvailable").textContent = PS.formatMoney(
-            available,
-            currency,
-          );
-          document.getElementById("heroPending").textContent = PS.formatMoney(
-            pending,
-            currency,
-          );
-          document.getElementById("heroCurrency").textContent = currency;
+          const heroBalance = document.getElementById("heroBalance");
+          if (heroBalance)
+            heroBalance.textContent = PS.formatMoney(balance, cur);
+          const heroAvail = document.getElementById("heroAvailable");
+          if (heroAvail) heroAvail.textContent = PS.formatMoney(available, cur);
+          const heroPend = document.getElementById("heroPending");
+          if (heroPend) heroPend.textContent = PS.formatMoney(pending, cur);
 
-          // Update all data-money spans (values in NGN base)
           PS.qsa("[data-money]").forEach((el) => {
             const base = parseFloat(el.dataset.money);
-            el.textContent = PS.formatMoney(base, currency);
+            if (!isNaN(base)) el.textContent = PS.formatMoney(base, cur);
           });
         }
 
-        renderBalance();
-        document.addEventListener("ps:currencychange", renderBalance);
+        document.addEventListener("ps:currencychange", renderWalletDisplays);
 
         // =========================================
-        // RENDER UPCOMING EVENTS (from demo tickets)
+        // ATTENDEE LOGIC
         // =========================================
-        const upcoming = window.PS_DATA.DEMO_TICKETS.filter(
-          (t) => t.status === "valid",
-        );
-        const upcomingWrap = document.getElementById("upcomingEvents");
+        function bindAttendeeLogic() {
+          const cur = PS.getCurrency();
 
-        if (upcoming.length === 0) {
-          upcomingWrap.innerHTML = `
-          <div class="empty-state" style="grid-column:1/-1;">
-            <div class="empty-state-icon">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 010-6h20a3 3 0 010 6M2 15a3 3 0 000 6h20a3 3 0 000-6M2 9v6M22 9v6"/></svg>
-            </div>
-            <h3 class="empty-state-title">No upcoming events</h3>
-            <p class="empty-state-text">You haven't purchased any tickets yet. Discover events happening near you.</p>
-            <a href="events.html" class="btn btn-primary">Discover events</a>
-          </div>`;
-        } else {
-          upcomingWrap.innerHTML = upcoming
-            .slice(0, 3)
-            .map((t) => {
-              const ev =
-                window.PS_DATA.DEMO_EVENTS.find((e) => e.id === t.eventId) ||
-                {};
-              return `
-            <article class="event-card" onclick="window.location.href='ticket-details.html?id=${t.id}'">
-              <div class="event-card-media">
-                <div class="event-card-media-placeholder">${ev.emoji || "🎫"}</div>
-                <div class="event-card-badges"><span class="badge badge-success">Valid</span></div>
+          // Upcoming events from tickets
+          const upcoming = window.PS_DATA.DEMO_TICKETS.filter(
+            (t) => t.status === "valid",
+          );
+          const upWrap = document.getElementById("upcomingEvents");
+          if (upcoming.length === 0) {
+            upWrap.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1;">
+              <div class="empty-state-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 010-6h20a3 3 0 010 6M2 15a3 3 0 000 6h20a3 3 0 000-6M2 9v6M22 9v6"/></svg>
               </div>
-              <div class="event-card-body">
-                <div class="event-card-date">${PS.formatDate(t.date)} · ${PS.formatTime(t.date)}</div>
-                <div class="event-card-title">${t.eventTitle}</div>
-                <div class="event-card-meta">
-                  <div class="event-card-meta-row">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                    ${ev.city || ""}, ${ev.state || ""}
+              <h3 class="empty-state-title">No upcoming events</h3>
+              <p class="empty-state-text">You haven't purchased any tickets yet.</p>
+              <a href="events.html" class="btn btn-primary">Discover events</a>
+            </div>`;
+          } else {
+            upWrap.innerHTML = upcoming
+              .slice(0, 3)
+              .map((t) => {
+                const ev =
+                  window.PS_DATA.DEMO_EVENTS.find((e) => e.id === t.eventId) ||
+                  {};
+                return `
+              <article class="event-card" onclick="window.location.href='ticket-details.html?id=${t.id}'">
+                <div class="event-card-media">
+                  <div class="event-card-media-placeholder">${ev.emoji || "🎫"}</div>
+                  <div class="event-card-badges"><span class="badge badge-success">Valid</span></div>
+                </div>
+                <div class="event-card-body">
+                  <div class="event-card-date">${PS.formatDate(t.date)} · ${PS.formatTime(t.date)}</div>
+                  <div class="event-card-title">${t.eventTitle}</div>
+                  <div class="event-card-meta">
+                    <div class="event-card-meta-row">📍 ${ev.city || ""}, ${(ev.state || "").replace(" (FCT)", "")}</div>
+                  </div>
+                  <div class="event-card-footer">
+                    <div class="event-card-price">${t.ticketType}<span class="event-card-price-label">ticket</span></div>
+                    <span class="badge badge-primary">View</span>
                   </div>
                 </div>
+              </article>`;
+              })
+              .join("");
+          }
+
+          // Recommended events
+          const recommended = window.PS_DATA.DEMO_EVENTS.filter(
+            (e) => e.featured || e.trending,
+          ).slice(0, 3);
+          document.getElementById("recommendedEvents").innerHTML = recommended
+            .map(
+              (ev) => `
+          <article class="event-card" onclick="window.location.href='event-details.html?id=${ev.id}'">
+            <div class="event-card-media">
+              <div class="event-card-media-placeholder">${ev.emoji}</div>
+              <div class="event-card-badges">
+                ${ev.trending ? '<span class="badge badge-primary">🔥 Trending</span>' : ""}
+                ${ev.featured ? '<span class="badge badge-info">Featured</span>' : ""}
+              </div>
+            </div>
+            <div class="event-card-body">
+              <div class="event-card-date">${PS.formatDate(ev.date)} · ${PS.formatTime(ev.date)}</div>
+              <div class="event-card-title">${ev.title}</div>
+              <div class="event-card-meta">
+                <div class="event-card-meta-row">📍 ${ev.city}, ${ev.state.replace(" (FCT)", "")}</div>
+              </div>
+              <div class="event-card-footer">
+                <div class="event-card-price" data-money="${ev.price}">${PS.formatMoney(ev.price, cur)}<span class="event-card-price-label">from</span></div>
+              </div>
+            </div>
+          </article>
+        `,
+            )
+            .join("");
+
+          // Recent transactions
+          renderRecentTx();
+
+          // Favorites count
+          document.getElementById("favCount").textContent =
+            PS.favorites.all().length;
+
+          // Wallet displays
+          renderWalletDisplays();
+        }
+
+        // =========================================
+        // ORGANIZER LOGIC
+        // =========================================
+        function bindOrganizerLogic(myEvents) {
+          const cur = PS.getCurrency();
+
+          document.getElementById("myEventsGrid").innerHTML = myEvents
+            .slice(0, 3)
+            .map((ev) => {
+              const revenue = ev.price * ev.sold;
+              const pct = (ev.sold / ev.capacity) * 100;
+              return `
+            <article class="event-card" onclick="window.location.href='event-details.html?id=${ev.id}'">
+              <div class="event-card-media">
+                <div class="event-card-media-placeholder">${ev.emoji}</div>
+                <div class="event-card-badges"><span class="badge badge-success">Published</span></div>
+              </div>
+              <div class="event-card-body">
+                <div class="event-card-date">${PS.formatDate(ev.date)}</div>
+                <div class="event-card-title">${ev.title}</div>
+                <div class="progress" style="margin-top:var(--space-2);">
+                  <div class="progress-bar" style="width:${pct}%;"></div>
+                </div>
+                <div class="flex justify-between text-xs text-muted">
+                  <span>${ev.sold.toLocaleString()} sold</span>
+                  <span>${ev.capacity.toLocaleString()} cap</span>
+                </div>
                 <div class="event-card-footer">
-                  <div class="event-card-price">${t.ticketType}<span class="event-card-price-label">ticket</span></div>
-                  <span class="badge badge-primary">View</span>
+                  <div class="event-card-price" data-money="${revenue}">${PS.formatMoney(revenue, cur)}<span class="event-card-price-label">revenue</span></div>
                 </div>
               </div>
             </article>`;
             })
             .join("");
+
+          // Recent transactions
+          renderRecentTx();
+
+          // Wallet displays
+          renderWalletDisplays();
         }
 
         // =========================================
-        // RENDER RECOMMENDED (trending/featured)
+        // SHARED: RECENT TRANSACTIONS
         // =========================================
-        const recommended = window.PS_DATA.DEMO_EVENTS.filter(
-          (e) => e.featured || e.trending,
-        ).slice(0, 3);
-        document.getElementById("recommendedEvents").innerHTML = recommended
-          .map(
-            (ev) => `
-        <article class="event-card" onclick="window.location.href='event-details.html?id=${ev.id}'">
-          <div class="event-card-media">
-            <div class="event-card-media-placeholder">${ev.emoji}</div>
-            <div class="event-card-badges">
-              ${ev.trending ? '<span class="badge badge-primary">🔥 Trending</span>' : ""}
-              ${ev.featured ? '<span class="badge badge-info">Featured</span>' : ""}
-            </div>
-          </div>
-          <div class="event-card-body">
-            <div class="event-card-date">${PS.formatDate(ev.date)} · ${PS.formatTime(ev.date)}</div>
-            <div class="event-card-title">${ev.title}</div>
-            <div class="event-card-meta">
-              <div class="event-card-meta-row">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                ${ev.city}, ${ev.state.replace(" (FCT)", "")}
+        function renderRecentTx() {
+          const cur = PS.getCurrency();
+          const recent = window.PS_DATA.DEMO_TRANSACTIONS.slice(0, 5);
+          document.getElementById("recentTransactions").innerHTML = recent
+            .map((tx) => {
+              const isIn = tx.amount > 0;
+              return `
+            <div class="tx-row" onclick="window.location.href='payments.html?id=${tx.id}'">
+              <div class="tx-icon ${isIn ? "in" : "out"}">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  ${isIn ? '<path d="M12 19V5M5 12l7-7 7 7"/>' : '<path d="M12 5v14M5 12l7 7 7-7"/>'}
+                </svg>
               </div>
-            </div>
-            <div class="event-card-footer">
-              <div class="event-card-price" data-money="${ev.price}">${PS.formatMoney(ev.price, PS.getCurrency())}<span class="event-card-price-label">from</span></div>
-            </div>
-          </div>
-        </article>
-      `,
-          )
-          .join("");
+              <div class="tx-main">
+                <div class="tx-title">${tx.description}</div>
+                <div class="tx-meta">${tx.type} · ${PS.formatDateTime(tx.date)}</div>
+              </div>
+              <div class="tx-amount ${isIn ? "in" : "out"}">${PS.formatMoney(tx.amount, cur)}</div>
+            </div>`;
+            })
+            .join("");
+        }
 
-        // =========================================
-        // RENDER RECENT TRANSACTIONS
-        // =========================================
-        const txWrap = document.getElementById("recentTransactions");
-        const recent = window.PS_DATA.DEMO_TRANSACTIONS.slice(0, 5);
-        txWrap.innerHTML = recent
-          .map((tx) => {
-            const isIn = tx.amount > 0;
-            const iconClass = isIn ? "in" : "out";
-            return `
-          <div class="tx-row" onclick="window.location.href='payments.html?id=${tx.id}'">
-            <div class="tx-icon ${iconClass}">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                ${isIn ? '<path d="M12 19V5M5 12l7-7 7 7"/>' : '<path d="M12 5v14M5 12l7 7 7-7"/>'}
-              </svg>
-            </div>
-            <div class="tx-main">
-              <div class="tx-title">${tx.description}</div>
-              <div class="tx-meta">${tx.type} · ${PS.formatDateTime(tx.date)}</div>
-            </div>
-            <div class="tx-amount ${isIn ? "in" : "out"}">${PS.formatMoney(tx.amount, PS.getCurrency())}</div>
-          </div>`;
-          })
-          .join("");
-
-        // =========================================
-        // FAVORITES COUNT
-        // =========================================
-        document.getElementById("favCount").textContent =
-          PS.favorites.all().length;
-
-        // =========================================
-        // LOGOUT HANDLING
-        // =========================================
+        // Logout handling
         const openLogout = () => PS.openModal("logoutModal");
         document
           .getElementById("logoutBtn")
@@ -964,68 +501,13 @@
           ?.addEventListener("click", openLogout);
         document
           .getElementById("confirmLogout")
-          .addEventListener("click", () => {
-            PS.session.logout();
-          });
+          .addEventListener("click", () => PS.session.logout());
 
-        // =========================================
-        // GLOBAL SEARCH
-        // =========================================
-        const searchInput = document.getElementById("globalSearch");
-        const searchResults = document.getElementById("searchResults");
-
-        searchInput?.addEventListener("input", () => {
-          const q = searchInput.value.trim().toLowerCase();
-          if (!q) {
-            searchResults.classList.remove("is-open");
-            return;
-          }
-
-          const eventMatches = window.PS_DATA.DEMO_EVENTS.filter(
-            (e) =>
-              e.title.toLowerCase().includes(q) ||
-              e.category.toLowerCase().includes(q) ||
-              e.state.toLowerCase().includes(q) ||
-              e.city.toLowerCase().includes(q),
-          ).slice(0, 6);
-
-          if (eventMatches.length === 0) {
-            searchResults.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-tertiary); font-size:var(--fs-sm);">No results for "${searchInput.value}"</div>`;
-          } else {
-            searchResults.innerHTML = eventMatches
-              .map(
-                (e) => `
-            <div class="search-result-item" onclick="window.location.href='event-details.html?id=${e.id}'">
-              <div style="font-size:20px;">${e.emoji}</div>
-              <div style="flex:1; min-width:0;">
-                <div class="search-result-title">${e.title}</div>
-                <div class="search-result-meta">${e.category} · ${e.city}, ${e.state.replace(" (FCT)", "")}</div>
-              </div>
-            </div>
-          `,
-              )
-              .join("");
-          }
-          searchResults.classList.add("is-open");
-        });
-
-        // Close search on outside click
-        document.addEventListener("click", (e) => {
-          if (!e.target.closest(".topbar-search")) {
-            searchResults?.classList.remove("is-open");
-          }
-        });
-
-        // =========================================
-        // MOBILE MENU BUTTON (show only on small)
-        // =========================================
+        // Mobile menu
         if (window.innerWidth <= 860) {
-          document.getElementById("mobileMenuBtn").style.display = "flex";
+          const mb = document.getElementById("mobileMenuBtn");
+          if (mb) mb.style.display = "flex";
         }
-        window.addEventListener("resize", () => {
-          document.getElementById("mobileMenuBtn").style.display =
-            window.innerWidth <= 860 ? "flex" : "none";
-        });
       });
     </script>
   </body>

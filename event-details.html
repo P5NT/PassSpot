@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PassSpot — Event Details</title>
+    <title>Event Details — Pass Spot</title>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
@@ -22,13 +22,10 @@
       <div class="sidebar-overlay"></div>
       <div class="main-area">
         <header class="topbar" id="appTopbar"></header>
-        <main class="page-content" id="eventContent">
-          <!-- Populated by JS -->
-        </main>
+        <main class="page-content" id="eventContent"></main>
       </div>
     </div>
 
-    <!-- Purchase Modal -->
     <div class="modal-overlay" id="purchaseModal">
       <div class="modal modal-lg">
         <div class="modal-header">
@@ -51,7 +48,7 @@
             <span>Subtotal</span><span id="checkoutSubtotal">₦0.00</span>
           </div>
           <div class="summary-row">
-            <span>Service fee</span><span id="checkoutFee">₦0.00</span>
+            <span>Service fee (2%)</span><span id="checkoutFee">₦0.00</span>
           </div>
           <div class="summary-row total">
             <span>Total</span><span id="checkoutTotal">₦0.00</span>
@@ -82,7 +79,7 @@
             <div>
               <strong>Insufficient wallet balance</strong>
               <div style="margin-top: 4px; font-size: var(--fs-xs)">
-                Deposit funds to continue with this purchase.
+                Deposit funds to continue.
               </div>
               <a href="deposits.html" class="btn btn-sm btn-primary mt-2"
                 >Deposit funds</a
@@ -104,7 +101,6 @@
       </div>
     </div>
 
-    <!-- Success Modal -->
     <div class="modal-overlay" id="successModal">
       <div class="modal modal-sm">
         <div
@@ -164,28 +160,85 @@
     <script src="js/data.js"></script>
     <script src="js/script.js"></script>
     <script>
-      /* =========================================
-       EVENT DETAILS PAGE
-       Renders event info, ticket selection,
-       wallet integration, and purchase flow.
-    ========================================= */
       document.addEventListener("DOMContentLoaded", () => {
         window.PS_SHELL.renderSidebar("events");
         window.PS_SHELL.renderTopbar("Event details");
 
-        // Parse ?id=
         const params = new URLSearchParams(window.location.search);
         const eventId = params.get("id") || "evt_001";
-        const ev =
-          window.PS_DATA.DEMO_EVENTS.find((e) => e.id === eventId) ||
-          window.PS_DATA.DEMO_EVENTS[0];
+
+        // Use persistent lookup when available
+        const events =
+          window.PS_DATA && typeof PS_DATA.getEvents === "function"
+            ? PS_DATA.getEvents()
+            : window.PS_DATA.DEMO_EVENTS;
+        const ev = events.find((e) => e.id === eventId) || events[0];
+
+        if (!ev) {
+          document.getElementById("eventContent").innerHTML =
+            `<div class="empty-state"><h3 class="empty-state-title">Event not found</h3><a href="events.html" class="btn btn-primary">Browse events</a></div>`;
+          return;
+        }
 
         const cur = PS.getCurrency();
         const isFav = PS.favorites.isFav(ev.id);
 
-        // =========================================
-        // RENDER EVENT DETAILS
-        // =========================================
+        // Build media: image if present, else emoji placeholder
+        const mediaHTML = ev.imageData
+          ? `<img src="${ev.imageData}" alt="${ev.title}" style="width:100%;height:100%;object-fit:cover;">`
+          : `<div style="display:flex;align-items:center;justify-content:center;font-size:80px;">${ev.emoji || "🎫"}</div>`;
+
+        // Build date display — multi-day support
+        const dateDisplay =
+          ev.schedule && ev.schedule.length > 1
+            ? `${PS.formatDate(ev.schedule[0].date)} → ${PS.formatDate(ev.schedule[ev.schedule.length - 1].date)} · ${ev.schedule.length} days`
+            : `${PS.formatDate(ev.date)} · ${PS.formatTime(ev.date)}`;
+
+        // Promo codes section (only if any exist)
+        const promoSection =
+          ev.promoCodes && ev.promoCodes.length > 0
+            ? `
+        <div class="card mb-6">
+          <h3 class="card-title mb-3">Promo codes</h3>
+          <p class="text-sm text-muted mb-3">Use these codes at checkout for a discount.</p>
+          <div class="flex gap-2" style="flex-wrap:wrap;">
+            ${ev.promoCodes
+              .map(
+                (p) => `
+              <div class="badge badge-primary" style="padding:8px 14px;font-size:var(--fs-sm);">
+                <span class="mono fw-bold">${p.code}</span>
+                <span style="margin-left:8px;">${p.discountType === "percent" ? p.discountValue + "% off" : PS.formatMoney(p.discountValue, cur) + " off"}</span>
+              </div>
+            `,
+              )
+              .join("")}
+          </div>
+        </div>
+      `
+            : "";
+
+        // Schedule rows (only if multi-day)
+        const scheduleSection =
+          ev.schedule && ev.schedule.length > 1
+            ? `
+        <div class="card mb-6">
+          <h3 class="card-title mb-3">Daily schedule</h3>
+          <div class="flex flex-col gap-2">
+            ${ev.schedule
+              .map(
+                (d) => `
+              <div class="flex justify-between items-center" style="padding:var(--space-2) 0;border-bottom:1px solid var(--border-color);">
+                <span class="text-sm">${PS.formatDate(d.date)}</span>
+                <span class="fw-semibold text-sm">${d.startTime}</span>
+              </div>
+            `,
+              )
+              .join("")}
+          </div>
+        </div>
+      `
+            : "";
+
         document.getElementById("eventContent").innerHTML = `
         <div class="flex items-center gap-2 mb-4">
           <a href="events.html" class="btn btn-ghost btn-sm">
@@ -195,16 +248,16 @@
         </div>
 
         <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:var(--space-8);" id="eventGrid">
-          <!-- LEFT: Hero + description -->
           <div>
-            <div style="aspect-ratio:16/9;border-radius:var(--radius-xl);background:linear-gradient(135deg,var(--primary-100),var(--primary-50));display:flex;align-items:center;justify-content:center;font-size:80px;margin-bottom:var(--space-6);">
-              ${ev.emoji}
+            <div style="aspect-ratio:16/9;border-radius:var(--radius-xl);background:linear-gradient(135deg,var(--primary-100),var(--primary-50));overflow:hidden;margin-bottom:var(--space-6);">
+              ${mediaHTML}
             </div>
 
             <div class="flex items-center gap-2 mb-3 flex-wrap">
               <span class="badge badge-primary">${ev.category}</span>
               ${ev.trending ? '<span class="badge badge-warning">🔥 Trending</span>' : ""}
               ${ev.featured ? '<span class="badge badge-info">Featured</span>' : ""}
+              ${ev.schedule && ev.schedule.length > 1 ? `<span class="badge badge-neutral">${ev.schedule.length} days</span>` : ""}
             </div>
 
             <h1 style="font-size:var(--fs-3xl);margin-bottom:var(--space-4);">${ev.title}</h1>
@@ -212,7 +265,7 @@
             <div class="flex gap-6 mb-6" style="flex-wrap:wrap;">
               <div class="flex items-center gap-2 text-sm text-muted">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                <span>${PS.formatDate(ev.date)} · ${PS.formatTime(ev.date)}</span>
+                <span>${dateDisplay}</span>
               </div>
               <div class="flex items-center gap-2 text-sm text-muted">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -227,14 +280,16 @@
             <div class="card mb-6">
               <h3 class="card-title mb-3">About this event</h3>
               <p class="text-sm text-muted" style="line-height:var(--lh-relaxed);">
-                Join us for an unforgettable experience at ${ev.title}. Featuring an incredible lineup, premium production, and a vibrant atmosphere that celebrates Nigerian culture and creativity.
-                This event brings together fans, creators, and communities for a night you won't want to miss.
+                ${ev.description || `Join us for an unforgettable experience at ${ev.title}. Featuring an incredible lineup, premium production, and a vibrant atmosphere. This event brings together fans, creators, and communities for a night you won't want to miss.`}
               </p>
             </div>
 
+            ${scheduleSection}
+            ${promoSection}
+
             <div class="card">
               <h3 class="card-title mb-3">Venue & location</h3>
-              <p class="text-sm text-muted">${ev.venue}</p>
+              <p class="text-sm text-muted">${ev.venue}${ev.address ? `, ${ev.address}` : ""}</p>
               <p class="text-sm text-muted">${ev.city}, ${ev.state.replace(" (FCT)", "")}</p>
               <div style="margin-top:var(--space-4);height:180px;background:var(--surface-muted);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:var(--fs-sm);">
                 📍 Map preview
@@ -242,13 +297,12 @@
             </div>
           </div>
 
-          <!-- RIGHT: Sticky purchase card -->
           <div>
             <div class="card" style="position:sticky;top:calc(var(--header-height) + var(--space-4));">
               <div class="card-header" style="margin-bottom:var(--space-4);">
                 <div>
                   <div class="text-xs text-muted">Tickets from</div>
-                  <div class="stat-value" style="font-size:var(--fs-2xl);" data-money="${ev.price}">${PS.formatMoney(ev.price, cur)}</div>
+                  <div class="stat-value" style="font-size:var(--fs-2xl);">${PS.formatMoney(ev.price, cur)}</div>
                 </div>
                 <button class="event-card-fav ${isFav ? "is-active" : ""}" id="favBtn" style="position:static;background:var(--surface-muted);">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFav ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
@@ -262,30 +316,11 @@
               </div>
 
               <button class="btn btn-primary btn-lg btn-block" id="openPurchase">Buy tickets</button>
-
-              <div class="divider"></div>
-              <div class="flex flex-col gap-3 text-sm">
-                <div class="flex items-center gap-2 text-muted">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                  Secure payment via wallet
-                </div>
-                <div class="flex items-center gap-2 text-muted">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                  Instant digital ticket
-                </div>
-                <div class="flex items-center gap-2 text-muted">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
-                  Refunds per organizer policy
-                </div>
-              </div>
             </div>
           </div>
         </div>
       `;
 
-        // =========================================
-        // FAVORITE TOGGLE
-        // =========================================
         document.getElementById("favBtn").addEventListener("click", (e) => {
           const now = PS.favorites.toggle(ev.id);
           e.currentTarget.classList.toggle("is-active", now);
@@ -298,48 +333,51 @@
           );
         });
 
-        // =========================================
-        // TICKET TYPES (demo)
-        // =========================================
-        const ticketTypes = [
-          {
-            id: "regular",
-            name: "Regular",
-            price: ev.price,
-            desc: "General admission",
-          },
-          {
-            id: "vip",
-            name: "VIP",
-            price: ev.price * 2.5,
-            desc: "VIP lounge + early entry",
-          },
-          {
-            id: "table",
-            name: "Table for 4",
-            price: ev.price * 6,
-            desc: "Reserved table with bottle service",
-          },
-        ];
+        // Ticket purchase logic
+        const tiers =
+          ev.ticketTiers && ev.ticketTiers.length > 0
+            ? ev.ticketTiers.map((t, i) => ({
+                id: `tier_${i}`,
+                name: t.name,
+                price: t.price,
+                desc:
+                  t.name === "Regular"
+                    ? "General admission"
+                    : `Access to ${t.name.toLowerCase()} experience`,
+              }))
+            : [
+                {
+                  id: "regular",
+                  name: "Regular",
+                  price: ev.price,
+                  desc: "General admission",
+                },
+                {
+                  id: "vip",
+                  name: "VIP",
+                  price: Math.round(ev.price * 2.5),
+                  desc: "VIP lounge + early entry",
+                },
+              ];
 
-        const state = { quantities: {} };
-        ticketTypes.forEach((t) => (state.quantities[t.id] = 0));
+        const quantities = {};
+        tiers.forEach((t) => (quantities[t.id] = 0));
 
-        function renderTicketTypes() {
-          const cur = PS.getCurrency();
-          document.getElementById("ticketTypes").innerHTML = ticketTypes
+        function renderTiers() {
+          const c = PS.getCurrency();
+          document.getElementById("ticketTypes").innerHTML = tiers
             .map(
-              (tt) => `
+              (t) => `
           <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-4);border:1px solid var(--border-color);border-radius:var(--radius-md);margin-bottom:var(--space-3);">
             <div>
-              <div class="fw-semibold text-sm">${tt.name}</div>
-              <div class="text-xs text-muted">${tt.desc}</div>
-              <div class="fw-bold text-sm mt-1" data-money="${tt.price}">${PS.formatMoney(tt.price, cur)}</div>
+              <div class="fw-semibold text-sm">${t.name}</div>
+              <div class="text-xs text-muted">${t.desc}</div>
+              <div class="fw-bold text-sm mt-1">${PS.formatMoney(t.price, c)}</div>
             </div>
             <div class="flex items-center gap-2">
-              <button class="btn btn-secondary btn-sm" data-minus="${tt.id}" aria-label="Decrease">−</button>
-              <span class="fw-bold" style="min-width:24px;text-align:center;" id="qty-${tt.id}">${state.quantities[tt.id]}</span>
-              <button class="btn btn-secondary btn-sm" data-plus="${tt.id}" aria-label="Increase">+</button>
+              <button class="btn btn-secondary btn-sm" data-minus="${t.id}">−</button>
+              <span class="fw-bold" style="min-width:24px;text-align:center;" id="qty-${t.id}">${quantities[t.id]}</span>
+              <button class="btn btn-secondary btn-sm" data-plus="${t.id}">+</button>
             </div>
           </div>
         `,
@@ -348,48 +386,42 @@
 
           document.querySelectorAll("[data-plus]").forEach((b) =>
             b.addEventListener("click", () => {
-              state.quantities[b.dataset.plus]++;
+              quantities[b.dataset.plus]++;
               updateTotals();
             }),
           );
           document.querySelectorAll("[data-minus]").forEach((b) =>
             b.addEventListener("click", () => {
-              if (state.quantities[b.dataset.minus] > 0)
-                state.quantities[b.dataset.minus]--;
+              if (quantities[b.dataset.minus] > 0)
+                quantities[b.dataset.minus]--;
               updateTotals();
             }),
           );
         }
 
         function updateTotals() {
-          const cur = PS.getCurrency();
-          ticketTypes.forEach((tt) => {
-            document.getElementById(`qty-${tt.id}`).textContent =
-              state.quantities[tt.id];
+          const c = PS.getCurrency();
+          tiers.forEach((t) => {
+            document.getElementById(`qty-${t.id}`).textContent =
+              quantities[t.id];
           });
           let subtotal = 0;
-          ticketTypes.forEach(
-            (tt) => (subtotal += tt.price * state.quantities[tt.id]),
-          );
-          const fee = subtotal * 0.02; // 2% demo service fee
+          tiers.forEach((t) => (subtotal += t.price * quantities[t.id]));
+          const fee = subtotal * 0.02;
           const total = subtotal + fee;
-
           document.getElementById("checkoutSubtotal").textContent =
-            PS.formatMoney(subtotal, cur);
+            PS.formatMoney(subtotal, c);
           document.getElementById("checkoutFee").textContent = PS.formatMoney(
             fee,
-            cur,
+            c,
           );
           document.getElementById("checkoutTotal").textContent = PS.formatMoney(
             total,
-            cur,
+            c,
           );
-
           const bal = PS.wallet.getBalance();
           document.getElementById("checkoutWallet").textContent =
-            PS.formatMoney(bal, cur);
-
-          const insufficient = total > bal || subtotal === 0;
+            PS.formatMoney(bal, c);
           document.getElementById("insufficientNotice").style.display =
             total > bal ? "block" : "none";
           document.getElementById("confirmPurchase").disabled =
@@ -400,70 +432,32 @@
           .getElementById("openPurchase")
           .addEventListener("click", () => {
             document.getElementById("purchaseEventName").textContent = ev.title;
-            renderTicketTypes();
+            renderTiers();
             updateTotals();
             PS.openModal("purchaseModal");
           });
 
-        // =========================================
-        // CONFIRM PURCHASE
-        // =========================================
         document
           .getElementById("confirmPurchase")
           .addEventListener("click", (e) => {
             const btn = e.currentTarget;
             btn.classList.add("is-loading");
             btn.disabled = true;
-
             let subtotal = 0;
-            ticketTypes.forEach(
-              (tt) => (subtotal += tt.price * state.quantities[tt.id]),
-            );
+            tiers.forEach((t) => (subtotal += t.price * quantities[t.id]));
             const fee = subtotal * 0.02;
             const total = subtotal + fee;
-            const cur = PS.getCurrency();
-
             setTimeout(() => {
               PS.wallet.deduct(total);
-
               const txId = "TX-" + Date.now().toString().slice(-10);
-              // Save new ticket(s) to demo tickets
-              ticketTypes.forEach((tt) => {
-                if (state.quantities[tt.id] > 0) {
-                  const newTicket = {
-                    id:
-                      "PS-" +
-                      Math.random().toString(36).slice(2, 6).toUpperCase() +
-                      "-" +
-                      ev.id.slice(-3).toUpperCase(),
-                    eventId: ev.id,
-                    eventTitle: ev.title,
-                    ticketType: tt.name,
-                    price: tt.price,
-                    date: ev.date,
-                    venue: `${ev.venue}, ${ev.city}, ${ev.state}`,
-                    status: "valid",
-                    attendee: PS.session.getUser().name,
-                    purchasedAt: new Date().toISOString(),
-                  };
-                  window.PS_DATA.DEMO_TICKETS.push(newTicket);
-                }
-              });
-
               PS.closeModal("purchaseModal");
               document.getElementById("successTxId").textContent = txId;
               PS.openModal("successModal");
-              PS.toast("Purchase complete — tickets issued", "success");
+              PS.toast("Purchase complete", "success");
               btn.classList.remove("is-loading");
               btn.disabled = false;
             }, 1200);
           });
-
-        // Re-render totals on currency change
-        document.addEventListener("ps:currencychange", () => {
-          renderTicketTypes();
-          updateTotals();
-        });
       });
     </script>
   </body>

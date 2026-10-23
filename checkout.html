@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      .checkout-header {
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--space-6);
+        border-bottom: 1px solid var(--border-color);
+        background-color: var(--surface-bg);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+      }
+      .checkout-layout {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: var(--space-8) var(--space-6) var(--space-16);
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: var(--space-8);
+        align-items: start;
+      }
+      .checkout-summary {
+        position: sticky;
+        top: calc(var(--header-height) + var(--space-4));
+      }
+      .ticket-option {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+        padding: var(--space-4);
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        margin-bottom: var(--space-3);
+        background-color: var(--surface-elevated);
+      }
+      .ticket-option:hover {
+        border-color: var(--primary-300);
+      }
+      .ticket-option.is-selected {
+        border-color: var(--primary-color);
+        background-color: var(--primary-50);
+        box-shadow: 0 0 0 3px var(--primary-50);
+      }
+      .wallet-wrap {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: var(--space-10) var(--space-6) var(--space-16);
+      }
+      .wallet-header {
+        text-align: center;
+        margin-bottom: var(--space-8);
+      }
+      .success-icon-badge {
+        width: 88px;
+        height: 88px;
+        border-radius: 50%;
+        background-color: var(--success-bg);
+        color: var(--success-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-5);
+      }
+      .ticket-wallet-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-5);
+      }
+      .ticket-wallet-card {
+        background-color: var(--surface-elevated);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        transition: all var(--transition-base);
+      }
+      .ticket-wallet-card:hover {
+        border-color: var(--border-strong);
+        box-shadow: var(--shadow-md);
+      }
+      .ticket-wallet-card.is-used {
+        opacity: 0.55;
+        background-color: var(--surface-muted);
+      }
+      .qr-box {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        padding: var(--space-3);
+        width: 100%;
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 180px;
+        margin: 0 auto;
+      }
+      .ticket-wallet-label {
+        text-align: center;
+        font-family: "JetBrains Mono", monospace;
+        font-size: var(--fs-xs);
+        color: var(--text-tertiary);
+        letter-spacing: 0.02em;
+      }
+      .ticket-wallet-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-2);
+      }
+      .wallet-summary {
+        background-color: var(--surface-muted);
+        border-radius: var(--radius-md);
+        padding: var(--space-4);
+        margin-top: var(--space-6);
+      }
+      @media (max-width: 768px) {
+        .checkout-layout {
+          grid-template-columns: 1fr;
+          padding: var(--space-5) var(--space-4) var(--space-12);
+        }
+        .checkout-summary {
+          position: static;
+        }
+        .wallet-wrap {
+          padding: var(--space-6) var(--space-4) var(--space-12);
+        }
+        .ticket-wallet-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="checkout-header">
+      <a href="index.html" class="brand"
+        >Pass<span class="brand-accent">Spot</span></a
+      >
+      <div class="flex items-center gap-2">
+        <button class="icon-btn" id="themeToggle" aria-label="Toggle theme">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+            />
+          </svg>
+        </button>
+        <a href="login.html" class="btn btn-ghost btn-sm">Log in</a>
+      </div>
+    </header>
+
+    <main id="checkoutMain"></main>
+
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const eventId = params.get("eventId") || "evt_001";
+
+        const events =
+          window.PS_DATA && typeof PS_DATA.getEvents === "function"
+            ? PS_DATA.getEvents()
+            : window.PS_DATA.DEMO_EVENTS;
+        const event = events.find((e) => e.id === eventId);
+        const main = document.getElementById("checkoutMain");
+
+        if (!event) {
+          main.innerHTML = `
+          <div class="checkout-layout" style="grid-template-columns:1fr;max-width:560px;">
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+              </div>
+              <h3 class="empty-state-title">Event not found</h3>
+              <p class="empty-state-text">The event link is invalid or the event has been removed.</p>
+              <a href="index.html" class="btn btn-primary">Go to Pass Spot</a>
+            </div>
+          </div>`;
+          return;
+        }
+
+        const state = {
+          ticketType: null,
+          qty: 1,
+          currency: "NGN",
+          guestName: "",
+          guestEmail: "",
+          appliedPromo: null,
+        };
+
+        const tiers =
+          event.ticketTiers && event.ticketTiers.length > 0
+            ? event.ticketTiers.map((t, i) => ({
+                id: `tier_${i}`,
+                name: t.name,
+                price: t.price,
+                desc:
+                  t.name === "Regular"
+                    ? "General admission"
+                    : `Access to ${t.name.toLowerCase()} experience`,
+              }))
+            : [
+                {
+                  id: "regular",
+                  name: "Regular",
+                  price: event.price,
+                  desc: "General admission",
+                },
+                {
+                  id: "vip",
+                  name: "VIP",
+                  price: Math.round(event.price * 2.5),
+                  desc: "VIP lounge + early entry",
+                },
+              ];
+
+        state.ticketType = tiers[0].id;
+
+        const eventMediaHTML = event.imageData
+          ? `<img src="${event.imageData}" alt="${event.title}" style="width:60px;height:60px;border-radius:var(--radius-md);object-fit:cover;flex-shrink:0;">`
+          : `<div style="width:60px;height:60px;border-radius:var(--radius-md);background:var(--primary-50);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">${event.emoji || "🎫"}</div>`;
+
+        // Multi-day date display
+        const dateText =
+          event.schedule && event.schedule.length > 1
+            ? `${PS.formatDate(event.schedule[0].date)} → ${event.schedule.length} days`
+            : `${PS.formatDate(event.date)} · ${PS.formatTime(event.date)}`;
+
+        function renderCheckout() {
+          main.innerHTML = `
+          <div class="checkout-layout">
+            <div>
+              <div class="mb-6">
+                <h1 class="page-title">Get your tickets</h1>
+                <p class="page-subtitle">No account needed — just fill in your details.</p>
+              </div>
+
+              <form id="checkoutForm" novalidate>
+                <div class="card mb-4">
+                  <h3 class="card-title mb-4">Your details</h3>
+                  <div class="form-group">
+                    <label class="form-label" for="guestName">Full name <span class="required">*</span></label>
+                    <input class="form-input" type="text" id="guestName" placeholder="Ada Okafor" required>
+                    <span class="form-error"></span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="guestEmail">Email address <span class="required">*</span></label>
+                    <input class="form-input" type="email" id="guestEmail" placeholder="you@example.com" required>
+                    <span class="form-hint">We'll send your QR codes and receipt here.</span>
+                    <span class="form-error"></span>
+                  </div>
+                </div>
+
+                <div class="card mb-4">
+                  <h3 class="card-title mb-4">Choose your ticket</h3>
+                  <div id="ticketOptions"></div>
+                  <div class="form-group mt-4">
+                    <label class="form-label" for="qty">Quantity <span class="required">*</span></label>
+                    <div class="flex items-center gap-3">
+                      <button type="button" class="btn btn-secondary" id="qtyMinus">−</button>
+                      <input class="form-input" type="number" id="qty" value="1" min="1" max="10" style="max-width:100px;text-align:center;" required>
+                      <button type="button" class="btn btn-secondary" id="qtyPlus">+</button>
+                    </div>
+                    <span class="form-hint">Max 10 tickets per order.</span>
+                  </div>
+                </div>
+
+                <!-- Promo code -->
+                <div class="card mb-4">
+                  <h3 class="card-title mb-4">Promo code <span class="text-muted text-sm fw-regular">(optional)</span></h3>
+                  <div class="flex gap-2">
+                    <input class="form-input mono" type="text" id="promoInput" placeholder="Enter code" style="text-transform:uppercase;">
+                    <button type="button" class="btn btn-secondary" id="applyPromoBtn">Apply</button>
+                  </div>
+                  <div id="promoFeedback" class="mt-2"></div>
+                </div>
+
+                <div class="card mb-4">
+                  <h3 class="card-title mb-4">Payment method</h3>
+                  <div class="radio-cards" style="grid-template-columns:1fr;">
+                    <label class="radio-card">
+                      <input type="radio" name="payMethod" value="card" checked>
+                      <div class="radio-card-content">
+                        <div class="radio-card-title">💳 Card</div>
+                        <div class="radio-card-desc">Visa, Mastercard, Verve — Demo only</div>
+                      </div>
+                    </label>
+                    <label class="radio-card">
+                      <input type="radio" name="payMethod" value="bank">
+                      <div class="radio-card-content">
+                        <div class="radio-card-title">🏦 Bank Transfer</div>
+                        <div class="radio-card-desc">Transfer from any Nigerian bank — Demo only</div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="info-panel mb-4">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                  <span>Demo only — no payment will be charged.</span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg btn-block" id="payBtn">Pay and get tickets</button>
+              </form>
+            </div>
+
+            <aside class="checkout-summary">
+              <div class="card">
+                <div class="flex gap-3 items-start mb-4">
+                  ${eventMediaHTML}
+                  <div style="flex:1;min-width:0;">
+                    <div class="event-card-date" style="margin-bottom:4px;">${dateText}</div>
+                    <h3 class="card-title" style="font-size:var(--fs-md);line-height:1.3;">${event.title}</h3>
+                    <div class="text-xs text-muted mt-1">📍 ${event.venue}, ${event.city}</div>
+                  </div>
+                </div>
+                <div class="divider"></div>
+                <div class="summary-row"><span class="text-muted text-sm">Ticket</span><span class="fw-semibold text-sm" id="sumTicketName">—</span></div>
+                <div class="summary-row"><span class="text-muted text-sm">Price each</span><span class="fw-semibold text-sm" id="sumPriceEach">—</span></div>
+                <div class="summary-row"><span class="text-muted text-sm">Quantity</span><span class="fw-semibold text-sm" id="sumQty">1</span></div>
+                <div class="summary-row"><span class="text-muted text-sm">Subtotal</span><span class="fw-semibold text-sm" id="sumSubtotal">—</span></div>
+                <div class="summary-row" id="discountRow" style="display:none;">
+                  <span class="text-muted text-sm">Discount <span id="promoAppliedLabel" class="mono"></span></span>
+                  <span class="fw-semibold text-sm text-success" id="sumDiscount">—</span>
+                </div>
+                <div class="summary-row"><span class="text-muted text-sm">Service fee (2%)</span><span class="fw-semibold text-sm" id="sumFee">—</span></div>
+                <div class="summary-row total"><span>Total</span><span id="sumTotal">—</span></div>
+                <div class="divider"></div>
+                <label class="form-label mb-2">Display currency</label>
+                <div class="currency-switch" style="width:100%;">
+                  <button type="button" data-checkout-cur="NGN" class="is-active" style="flex:1;">₦ NGN</button>
+                  <button type="button" data-checkout-cur="USD" style="flex:1;">$ USD</button>
+                </div>
+              </div>
+            </aside>
+          </div>
+        `;
+          bindCheckout();
+        }
+
+        function bindCheckout() {
+          const ticketOptionsEl = document.getElementById("ticketOptions");
+          const qtyEl = document.getElementById("qty");
+          const guestNameEl = document.getElementById("guestName");
+          const guestEmailEl = document.getElementById("guestEmail");
+
+          function renderTicketOptions() {
+            ticketOptionsEl.innerHTML = tiers
+              .map(
+                (t) => `
+            <div class="ticket-option ${state.ticketType === t.id ? "is-selected" : ""}" data-tier="${t.id}">
+              <div>
+                <div class="fw-semibold text-sm">${t.name}</div>
+                <div class="text-xs text-muted">${t.desc}</div>
+              </div>
+              <div class="fw-bold text-sm">${PS.formatMoney(t.price, state.currency)}</div>
+            </div>
+          `,
+              )
+              .join("");
+            ticketOptionsEl.querySelectorAll("[data-tier]").forEach((el) => {
+              el.addEventListener("click", () => {
+                state.ticketType = el.dataset.tier;
+                renderTicketOptions();
+                updateSummary();
+              });
+            });
+          }
+
+          function updateSummary() {
+            const tier = tiers.find((t) => t.id === state.ticketType);
+            const subtotal = tier.price * state.qty;
+            let discount = 0;
+            if (state.appliedPromo) {
+              if (state.appliedPromo.discountType === "percent") {
+                discount = subtotal * (state.appliedPromo.discountValue / 100);
+              } else {
+                discount = state.appliedPromo.discountValue;
+                if (discount > subtotal) discount = subtotal;
+              }
+            }
+            const afterDiscount = subtotal - discount;
+            const fee = afterDiscount * 0.02;
+            const total = afterDiscount + fee;
+
+            document.getElementById("sumTicketName").textContent = tier.name;
+            document.getElementById("sumPriceEach").textContent =
+              PS.formatMoney(tier.price, state.currency);
+            document.getElementById("sumQty").textContent = state.qty;
+            document.getElementById("sumSubtotal").textContent = PS.formatMoney(
+              subtotal,
+              state.currency,
+            );
+            document.getElementById("sumFee").textContent = PS.formatMoney(
+              fee,
+              state.currency,
+            );
+            document.getElementById("sumTotal").textContent = PS.formatMoney(
+              total,
+              state.currency,
+            );
+
+            const discountRow = document.getElementById("discountRow");
+            if (discount > 0) {
+              discountRow.style.display = "flex";
+              document.getElementById("promoAppliedLabel").textContent =
+                `(${state.appliedPromo.code})`;
+              document.getElementById("sumDiscount").textContent =
+                "-" + PS.formatMoney(discount, state.currency);
+            } else {
+              discountRow.style.display = "none";
+            }
+          }
+
+          document.getElementById("qtyMinus").addEventListener("click", () => {
+            if (state.qty > 1) {
+              state.qty--;
+              qtyEl.value = state.qty;
+              updateSummary();
+            }
+          });
+          document.getElementById("qtyPlus").addEventListener("click", () => {
+            if (state.qty < 10) {
+              state.qty++;
+              qtyEl.value = state.qty;
+              updateSummary();
+            }
+          });
+          qtyEl.addEventListener("input", () => {
+            let v = parseInt(qtyEl.value) || 1;
+            v = Math.max(1, Math.min(10, v));
+            state.qty = v;
+            qtyEl.value = v;
+            updateSummary();
+          });
+
+          document.querySelectorAll("[data-checkout-cur]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              state.currency = btn.dataset.checkoutCur;
+              document.querySelectorAll("[data-checkout-cur]").forEach((b) => {
+                b.classList.toggle(
+                  "is-active",
+                  b.dataset.checkoutCur === state.currency,
+                );
+              });
+              renderTicketOptions();
+              updateSummary();
+            });
+          });
+
+          // Apply promo
+          document
+            .getElementById("applyPromoBtn")
+            .addEventListener("click", () => {
+              const code = document
+                .getElementById("promoInput")
+                .value.trim()
+                .toUpperCase();
+              const feedback = document.getElementById("promoFeedback");
+              if (!code) {
+                feedback.innerHTML = "";
+                state.appliedPromo = null;
+                updateSummary();
+                return;
+              }
+              const promos = event.promoCodes || [];
+              const found = promos.find((p) => p.code === code);
+              if (!found) {
+                feedback.innerHTML = `<div class="text-xs text-error fw-medium">Invalid promo code</div>`;
+                state.appliedPromo = null;
+                updateSummary();
+                return;
+              }
+              state.appliedPromo = found;
+              feedback.innerHTML = `<div class="text-xs text-success fw-medium">✓ Promo applied — ${found.discountType === "percent" ? found.discountValue + "% off" : PS.formatMoney(found.discountValue, state.currency) + " off"}</div>`;
+              updateSummary();
+              PS.toast("Promo code applied", "success");
+            });
+
+          document
+            .getElementById("checkoutForm")
+            .addEventListener("submit", (e) => {
+              e.preventDefault();
+              let valid = true;
+              PS.clearFieldError(guestNameEl);
+              PS.clearFieldError(guestEmailEl);
+              if (!guestNameEl.value.trim()) {
+                PS.setFieldError(guestNameEl, "Please enter your full name.");
+                valid = false;
+              }
+              if (!guestEmailEl.value.trim()) {
+                PS.setFieldError(guestEmailEl, "Please enter your email.");
+                valid = false;
+              } else if (!PS.validateEmail(guestEmailEl.value.trim())) {
+                PS.setFieldError(guestEmailEl, "Invalid email.");
+                valid = false;
+              }
+              if (!valid) {
+                PS.toast("Please fix the highlighted fields.", "error");
+                return;
+              }
+
+              state.guestName = guestNameEl.value.trim();
+              state.guestEmail = guestEmailEl.value.trim();
+              const payBtn = document.getElementById("payBtn");
+              payBtn.classList.add("is-loading");
+              payBtn.disabled = true;
+
+              setTimeout(() => {
+                const tier = tiers.find((t) => t.id === state.ticketType);
+                const subtotal = tier.price * state.qty;
+                let discount = 0;
+                if (state.appliedPromo) {
+                  if (state.appliedPromo.discountType === "percent") {
+                    discount =
+                      subtotal * (state.appliedPromo.discountValue / 100);
+                  } else {
+                    discount = Math.min(
+                      state.appliedPromo.discountValue,
+                      subtotal,
+                    );
+                  }
+                }
+                const afterDiscount = subtotal - discount;
+                const fee = afterDiscount * 0.02;
+                const total = afterDiscount + fee;
+
+                const order = PS.guest.createOrder({
+                  eventId: event.id,
+                  eventTitle: event.title,
+                  eventDate: event.date,
+                  eventVenue: `${event.venue}, ${event.city}, ${event.state}`,
+                  ticketType: tier.name,
+                  qty: state.qty,
+                  priceEach: tier.price,
+                  subtotal,
+                  discount,
+                  fee,
+                  total,
+                  currency: state.currency,
+                  guestName: state.guestName,
+                  guestEmail: state.guestEmail,
+                  promoCode: state.appliedPromo
+                    ? state.appliedPromo.code
+                    : null,
+                });
+
+                PS.toast(`Tickets sent to ${state.guestEmail}`, "success");
+                renderWallet(order);
+              }, 1400);
+            });
+
+          renderTicketOptions();
+          updateSummary();
+        }
+
+        function renderWallet(order) {
+          const shareUrl = `${window.location.origin}${window.location.pathname.replace("checkout.html", "event-details.html")}?id=${order.eventId}`;
+          main.innerHTML = `
+          <div class="wallet-wrap">
+            <div class="wallet-header">
+              <div class="success-icon-badge">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              </div>
+              <h1 class="page-title" style="margin-bottom:var(--space-2);">You're in! 🎉</h1>
+              <p class="page-subtitle">
+                ${order.qty === 1 ? "Your ticket has" : `Your ${order.qty} tickets have`} been sent to <strong>${order.guestEmail}</strong>
+              </p>
+            </div>
+            <div class="wallet-summary">
+              <div class="flex justify-between items-center mb-2" style="flex-wrap:wrap;gap:var(--space-2);">
+                <div>
+                  <div class="text-xs text-muted">Order ID</div>
+                  <div class="mono fw-bold">${order.orderId}</div>
+                </div>
+                <span class="badge badge-success">Paid</span>
+              </div>
+              <div class="summary-row">
+                <span class="text-muted text-sm">${order.eventTitle}</span>
+                <span class="fw-semibold text-sm">${PS.formatDate(order.eventDate)}</span>
+              </div>
+              <div class="summary-row">
+                <span class="text-muted text-sm">${order.ticketType} × ${order.qty}</span>
+                <span class="fw-semibold text-sm">${PS.formatMoney(order.total, order.currency)}</span>
+              </div>
+            </div>
+            <div class="flex justify-between items-center mt-8 mb-4" style="flex-wrap:wrap;gap:var(--space-3);">
+              <div>
+                <h3 class="section-title" style="font-size:var(--fs-xl);">Your tickets</h3>
+                <p class="section-subtitle">Each ticket has its own QR code.</p>
+              </div>
+              <button class="btn btn-secondary btn-sm" id="downloadAllBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                Download all (PNG)
+              </button>
+            </div>
+            <div class="ticket-wallet-grid" id="ticketGrid">
+              ${order.tickets.map((t) => renderTicketCard(order, t)).join("")}
+            </div>
+            <div class="card mt-8">
+              <h3 class="card-title mb-3">Share this event</h3>
+              <div class="flex gap-3" style="flex-wrap:wrap;">
+                <button class="btn btn-primary" id="shareEventBtn">Share event</button>
+                <button class="btn btn-secondary" id="copyEventBtn">Copy link</button>
+              </div>
+            </div>
+          </div>
+        `;
+          bindWallet(order, shareUrl);
+        }
+
+        function renderTicketCard(order, ticket) {
+          return `
+          <div class="ticket-wallet-card" data-token="${ticket.token}">
+            <div class="flex justify-between items-center" style="flex-wrap:wrap;gap:var(--space-2);">
+              <span class="badge badge-primary">Ticket ${ticket.index} of ${ticket.total}</span>
+            </div>
+            <div class="qr-box">${renderQR(ticket.token)}</div>
+            <div class="ticket-wallet-label">${ticket.token}</div>
+            <div class="text-sm" style="text-align:center;">
+              <div class="fw-semibold">${ticket.attendeeName || "Unassigned"}</div>
+              <div class="text-xs text-muted">${order.ticketType}</div>
+            </div>
+            <div class="ticket-wallet-actions">
+              <button class="btn btn-secondary btn-sm" data-share-token="${ticket.token}">Share</button>
+              <button class="btn btn-secondary btn-sm" data-download-token="${ticket.token}">PNG</button>
+            </div>
+          </div>
+        `;
+        }
+
+        function renderQR(token) {
+          let hash = 0;
+          for (let i = 0; i < token.length; i++)
+            hash = ((hash << 5) - hash + token.charCodeAt(i)) | 0;
+          const cells = [];
+          for (let y = 0; y < 16; y++) {
+            for (let x = 0; x < 16; x++) {
+              const bit = (hash >> ((x + y * 16) % 31)) & 1;
+              if (
+                bit ||
+                (x < 4 && y < 4) ||
+                (x > 11 && y < 4) ||
+                (x < 4 && y > 11)
+              ) {
+                cells.push(
+                  `<rect x="${x * 10 + 15}" y="${y * 10 + 15}" width="10" height="10" fill="#0D0D0D"/>`,
+                );
+              }
+            }
+          }
+          return `<svg width="180" height="180" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">${cells.join("")}</svg>`;
+        }
+
+        function bindWallet(order, shareUrl) {
+          document.querySelectorAll("[data-download-token]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const ticket = order.tickets.find(
+                (t) => t.token === btn.dataset.downloadToken,
+              );
+              downloadTicketPNG(order, ticket);
+            });
+          });
+          document
+            .getElementById("downloadAllBtn")
+            .addEventListener("click", async () => {
+              for (let i = 0; i < order.tickets.length; i++) {
+                await new Promise((r) => setTimeout(r, 300));
+                downloadTicketPNG(order, order.tickets[i]);
+              }
+            });
+          document
+            .getElementById("shareEventBtn")
+            .addEventListener("click", async () => {
+              const text = `Join me at ${order.eventTitle} → ${shareUrl}`;
+              if (navigator.share) {
+                try {
+                  await navigator.share({
+                    title: order.eventTitle,
+                    url: shareUrl,
+                  });
+                } catch {}
+              } else {
+                try {
+                  await navigator.clipboard.writeText(text);
+                  PS.toast("Link copied", "success");
+                } catch {}
+              }
+            });
+          document
+            .getElementById("copyEventBtn")
+            .addEventListener("click", async () => {
+              try {
+                await navigator.clipboard.writeText(shareUrl);
+                PS.toast("Link copied", "success");
+              } catch {}
+            });
+        }
+
+        function downloadTicketPNG(order, ticket) {
+          const canvas = document.createElement("canvas");
+          canvas.width = 800;
+          canvas.height = 1100;
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(0, 0, 800, 1100);
+          ctx.fillStyle = "#6C2BD9";
+          ctx.fillRect(0, 0, 800, 140);
+          ctx.fillStyle = "#FFFFFF";
+          ctx.font = "700 42px Inter, sans-serif";
+          ctx.textBaseline = "middle";
+          ctx.fillText("Pass Spot", 40, 70);
+          ctx.font = "700 20px Inter, sans-serif";
+          ctx.textAlign = "right";
+          ctx.fillText(`Ticket ${ticket.index} of ${ticket.total}`, 760, 90);
+          ctx.textAlign = "left";
+          ctx.fillStyle = "#0D0D0D";
+          ctx.font = "700 34px Inter, sans-serif";
+          wrapText(ctx, order.eventTitle, 40, 220, 720, 44);
+          ctx.fillStyle = "#52525B";
+          ctx.font = "500 20px Inter, sans-serif";
+          ctx.fillText(
+            `${PS.formatDate(order.eventDate)} · ${PS.formatTime(order.eventDate)}`,
+            40,
+            320,
+          );
+          ctx.fillText(order.eventVenue, 40, 355);
+          ctx.fillStyle = "#0D0D0D";
+          ctx.font = "600 22px Inter, sans-serif";
+          ctx.fillText(ticket.attendeeName || "Unassigned", 40, 420);
+          ctx.fillStyle = "#71717D";
+          ctx.font = "500 18px Inter, sans-serif";
+          ctx.fillText(order.ticketType, 40, 450);
+          ctx.strokeStyle = "#E8E8EC";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(40, 500);
+          ctx.lineTo(760, 500);
+          ctx.stroke();
+          drawQRToCanvas(ctx, ticket.token, 220, 560, 360);
+          ctx.fillStyle = "#0D0D0D";
+          ctx.font = "700 22px JetBrains Mono, monospace";
+          ctx.textAlign = "center";
+          ctx.fillText(ticket.token, 400, 970);
+          ctx.fillStyle = "#71717D";
+          ctx.font = "500 16px Inter, sans-serif";
+          ctx.fillText("Scan at the entrance · One admission only", 400, 1010);
+          ctx.fillStyle = "#A1A1AC";
+          ctx.font = "500 14px Inter, sans-serif";
+          ctx.fillText(`Order ${order.orderId}`, 400, 1045);
+          canvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `passspot-${ticket.token}.png`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            PS.toast(`Downloaded ${ticket.token}.png`, "success");
+          }, "image/png");
+        }
+
+        function drawQRToCanvas(ctx, token, x, y, size) {
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillRect(x, y, size, size);
+          ctx.strokeStyle = "#0D0D0D";
+          ctx.lineWidth = 4;
+          ctx.strokeRect(x, y, size, size);
+          let hash = 0;
+          for (let i = 0; i < token.length; i++)
+            hash = ((hash << 5) - hash + token.charCodeAt(i)) | 0;
+          const padding = 20,
+            innerSize = size - padding * 2,
+            gridSize = 21,
+            cell = innerSize / gridSize;
+          ctx.fillStyle = "#0D0D0D";
+          for (let row = 0; row < gridSize; row++) {
+            for (let col = 0; col < gridSize; col++) {
+              const bit = (hash >> ((row * gridSize + col) % 31)) & 1;
+              const isTopLeft = row < 7 && col < 7;
+              const isTopRight = row < 7 && col >= gridSize - 7;
+              const isBottomLeft = row >= gridSize - 7 && col < 7;
+              let filled = bit === 1;
+              if (isTopLeft || isTopRight || isBottomLeft) {
+                const lr = row < 7 ? row : row - (gridSize - 7);
+                const lc = col < 7 ? col : col - (gridSize - 7);
+                const outer = lr === 0 || lr === 6 || lc === 0 || lc === 6;
+                const inner = lr >= 2 && lr <= 4 && lc >= 2 && lc <= 4;
+                filled = outer || inner;
+              }
+              if (filled) {
+                ctx.fillRect(
+                  x + padding + col * cell,
+                  y + padding + row * cell,
+                  cell + 0.5,
+                  cell + 0.5,
+                );
+              }
+            }
+          }
+        }
+
+        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+          const words = text.split(" ");
+          let line = "",
+            currentY = y;
+          for (const word of words) {
+            const test = line + word + " ";
+            if (ctx.measureText(test).width > maxWidth && line !== "") {
+              ctx.fillText(line.trim(), x, currentY);
+              line = word + " ";
+              currentY += lineHeight;
+            } else {
+              line = test;
+            }
+          }
+          ctx.fillText(line.trim(), x, currentY);
+        }
+
+        renderCheckout();
+      });
+    </script>
+  </body>
+</html>

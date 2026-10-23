@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PassSpot — Discover Events</title>
+    <title>Discover Events — Pass Spot</title>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
@@ -17,7 +17,6 @@
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <!-- Shared app shell header (sidebar + topbar) omitted for brevity — see dashboard.html -->
     <div class="app-layout">
       <aside class="sidebar" id="appSidebar"></aside>
       <div class="sidebar-overlay"></div>
@@ -49,10 +48,8 @@
             </div>
           </div>
 
-          <!-- Category chips -->
           <div class="category-scroll" id="categoryChips"></div>
 
-          <!-- Filters -->
           <div class="filter-bar">
             <div class="filter-search">
               <svg
@@ -112,7 +109,7 @@
           </div>
 
           <div class="flex items-center justify-between mb-4">
-            <p class="text-sm text-muted" id="resultCount">12 events</p>
+            <p class="text-sm text-muted" id="resultCount">0 events</p>
           </div>
 
           <div class="event-grid" id="eventsGrid"></div>
@@ -123,13 +120,7 @@
     <script src="js/data.js"></script>
     <script src="js/script.js"></script>
     <script>
-      /* =========================================
-       EVENT DISCOVERY LOGIC
-       Functional search, category, state,
-       city, price filters and sorting.
-    ========================================= */
       document.addEventListener("DOMContentLoaded", () => {
-        // Inject shared shell
         window.PS_SHELL.renderSidebar("events");
         window.PS_SHELL.renderTopbar("Discover events");
 
@@ -157,13 +148,12 @@
           stateFilter.appendChild(opt);
         });
 
-        // Category chips
-        const chipHTML =
+        // Chips
+        chips.innerHTML =
           `<button class="filter-chip is-active" data-cat="">All</button>` +
           window.PS_DATA.EVENT_CATEGORIES.map(
             (c) => `<button class="filter-chip" data-cat="${c}">${c}</button>`,
           ).join("");
-        chips.innerHTML = chipHTML;
 
         chips.addEventListener("click", (e) => {
           const chip = e.target.closest(".filter-chip");
@@ -176,11 +166,9 @@
           render();
         });
 
-        // State -> City cascade
         stateFilter.addEventListener("change", () => {
           activeState = stateFilter.value;
           activeCity = "";
-          // Repopulate cities for selected state
           cityFilter.innerHTML = `<option value="">All cities</option>`;
           const cities = window.PS_DATA.NIGERIAN_CITIES[activeState] || [];
           cities.forEach((c) => {
@@ -209,20 +197,18 @@
           render();
         });
 
-        // =========================================
-        // RENDER FILTERED EVENTS
-        // =========================================
-        function render() {
-          let list = [...window.PS_DATA.DEMO_EVENTS];
+        function getEvents() {
+          return window.PS_DATA && typeof PS_DATA.getEvents === "function"
+            ? PS_DATA.getEvents()
+            : window.PS_DATA.DEMO_EVENTS;
+        }
 
-          // Category
+        function render() {
+          let list = [...getEvents()];
           if (activeCategory)
             list = list.filter((e) => e.category === activeCategory);
-          // State
           if (activeState) list = list.filter((e) => e.state === activeState);
-          // City
           if (activeCity) list = list.filter((e) => e.city === activeCity);
-          // Price
           if (activePrice) {
             if (activePrice.endsWith("+")) {
               const min = parseInt(activePrice);
@@ -232,7 +218,6 @@
               list = list.filter((e) => e.price >= min && e.price <= max);
             }
           }
-          // Search
           if (activeSearch) {
             list = list.filter(
               (e) =>
@@ -242,7 +227,6 @@
                 e.state.toLowerCase().includes(activeSearch),
             );
           }
-          // Sort
           if (activeSort === "date")
             list.sort((a, b) => new Date(a.date) - new Date(b.date));
           else if (activeSort === "price-asc")
@@ -261,8 +245,7 @@
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
               </div>
               <h3 class="empty-state-title">No events found</h3>
-              <p class="empty-state-text">Try adjusting your search or filters to discover more events.</p>
-              <button class="btn btn-secondary" onclick="document.getElementById('searchInput').value=''; document.getElementById('stateFilter').value=''; document.getElementById('cityFilter').innerHTML='<option value=\\'\\'>All cities</option>'; document.getElementById('priceFilter').value=''; document.getElementById('searchInput').dispatchEvent(new Event('input')); document.getElementById('stateFilter').dispatchEvent(new Event('change'));">Clear filters</button>
+              <p class="empty-state-text">Try adjusting your search or filters.</p>
             </div>`;
             return;
           }
@@ -271,33 +254,34 @@
           grid.innerHTML = list
             .map((ev) => {
               const isFav = PS.favorites.isFav(ev.id);
+              const mediaHTML = ev.imageData
+                ? `<img src="${ev.imageData}" alt="${ev.title}">`
+                : `<div class="event-card-media-placeholder">${ev.emoji || "🎫"}</div>`;
+              const multiDay = ev.schedule && ev.schedule.length > 1;
               return `
             <article class="event-card" onclick="window.location.href='event-details.html?id=${ev.id}'">
               <div class="event-card-media">
-                <div class="event-card-media-placeholder">${ev.emoji}</div>
+                ${mediaHTML}
                 <div class="event-card-badges">
                   ${ev.trending ? '<span class="badge badge-primary">🔥</span>' : ""}
                   ${ev.featured ? '<span class="badge badge-info">Featured</span>' : ""}
+                  ${multiDay ? `<span class="badge badge-neutral">${ev.schedule.length} days</span>` : ""}
                 </div>
-                <button class="event-card-fav ${isFav ? "is-active" : ""}" data-fav="${ev.id}" aria-label="Favorite" onclick="event.stopPropagation();">
+                <button class="event-card-fav ${isFav ? "is-active" : ""}" data-fav="${ev.id}" onclick="event.stopPropagation();" aria-label="Favorite">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFav ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
                 </button>
               </div>
               <div class="event-card-body">
-                <div class="event-card-date">${PS.formatDate(ev.date)} · ${PS.formatTime(ev.date)}</div>
+                <div class="event-card-date">${multiDay ? `${PS.formatDate(ev.schedule[0].date)} → ${ev.schedule.length} days` : `${PS.formatDate(ev.date)} · ${PS.formatTime(ev.date)}`}</div>
                 <div class="event-card-title">${ev.title}</div>
                 <div class="event-card-meta">
                   <div class="event-card-meta-row">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
                     ${ev.city}, ${ev.state.replace(" (FCT)", "")}
                   </div>
-                  <div class="event-card-meta-row">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    ${ev.organizer}
-                  </div>
                 </div>
                 <div class="event-card-footer">
-                  <div class="event-card-price" data-money="${ev.price}">${PS.formatMoney(ev.price, cur)}<span class="event-card-price-label">from</span></div>
+                  <div class="event-card-price">${PS.formatMoney(ev.price, cur)}<span class="event-card-price-label">from</span></div>
                   <span class="badge ${ev.sold / ev.capacity > 0.7 ? "badge-warning" : "badge-success"}">${ev.capacity - ev.sold} left</span>
                 </div>
               </div>
@@ -305,16 +289,16 @@
             })
             .join("");
 
-          // Favorites toggle
           grid.querySelectorAll("[data-fav]").forEach((btn) => {
             btn.addEventListener("click", () => {
               const id = btn.dataset.fav;
               const nowFav = PS.favorites.toggle(id);
               btn.classList.toggle("is-active", nowFav);
-              const svg = btn.querySelector("svg");
-              svg.setAttribute("fill", nowFav ? "currentColor" : "none");
+              btn
+                .querySelector("svg")
+                .setAttribute("fill", nowFav ? "currentColor" : "none");
               PS.toast(
-                nowFav ? "Added to favorites" : "Removed from favorites",
+                nowFav ? "Added to favorites" : "Removed",
                 nowFav ? "success" : "info",
               );
             });

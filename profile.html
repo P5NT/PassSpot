@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PassSpot — Profile</title>
+    <title>Profile — Pass Spot</title>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
@@ -15,6 +15,51 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/style.css" />
+    <style>
+      /* Profile-pic dropzone */
+      .avatar-upload {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-3);
+        margin-bottom: var(--space-5);
+      }
+      .avatar-upload-inner {
+        position: relative;
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2px dashed var(--border-color);
+        background-color: var(--surface-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--transition-fast);
+      }
+      .avatar-upload-inner:hover {
+        border-color: var(--primary-color);
+        background-color: var(--primary-50);
+      }
+      .avatar-upload-inner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .avatar-upload-inner input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+      }
+      .avatar-initials {
+        font-family: var(--font-display);
+        font-size: var(--fs-2xl);
+        font-weight: var(--fw-bold);
+        color: var(--primary-color);
+      }
+    </style>
   </head>
   <body>
     <div class="app-layout">
@@ -34,14 +79,12 @@
 
           <!-- Profile header -->
           <div class="profile-header">
-            <div class="avatar avatar-xl" id="profileAvatar">AO</div>
+            <div class="avatar avatar-xl" id="profileAvatar"></div>
             <div class="profile-header-info">
-              <h3 class="profile-name" id="profileName">Ada Okafor</h3>
-              <p class="profile-email" id="profileEmail">
-                ada.okafor@example.com
-              </p>
+              <h3 class="profile-name" id="profileName">—</h3>
+              <p class="profile-email" id="profileEmail">—</p>
               <div class="profile-tags">
-                <span class="badge badge-primary">Attendee</span>
+                <span id="profileRoleBadge" class="badge"></span>
                 <span class="badge badge-success">Verified</span>
                 <span class="badge badge-neutral">Member since Nov 2025</span>
               </div>
@@ -57,7 +100,7 @@
               <div class="stat-card-head">
                 <span class="stat-label">Tickets purchased</span>
               </div>
-              <div class="stat-value" id="profileTickets">3</div>
+              <div class="stat-value" id="profileTickets">0</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
@@ -69,7 +112,7 @@
               <div class="stat-card-head">
                 <span class="stat-label">Wallet balance</span>
               </div>
-              <div class="stat-value" id="profileWallet">₦125,000.00</div>
+              <div class="stat-value" id="profileWallet">—</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
@@ -92,13 +135,11 @@
               <h3 class="card-title mb-4">Personal information</h3>
               <div class="summary-row">
                 <span class="text-muted text-sm">Full name</span
-                ><span class="fw-semibold text-sm" id="pName">Ada Okafor</span>
+                ><span class="fw-semibold text-sm" id="pName">—</span>
               </div>
               <div class="summary-row">
                 <span class="text-muted text-sm">Email</span
-                ><span class="fw-semibold text-sm" id="pEmail"
-                  >ada.okafor@example.com</span
-                >
+                ><span class="fw-semibold text-sm" id="pEmail">—</span>
               </div>
               <div class="summary-row">
                 <span class="text-muted text-sm">Phone</span
@@ -108,7 +149,7 @@
               </div>
               <div class="summary-row">
                 <span class="text-muted text-sm">Account type</span
-                ><span class="badge badge-primary">Attendee</span>
+                ><span id="pAccountType" class="badge"></span>
               </div>
             </div>
 
@@ -141,45 +182,67 @@
       </div>
     </div>
 
-    <!-- Edit modal -->
+    <!-- =========================================
+       EDIT PROFILE MODAL
+  ========================================= -->
     <div class="modal-overlay" id="editModal">
       <div class="modal">
         <div class="modal-header">
           <div>
             <h3 class="modal-title">Edit profile</h3>
-            <p class="modal-subtitle">Update your information.</p>
+            <p class="modal-subtitle">Update your information and photo.</p>
           </div>
-          <button class="modal-close" onclick="PS.closeModal('editModal')">
+          <button
+            class="modal-close"
+            onclick="PS.closeModal('editModal')"
+            aria-label="Close"
+          >
             ✕
           </button>
         </div>
         <div class="modal-body">
+          <!-- Profile picture upload -->
+          <div class="avatar-upload">
+            <div class="avatar-upload-inner" id="avatarUploadInner">
+              <input type="file" id="avatarFileInput" accept="image/*" />
+              <span id="avatarPreviewInitials" class="avatar-initials">AO</span>
+              <img id="avatarPreviewImg" src="" alt="" style="display: none" />
+            </div>
+            <div class="flex gap-2">
+              <label class="btn btn-sm btn-secondary" style="cursor: pointer">
+                Upload photo
+                <input
+                  type="file"
+                  id="avatarUploadBtnInput"
+                  accept="image/*"
+                  style="display: none"
+                />
+              </label>
+              <button
+                type="button"
+                class="btn btn-sm btn-ghost"
+                id="removeAvatarBtn"
+                style="display: none; color: var(--error-color)"
+              >
+                Remove
+              </button>
+            </div>
+            <p class="form-hint" style="text-align: center">
+              Square image works best. Auto-cropped.
+            </p>
+          </div>
+
           <div class="form-group">
             <label class="form-label">Full name</label>
-            <input
-              class="form-input"
-              type="text"
-              id="editName"
-              value="Ada Okafor"
-            />
+            <input class="form-input" type="text" id="editName" />
           </div>
           <div class="form-group">
             <label class="form-label">Email</label>
-            <input
-              class="form-input"
-              type="email"
-              id="editEmail"
-              value="ada.okafor@example.com"
-            />
+            <input class="form-input" type="email" id="editEmail" />
           </div>
           <div class="form-group">
             <label class="form-label">Phone</label>
-            <input
-              class="form-input"
-              type="tel"
-              id="editPhone"
-              value="+234 801 234 5678"
-            />
+            <input class="form-input" type="tel" id="editPhone" />
           </div>
         </div>
         <div class="modal-footer">
@@ -197,45 +260,91 @@
     <script src="js/data.js"></script>
     <script src="js/script.js"></script>
     <script>
-      /* =========================================
-       PROFILE PAGE
-    ========================================= */
       document.addEventListener("DOMContentLoaded", () => {
         window.PS_SHELL.renderSidebar("profile");
         window.PS_SHELL.renderTopbar("Profile");
 
-        const user = PS.session.getUser();
-        const initials = user.name
-          .split(" ")
-          .map((n) => n[0])
-          .join("")
-          .slice(0, 2)
-          .toUpperCase();
+        // Local state for avatar changes inside the modal
+        // (before "Save" is clicked)
+        let pendingAvatarData = null; // null = unchanged
+        let pendingAvatarRemoved = false;
 
-        document.getElementById("profileName").textContent = user.name;
-        document.getElementById("profileEmail").textContent = user.email;
-        document.getElementById("profileAvatar").textContent = initials;
-        document.getElementById("pName").textContent = user.name;
-        document.getElementById("pEmail").textContent = user.email;
-        document.getElementById("pCurrency").textContent = PS.getCurrency();
-        document.getElementById("pTheme").textContent =
-          document.documentElement.getAttribute("data-theme") === "dark"
-            ? "Dark"
-            : "Light";
-        document.getElementById("profileTickets").textContent =
-          window.PS_DATA.DEMO_TICKETS.length;
-        document.getElementById("profileFavorites").textContent =
-          PS.favorites.all().length;
+        // =========================================
+        // RENDER USER
+        // =========================================
+        function renderUser() {
+          const user = PS.session.getUser();
+          const isOrganizer = PS.session.isOrganizer();
+          const initials = user.name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase();
 
-        function renderWallet() {
+          // Large avatar
+          const avatarEl = document.getElementById("profileAvatar");
+          if (user.profilePic) {
+            avatarEl.style.padding = "0";
+            avatarEl.style.overflow = "hidden";
+            avatarEl.innerHTML = `<img src="${user.profilePic}" alt="" style="width:100%;height:100%;object-fit:cover;">`;
+          } else {
+            avatarEl.style.padding = "";
+            avatarEl.style.overflow = "";
+            avatarEl.innerHTML = initials;
+          }
+
+          // Text
+          document.getElementById("profileName").textContent = user.name;
+          document.getElementById("profileEmail").textContent = user.email;
+          document.getElementById("pName").textContent = user.name;
+          document.getElementById("pEmail").textContent = user.email;
+
+          // Role badge in header tags
+          const roleBadge = document.getElementById("profileRoleBadge");
+          roleBadge.className = `badge ${isOrganizer ? "badge-primary" : "badge-neutral"}`;
+          roleBadge.textContent = isOrganizer ? "Organizer" : "Attendee";
+
+          // Account type in Personal Info
+          const accType = document.getElementById("pAccountType");
+          accType.className = `badge ${isOrganizer ? "badge-primary" : "badge-neutral"}`;
+          accType.textContent = isOrganizer ? "Organizer" : "Attendee";
+
+          // Currency
+          document.getElementById("pCurrency").textContent = PS.getCurrency();
+
+          // Wallet
           document.getElementById("profileWallet").textContent = PS.formatMoney(
             PS.wallet.getBalance(),
             PS.getCurrency(),
           );
-        }
-        renderWallet();
 
-        // Recent activity
+          // Tickets + favorites
+          document.getElementById("profileTickets").textContent =
+            window.PS_DATA.DEMO_TICKETS.length;
+          document.getElementById("profileFavorites").textContent =
+            PS.favorites.all().length;
+
+          // Initials for the modal preview
+          document.getElementById("avatarPreviewInitials").textContent =
+            initials;
+        }
+
+        // =========================================
+        // THEME LABEL — reactive
+        // =========================================
+        function renderThemeLabel() {
+          const t =
+            document.documentElement.getAttribute("data-theme") || "light";
+          document.getElementById("pTheme").textContent =
+            t === "dark" ? "Dark" : "Light";
+        }
+        renderThemeLabel();
+        document.addEventListener("ps:themechange", renderThemeLabel);
+
+        // =========================================
+        // RECENT ACTIVITY
+        // =========================================
         document.getElementById("profileActivity").innerHTML =
           window.PS_DATA.DEMO_TRANSACTIONS.slice(0, 4)
             .map((tx) => {
@@ -254,14 +363,128 @@
             })
             .join("");
 
+        // Currency change → re-render
+        document.addEventListener("ps:currencychange", renderUser);
+
+        // Initial render
+        renderUser();
+
+        // =========================================
+        // EDIT PROFILE MODAL
+        // =========================================
         document
           .getElementById("editProfileBtn")
           .addEventListener("click", () => {
+            const user = PS.session.getUser();
             document.getElementById("editName").value = user.name;
             document.getElementById("editEmail").value = user.email;
+            document.getElementById("editPhone").value =
+              user.phone || "+234 801 234 5678";
+
+            // Reset avatar state
+            pendingAvatarData = null;
+            pendingAvatarRemoved = false;
+            updateAvatarPreview();
             PS.openModal("editModal");
           });
 
+        // =========================================
+        // AVATAR PREVIEW / UPLOAD
+        // =========================================
+        function updateAvatarPreview() {
+          const user = PS.session.getUser();
+          const initials = user.name
+            .split(" ")
+            .map((n) => n[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase();
+          const previewImg = document.getElementById("avatarPreviewImg");
+          const previewInitials = document.getElementById(
+            "avatarPreviewInitials",
+          );
+          const removeBtn = document.getElementById("removeAvatarBtn");
+
+          // Current effective picture = pending override, existing, or none
+          let effectivePic = user.profilePic;
+          if (pendingAvatarRemoved) effectivePic = null;
+          else if (pendingAvatarData) effectivePic = pendingAvatarData;
+
+          if (effectivePic) {
+            previewImg.src = effectivePic;
+            previewImg.style.display = "block";
+            previewInitials.style.display = "none";
+          } else {
+            previewImg.src = "";
+            previewImg.style.display = "none";
+            previewInitials.style.display = "block";
+            previewInitials.textContent = initials;
+          }
+
+          // Show "Remove" only if there's a picture in play
+          removeBtn.style.display =
+            effectivePic || user.profilePic ? "inline-flex" : "none";
+        }
+
+        // Bind both file inputs (dropzone + labelled button)
+        ["avatarFileInput", "avatarUploadBtnInput"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          el.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files[0]) {
+              handleAvatarFile(e.target.files[0]);
+            }
+          });
+        });
+
+        function handleAvatarFile(file) {
+          if (!file.type.startsWith("image/")) {
+            PS.toast("Please choose an image file", "error");
+            return;
+          }
+          if (file.size > 5 * 1024 * 1024) {
+            PS.toast("Image is too large. Max 5MB.", "error");
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            const img = new Image();
+            img.onload = () => {
+              pendingAvatarData = compressAvatar(img);
+              pendingAvatarRemoved = false;
+              updateAvatarPreview();
+            };
+            img.onerror = () => PS.toast("Could not read image", "error");
+            img.src = evt.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+
+        // Center-crop to a square and resize to 400x400
+        function compressAvatar(img) {
+          const size = Math.min(img.width, img.height);
+          const sx = (img.width - size) / 2;
+          const sy = (img.height - size) / 2;
+          const target = 400;
+          const canvas = document.createElement("canvas");
+          canvas.width = target;
+          canvas.height = target;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, sx, sy, size, size, 0, 0, target, target);
+          return canvas.toDataURL("image/jpeg", 0.85);
+        }
+
+        document
+          .getElementById("removeAvatarBtn")
+          .addEventListener("click", () => {
+            pendingAvatarData = null;
+            pendingAvatarRemoved = true;
+            updateAvatarPreview();
+          });
+
+        // =========================================
+        // SAVE PROFILE
+        // =========================================
         document.getElementById("saveProfile").addEventListener("click", () => {
           const name = document.getElementById("editName").value.trim();
           const email = document.getElementById("editEmail").value.trim();
@@ -269,23 +492,26 @@
             PS.toast("Please enter valid details", "error");
             return;
           }
-          const updated = { ...user, name, email };
-          PS.session.login(updated);
-          document.getElementById("profileName").textContent = name;
-          document.getElementById("profileEmail").textContent = email;
-          document.getElementById("pName").textContent = name;
-          document.getElementById("pEmail").textContent = email;
-          document.getElementById("profileAvatar").textContent = name
-            .split(" ")
-            .map((n) => n[0])
-            .join("")
-            .slice(0, 2)
-            .toUpperCase();
-          PS.closeModal("editModal");
-          PS.toast("Profile updated successfully", "success");
-        });
+          // Save profile pic first (or clear)
+          if (pendingAvatarData) {
+            PS.session.setProfilePic(pendingAvatarData);
+          } else if (pendingAvatarRemoved) {
+            PS.session.clearProfilePic();
+          }
+          // Save name + email (preserve other user fields)
+          const user = PS.session.getUser();
+          PS.session.login({ ...user, name, email });
 
-        document.addEventListener("ps:currencychange", renderWallet);
+          pendingAvatarData = null;
+          pendingAvatarRemoved = false;
+
+          PS.closeModal("editModal");
+          PS.toast("Profile updated", "success");
+
+          // Re-render profile page + topbar avatar
+          renderUser();
+          window.PS_SHELL.renderTopbar("Profile");
+        });
       });
     </script>
   </body>

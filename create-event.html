@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PassSpot — Create Event</title>
+    <title>Create Event — Pass Spot</title>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
@@ -15,6 +15,150 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/style.css" />
+    <style>
+      /* =========================================
+       CREATE-EVENT PAGE STYLES
+       Additions specific to this page only.
+    ========================================= */
+
+      /* Image upload dropzone */
+      .image-dropzone {
+        position: relative;
+        border: 2px dashed var(--border-color);
+        border-radius: var(--radius-lg);
+        background-color: var(--surface-muted);
+        aspect-ratio: 16 / 9;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        overflow: hidden;
+      }
+      .image-dropzone:hover {
+        border-color: var(--primary-300);
+        background-color: var(--primary-50);
+      }
+      .image-dropzone.is-dragover {
+        border-color: var(--primary-color);
+        background-color: var(--primary-50);
+      }
+      .image-dropzone input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+      }
+      .image-dropzone-inner {
+        text-align: center;
+        padding: var(--space-6);
+        pointer-events: none;
+      }
+      .image-dropzone-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: var(--radius-md);
+        background-color: var(--surface-elevated);
+        color: var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-3);
+        border: 1px solid var(--border-color);
+      }
+      .image-preview {
+        position: relative;
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+        border: 1px solid var(--border-color);
+      }
+      .image-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+      .image-preview-actions {
+        position: absolute;
+        top: var(--space-3);
+        right: var(--space-3);
+        display: flex;
+        gap: var(--space-2);
+      }
+
+      /* Multi-day schedule rows */
+      .schedule-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: var(--space-4);
+        align-items: center;
+        padding: var(--space-3) var(--space-4);
+        background-color: var(--surface-muted);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--space-2);
+      }
+      .schedule-row-label {
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-semibold);
+      }
+      .schedule-row .form-input {
+        height: 40px;
+        width: 130px;
+      }
+      @media (max-width: 540px) {
+        .schedule-row {
+          grid-template-columns: 1fr;
+        }
+        .schedule-row .form-input {
+          width: 100%;
+        }
+      }
+
+      /* Schedule locked state */
+      .schedule-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-4);
+        background-color: var(--primary-50);
+        border: 1px solid var(--primary-200);
+        border-radius: var(--radius-md);
+        gap: var(--space-3);
+        flex-wrap: wrap;
+      }
+      .schedule-summary-text {
+        font-size: var(--fs-sm);
+        color: var(--primary-700);
+        font-weight: var(--fw-semibold);
+      }
+
+      /* Promo code card */
+      .promo-card {
+        padding: var(--space-4);
+        background-color: var(--surface-muted);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--space-3);
+      }
+      .promo-card-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-3);
+      }
+      .promo-grid {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr 1fr;
+        gap: var(--space-3);
+      }
+      @media (max-width: 640px) {
+        .promo-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
   </head>
   <body>
     <div class="app-layout">
@@ -30,11 +174,6 @@
                 Publish your event and start selling tickets in minutes.
               </p>
             </div>
-            <div class="page-actions">
-              <button class="btn btn-secondary" id="saveDraftBtn">
-                Save draft
-              </button>
-            </div>
           </div>
 
           <form id="eventForm" novalidate>
@@ -46,12 +185,27 @@
               "
               id="formGrid"
             >
-              <!-- LEFT: Form -->
+              <!-- =====================================
+                 LEFT COLUMN
+            ===================================== -->
               <div>
-                <!-- BASIC INFO -->
+                <!-- =================================
+                   EVENT IMAGE
+              ================================= -->
+                <div class="card mb-6">
+                  <h3 class="card-title mb-4">Event image</h3>
+                  <div id="imageUploadArea"></div>
+                  <p class="form-hint mt-3">
+                    JPG or PNG. Recommended 16:9 ratio. Images are auto-resized
+                    for display.
+                  </p>
+                </div>
+
+                <!-- =================================
+                   BASIC INFORMATION
+              ================================= -->
                 <div class="card mb-6">
                   <h3 class="card-title mb-4">Basic information</h3>
-
                   <div class="form-group">
                     <label class="form-label" for="eventTitle"
                       >Event title <span class="required">*</span></label
@@ -65,7 +219,6 @@
                     />
                     <span class="form-error"></span>
                   </div>
-
                   <div class="form-group">
                     <label class="form-label" for="eventCategory"
                       >Category <span class="required">*</span></label
@@ -75,7 +228,6 @@
                     </select>
                     <span class="form-error"></span>
                   </div>
-
                   <div class="form-group">
                     <label class="form-label" for="eventDescription"
                       >Description <span class="required">*</span></label
@@ -90,10 +242,11 @@
                   </div>
                 </div>
 
-                <!-- LOCATION -->
+                <!-- =================================
+                   LOCATION
+              ================================= -->
                 <div class="card mb-6">
                   <h3 class="card-title mb-4">Location</h3>
-
                   <div class="auth-form-row">
                     <div class="form-group">
                       <label class="form-label" for="eventState"
@@ -119,7 +272,6 @@
                       <span class="form-error"></span>
                     </div>
                   </div>
-
                   <div class="form-group">
                     <label class="form-label" for="eventVenue"
                       >Venue name <span class="required">*</span></label
@@ -133,7 +285,6 @@
                     />
                     <span class="form-error"></span>
                   </div>
-
                   <div class="form-group">
                     <label class="form-label" for="eventAddress"
                       >Street address</label
@@ -147,38 +298,48 @@
                   </div>
                 </div>
 
-                <!-- DATE & TIME -->
+                <!-- =================================
+                   DATE & TIME (multi-day support)
+              ================================= -->
                 <div class="card mb-6">
                   <h3 class="card-title mb-4">Date & time</h3>
+
                   <div class="auth-form-row">
                     <div class="form-group">
-                      <label class="form-label" for="eventDate"
-                        >Event date <span class="required">*</span></label
+                      <label class="form-label" for="eventStartDate"
+                        >Start date <span class="required">*</span></label
                       >
                       <input
                         class="form-input"
                         type="date"
-                        id="eventDate"
+                        id="eventStartDate"
                         required
                       />
                       <span class="form-error"></span>
                     </div>
                     <div class="form-group">
-                      <label class="form-label" for="eventTime"
-                        >Start time <span class="required">*</span></label
+                      <label class="form-label" for="eventEndDate"
+                        >End date <span class="required">*</span></label
                       >
                       <input
                         class="form-input"
-                        type="time"
-                        id="eventTime"
+                        type="date"
+                        id="eventEndDate"
                         required
                       />
+                      <span class="form-hint"
+                        >Same as start date for a one-day event.</span
+                      >
                       <span class="form-error"></span>
                     </div>
                   </div>
+
+                  <div id="scheduleArea"></div>
                 </div>
 
-                <!-- TICKETS -->
+                <!-- =================================
+                   TICKET TYPES
+              ================================= -->
                 <div class="card mb-6">
                   <div class="flex justify-between items-center mb-4">
                     <h3 class="card-title">Ticket types</h3>
@@ -192,9 +353,36 @@
                   </div>
                   <div id="ticketTypesList"></div>
                 </div>
+
+                <!-- =================================
+                   PROMO CODES (optional)
+              ================================= -->
+                <div class="card mb-6">
+                  <div class="flex justify-between items-center mb-2">
+                    <h3 class="card-title">
+                      Promo codes
+                      <span class="text-muted text-sm fw-regular"
+                        >(optional)</span
+                      >
+                    </h3>
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm"
+                      id="addPromoBtn"
+                    >
+                      + Add promo code
+                    </button>
+                  </div>
+                  <p class="text-xs text-muted mb-4">
+                    Discount codes buyers can enter at checkout.
+                  </p>
+                  <div id="promoList"></div>
+                </div>
               </div>
 
-              <!-- RIGHT: Preview + submit -->
+              <!-- =====================================
+                 RIGHT COLUMN — Preview & Publish
+            ===================================== -->
               <div>
                 <div
                   class="card"
@@ -211,7 +399,7 @@
                       border: 1px solid var(--border-color);
                     "
                   >
-                    <div class="event-card-media">
+                    <div class="event-card-media" id="previewMedia">
                       <div
                         class="event-card-media-placeholder"
                         id="previewEmoji"
@@ -249,10 +437,6 @@
 
                   <div class="flex flex-col gap-3">
                     <label class="checkbox">
-                      <input type="checkbox" id="enableAds" />
-                      <span>Create an ad campaign after publishing</span>
-                    </label>
-                    <label class="checkbox">
                       <input type="checkbox" id="agreeTerms" required />
                       <span>I confirm the event details are accurate</span>
                     </label>
@@ -280,13 +464,49 @@
     <script src="js/script.js"></script>
     <script>
       /* =========================================
-       CREATE EVENT PAGE
+       CREATE EVENT — PAGE LOGIC
+
+       Covers:
+       - Event image upload (with client-side
+         compression to 1200x675 JPEG)
+       - Multi-day date schedule with per-day
+         start times
+       - Optional promo codes (percentage or
+         flat discount)
+       - Live preview
+       - Publish to localStorage
     ========================================= */
       document.addEventListener("DOMContentLoaded", () => {
         window.PS_SHELL.renderSidebar("myEvents");
         window.PS_SHELL.renderTopbar("Create event");
 
-        // Populate categories
+        /* =========================================
+         CONSTANTS
+      ========================================= */
+        // Max size accepted at upload — will become 5MB
+        // for real backend uploads. Client compresses
+        // below this before storing in localStorage.
+        const IMAGE_MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+        const IMAGE_TARGET_WIDTH = 1200;
+        const IMAGE_TARGET_HEIGHT = 675;
+        const IMAGE_JPEG_QUALITY = 0.82;
+
+        /* =========================================
+         STATE
+      ========================================= */
+        const state = {
+          imageData: null, // base64 data URL or null
+          startDate: "",
+          endDate: "",
+          schedule: [], // [{ date: "YYYY-MM-DD", startTime: "HH:MM" }]
+          scheduleLocked: false, // true after clicking Save schedule
+          promos: [], // [{ code, discountType, discountValue, maxUses, usedCount }]
+          ticketTypes: [], // [{ id, name, price, qty }]
+        };
+
+        /* =========================================
+         INITIAL POPULATE: categories, states
+      ========================================= */
         const catSel = document.getElementById("eventCategory");
         window.PS_DATA.EVENT_CATEGORIES.forEach((c) => {
           const o = document.createElement("option");
@@ -295,7 +515,6 @@
           catSel.appendChild(o);
         });
 
-        // Populate states
         const stateSel = document.getElementById("eventState");
         window.PS_DATA.NIGERIAN_STATES.forEach((s) => {
           const o = document.createElement("option");
@@ -304,7 +523,6 @@
           stateSel.appendChild(o);
         });
 
-        // Cascade state → city
         const citySel = document.getElementById("eventCity");
         stateSel.addEventListener("change", () => {
           const cities = window.PS_DATA.NIGERIAN_CITIES[stateSel.value] || [];
@@ -320,7 +538,9 @@
         });
         citySel.addEventListener("change", updatePreview);
 
-        // Emoji mapping per category
+        /* =========================================
+         EMOJI MAP (for placeholder)
+      ========================================= */
         const emojiMap = {
           Music: "🎵",
           Concert: "🎤",
@@ -344,27 +564,397 @@
           Community: "🏘️",
         };
 
+        /* =========================================
+         1. EVENT IMAGE UPLOAD
+      ========================================= */
+        const imageArea = document.getElementById("imageUploadArea");
+
+        function renderImageArea() {
+          if (state.imageData) {
+            // Show preview
+            imageArea.innerHTML = `
+            <div class="image-preview">
+              <img src="${state.imageData}" alt="Event image preview">
+              <div class="image-preview-actions">
+                <label class="btn btn-sm btn-secondary" style="cursor:pointer;">
+                  Change
+                  <input type="file" accept="image/*" id="imageReplaceInput" style="display:none;">
+                </label>
+                <button type="button" class="btn btn-sm btn-danger" id="imageRemoveBtn">Remove</button>
+              </div>
+            </div>
+          `;
+            bindImageReplace();
+            document
+              .getElementById("imageRemoveBtn")
+              .addEventListener("click", () => {
+                state.imageData = null;
+                renderImageArea();
+                updatePreview();
+                PS.toast("Image removed", "info");
+              });
+          } else {
+            // Show dropzone
+            imageArea.innerHTML = `
+            <div class="image-dropzone" id="imageDropzone">
+              <input type="file" accept="image/*" id="imageFileInput">
+              <div class="image-dropzone-inner">
+                <div class="image-dropzone-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <path d="M21 15l-5-5L5 21"/>
+                  </svg>
+                </div>
+                <div class="fw-semibold text-sm mb-1">Click or drag to upload</div>
+                <div class="text-xs text-muted">JPG or PNG · Max 5MB</div>
+              </div>
+            </div>
+          `;
+            bindImageInput();
+          }
+        }
+
+        function bindImageInput() {
+          const input = document.getElementById("imageFileInput");
+          const dropzone = document.getElementById("imageDropzone");
+          if (!input || !dropzone) return;
+
+          input.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files[0])
+              handleImageFile(e.target.files[0]);
+          });
+
+          // Drag & drop
+          ["dragenter", "dragover"].forEach((evt) => {
+            dropzone.addEventListener(evt, (e) => {
+              e.preventDefault();
+              dropzone.classList.add("is-dragover");
+            });
+          });
+          ["dragleave", "drop"].forEach((evt) => {
+            dropzone.addEventListener(evt, (e) => {
+              e.preventDefault();
+              dropzone.classList.remove("is-dragover");
+            });
+          });
+          dropzone.addEventListener("drop", (e) => {
+            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+              handleImageFile(e.dataTransfer.files[0]);
+            }
+          });
+        }
+
+        function bindImageReplace() {
+          const input = document.getElementById("imageReplaceInput");
+          if (!input) return;
+          input.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files[0])
+              handleImageFile(e.target.files[0]);
+          });
+        }
+
         // =========================================
-        // TICKET TYPES
+        // HANDLE IMAGE FILE — validate + compress
         // =========================================
+        function handleImageFile(file) {
+          // Type validation
+          if (!file.type.startsWith("image/")) {
+            PS.toast("Please choose an image file", "error");
+            return;
+          }
+          // Size validation (5MB hard limit at upload)
+          if (file.size > IMAGE_MAX_UPLOAD_BYTES) {
+            PS.toast("Image is too large. Max 5MB.", "error");
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            const img = new Image();
+            img.onload = () => {
+              const compressed = compressImage(img);
+              state.imageData = compressed;
+              renderImageArea();
+              updatePreview();
+              PS.toast("Image added", "success");
+            };
+            img.onerror = () => PS.toast("Could not read image", "error");
+            img.src = evt.target.result;
+          };
+          reader.onerror = () => PS.toast("Could not read file", "error");
+          reader.readAsDataURL(file);
+        }
+
+        // =========================================
+        // COMPRESS — center-crop to 16:9 and resize
+        // =========================================
+        function compressImage(img) {
+          const targetW = IMAGE_TARGET_WIDTH;
+          const targetH = IMAGE_TARGET_HEIGHT;
+          const targetRatio = targetW / targetH;
+
+          const srcW = img.width;
+          const srcH = img.height;
+          const srcRatio = srcW / srcH;
+
+          // Calculate source crop region (center-crop to 16:9)
+          let sx = 0,
+            sy = 0,
+            sw = srcW,
+            sh = srcH;
+          if (srcRatio > targetRatio) {
+            // Source is wider — crop sides
+            sw = srcH * targetRatio;
+            sx = (srcW - sw) / 2;
+          } else if (srcRatio < targetRatio) {
+            // Source is taller — crop top/bottom
+            sh = srcW / targetRatio;
+            sy = (srcH - sh) / 2;
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = targetW;
+          canvas.height = targetH;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetW, targetH);
+
+          return canvas.toDataURL("image/jpeg", IMAGE_JPEG_QUALITY);
+        }
+
+        renderImageArea();
+
+        /* =========================================
+         2. DATE & TIME — MULTI-DAY SCHEDULE
+      ========================================= */
+        const startDateEl = document.getElementById("eventStartDate");
+        const endDateEl = document.getElementById("eventEndDate");
+        const scheduleArea = document.getElementById("scheduleArea");
+
+        startDateEl.addEventListener("change", () => {
+          state.startDate = startDateEl.value;
+          // Auto-fill end date with start date if empty or earlier
+          if (
+            state.startDate &&
+            (!state.endDate || state.endDate < state.startDate)
+          ) {
+            state.endDate = state.startDate;
+            endDateEl.value = state.endDate;
+          }
+          regenerateSchedule();
+          updatePreview();
+        });
+
+        endDateEl.addEventListener("change", () => {
+          state.endDate = endDateEl.value;
+          if (state.endDate < state.startDate) {
+            PS.toast("End date cannot be before start date", "error");
+            state.endDate = state.startDate;
+            endDateEl.value = state.startDate;
+          }
+          regenerateSchedule();
+          updatePreview();
+        });
+
+        // =========================================
+        // REGENERATE — build one row per day between
+        // start and end (inclusive)
+        // =========================================
+        function regenerateSchedule() {
+          if (!state.startDate || !state.endDate) {
+            state.schedule = [];
+            state.scheduleLocked = false;
+            renderSchedule();
+            return;
+          }
+
+          const days = daysBetween(state.startDate, state.endDate);
+          const defaultTime = state.schedule[0]?.startTime || "19:00";
+
+          state.schedule = days.map((date, idx) => ({
+            date,
+            // Preserve existing time for existing days; default for new ones
+            startTime:
+              state.schedule[idx]?.date === date
+                ? state.schedule[idx].startTime
+                : defaultTime,
+          }));
+          state.scheduleLocked = false;
+          renderSchedule();
+        }
+
+        function daysBetween(startISO, endISO) {
+          const out = [];
+          const cur = new Date(startISO + "T00:00:00");
+          const end = new Date(endISO + "T00:00:00");
+          while (cur <= end) {
+            out.push(cur.toISOString().slice(0, 10));
+            cur.setDate(cur.getDate() + 1);
+          }
+          return out;
+        }
+
+        function formatDay(dateISO) {
+          const d = new Date(dateISO + "T00:00:00");
+          return d.toLocaleDateString("en-NG", {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+          });
+        }
+
+        // =========================================
+        // RENDER SCHEDULE
+        // =========================================
+        function renderSchedule() {
+          // Single-day event: simple layout
+          if (state.schedule.length === 0) {
+            scheduleArea.innerHTML = "";
+            return;
+          }
+
+          if (state.schedule.length === 1) {
+            // Single day — show one time input inline
+            const row = state.schedule[0];
+            scheduleArea.innerHTML = `
+            <div class="form-group mt-4">
+              <label class="form-label" for="singleDayTime">Start time <span class="required">*</span></label>
+              <input class="form-input" type="time" id="singleDayTime" value="${row.startTime}" style="max-width:180px;">
+            </div>
+          `;
+            document
+              .getElementById("singleDayTime")
+              .addEventListener("input", (e) => {
+                state.schedule[0].startTime = e.target.value;
+                state.scheduleLocked = true; // single day: no save button needed
+              });
+            state.scheduleLocked = true;
+            return;
+          }
+
+          // Multi-day
+          if (state.scheduleLocked) {
+            // Locked state — show summary + Edit
+            const first = state.schedule[0];
+            const last = state.schedule[state.schedule.length - 1];
+            scheduleArea.innerHTML = `
+            <div class="schedule-summary mt-4">
+              <div>
+                <div class="schedule-summary-text">
+                  ✓ Schedule set — ${state.schedule.length} days
+                </div>
+                <div class="text-xs text-muted mt-1">
+                  ${formatDay(first.date)} → ${formatDay(last.date)}
+                </div>
+              </div>
+              <button type="button" class="btn btn-sm btn-secondary" id="editScheduleBtn">Edit</button>
+            </div>
+          `;
+            document
+              .getElementById("editScheduleBtn")
+              .addEventListener("click", () => {
+                state.scheduleLocked = false;
+                renderSchedule();
+              });
+          } else {
+            // Editable state
+            scheduleArea.innerHTML = `
+            <div class="mt-4">
+              <div class="text-xs fw-semibold text-muted mb-2" style="text-transform:uppercase;letter-spacing:0.06em;">
+                Daily start times
+              </div>
+              ${state.schedule
+                .map(
+                  (row, idx) => `
+                <div class="schedule-row" data-idx="${idx}">
+                  <div class="schedule-row-label">${formatDay(row.date)}</div>
+                  <input class="form-input" type="time" data-idx="${idx}" value="${row.startTime}">
+                </div>
+              `,
+                )
+                .join("")}
+
+              <div class="flex gap-2 mt-4" style="flex-wrap:wrap;">
+                <button type="button" class="btn btn-secondary btn-sm" id="applyAllBtn">
+                  Apply first day's time to all
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" id="cancelScheduleBtn">
+                  Cancel
+                </button>
+                <button type="button" class="btn btn-primary btn-sm" id="saveScheduleBtn">
+                  Save schedule
+                </button>
+              </div>
+            </div>
+          `;
+
+            // Bind time inputs
+            scheduleArea
+              .querySelectorAll("input[type='time']")
+              .forEach((inp) => {
+                inp.addEventListener("input", (e) => {
+                  const idx = parseInt(e.target.dataset.idx);
+                  state.schedule[idx].startTime = e.target.value;
+                });
+              });
+
+            document
+              .getElementById("applyAllBtn")
+              .addEventListener("click", () => {
+                const firstTime = state.schedule[0]?.startTime || "19:00";
+                state.schedule.forEach((row, idx) => {
+                  if (idx > 0) row.startTime = firstTime;
+                });
+                renderSchedule();
+                PS.toast("Applied to all days", "success");
+              });
+
+            document
+              .getElementById("cancelScheduleBtn")
+              .addEventListener("click", () => {
+                // Reset to default time
+                state.schedule.forEach((row) => (row.startTime = "19:00"));
+                renderSchedule();
+                PS.toast("Changes discarded", "info");
+              });
+
+            document
+              .getElementById("saveScheduleBtn")
+              .addEventListener("click", () => {
+                // Validate all times are set
+                const missing = state.schedule.some((r) => !r.startTime);
+                if (missing) {
+                  PS.toast("Please fill in all start times", "error");
+                  return;
+                }
+                state.scheduleLocked = true;
+                renderSchedule();
+                PS.toast("Schedule saved", "success");
+              });
+          }
+        }
+
+        /* =========================================
+         3. TICKET TYPES
+      ========================================= */
         let ticketTypeCounter = 0;
-        const ticketTypes = [];
 
         function addTicketType(defaults = {}) {
           const id = `tt_${++ticketTypeCounter}`;
-          ticketTypes.push({ id, ...defaults });
+          state.ticketTypes.push({ id, ...defaults });
           renderTicketTypes();
         }
 
         function renderTicketTypes() {
           const wrap = document.getElementById("ticketTypesList");
-          wrap.innerHTML = ticketTypes
+          wrap.innerHTML = state.ticketTypes
             .map(
               (tt, idx) => `
-          <div class="card" style="padding:var(--space-4);margin-bottom:var(--space-3);background:var(--surface-muted);" data-tt="${tt.id}">
+          <div class="card" style="padding:var(--space-4);margin-bottom:var(--space-3);background:var(--surface-muted);">
             <div class="flex justify-between items-center mb-3">
               <span class="fw-semibold text-sm">Ticket type ${idx + 1}</span>
-              ${ticketTypes.length > 1 ? `<button type="button" class="btn btn-ghost btn-sm" data-remove="${tt.id}" style="color:var(--error-color);">Remove</button>` : ""}
+              ${state.ticketTypes.length > 1 ? `<button type="button" class="btn btn-ghost btn-sm" data-remove="${tt.id}" style="color:var(--error-color);">Remove</button>` : ""}
             </div>
             <div class="form-group">
               <label class="form-label">Name</label>
@@ -385,25 +975,25 @@
             )
             .join("");
 
-          // Bind field changes
           wrap.querySelectorAll("input[data-tt-id]").forEach((inp) => {
             inp.addEventListener("input", () => {
-              const tt = ticketTypes.find((t) => t.id === inp.dataset.ttId);
+              const tt = state.ticketTypes.find(
+                (t) => t.id === inp.dataset.ttId,
+              );
               if (tt) tt[inp.dataset.field] = inp.value;
             });
           });
           wrap.querySelectorAll("[data-remove]").forEach((btn) => {
             btn.addEventListener("click", () => {
-              const idx = ticketTypes.findIndex(
+              const idx = state.ticketTypes.findIndex(
                 (t) => t.id === btn.dataset.remove,
               );
-              if (idx >= 0) ticketTypes.splice(idx, 1);
+              if (idx >= 0) state.ticketTypes.splice(idx, 1);
               renderTicketTypes();
             });
           });
         }
 
-        // Seed with one default ticket type
         addTicketType({ name: "Regular", price: 5000, qty: 100 });
 
         document
@@ -412,71 +1002,155 @@
             addTicketType({ name: "", price: "", qty: "" });
           });
 
-        // =========================================
-        // LIVE PREVIEW
-        // =========================================
+        /* =========================================
+         4. PROMO CODES
+      ========================================= */
+        function addPromo() {
+          state.promos.push({
+            code: "",
+            discountType: "percent",
+            discountValue: "",
+            maxUses: "",
+            usedCount: 0,
+          });
+          renderPromos();
+        }
+
+        function renderPromos() {
+          const wrap = document.getElementById("promoList");
+          if (state.promos.length === 0) {
+            wrap.innerHTML = `<p class="text-xs text-muted" style="text-align:center;padding:var(--space-4);">No promo codes added. Click "Add promo code" to create one.</p>`;
+            return;
+          }
+
+          wrap.innerHTML = state.promos
+            .map(
+              (p, idx) => `
+          <div class="promo-card" data-promo-idx="${idx}">
+            <div class="promo-card-head">
+              <span class="fw-semibold text-sm">Promo ${idx + 1}</span>
+              <button type="button" class="btn btn-ghost btn-sm" data-remove-promo="${idx}" style="color:var(--error-color);">Remove</button>
+            </div>
+            <div class="promo-grid">
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Code</label>
+                <input class="form-input mono" type="text" data-promo-field="code" data-promo-idx="${idx}" value="${p.code}" placeholder="EARLYBIRD" style="text-transform:uppercase;">
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Discount</label>
+                <div class="flex gap-1">
+                  <input class="form-input" type="number" min="1" data-promo-field="discountValue" data-promo-idx="${idx}" value="${p.discountValue}" placeholder="10">
+                  <select class="form-select" data-promo-field="discountType" data-promo-idx="${idx}" style="width:auto;">
+                    <option value="percent" ${p.discountType === "percent" ? "selected" : ""}>%</option>
+                    <option value="flat" ${p.discountType === "flat" ? "selected" : ""}>₦</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group" style="margin:0;">
+                <label class="form-label">Max uses</label>
+                <input class="form-input" type="number" min="1" data-promo-field="maxUses" data-promo-idx="${idx}" value="${p.maxUses}" placeholder="Unlimited">
+              </div>
+            </div>
+          </div>
+        `,
+            )
+            .join("");
+
+          wrap.querySelectorAll("[data-promo-field]").forEach((inp) => {
+            inp.addEventListener("input", (e) => {
+              const idx = parseInt(e.target.dataset.promoIdx);
+              const field = e.target.dataset.promoField;
+              let val = e.target.value;
+              if (field === "code") val = val.toUpperCase();
+              state.promos[idx][field] = val;
+            });
+          });
+          wrap.querySelectorAll("[data-remove-promo]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              state.promos.splice(parseInt(btn.dataset.removePromo), 1);
+              renderPromos();
+            });
+          });
+        }
+
+        document
+          .getElementById("addPromoBtn")
+          .addEventListener("click", addPromo);
+        renderPromos();
+
+        /* =========================================
+         5. LIVE PREVIEW
+      ========================================= */
         function updatePreview() {
           const title =
             document.getElementById("eventTitle").value.trim() || "Event title";
           const cat = document.getElementById("eventCategory").value;
-          const date = document.getElementById("eventDate").value;
-          const time = document.getElementById("eventTime").value;
+          const startDate = state.startDate;
           const city = citySel.value;
-          const state = stateSel.value;
+          const stateName = stateSel.value;
 
           document.getElementById("previewTitle").textContent = title;
-          document.getElementById("previewEmoji").textContent =
-            emojiMap[cat] || "🎫";
 
-          if (date) {
-            const d = new Date(date + "T" + (time || "00:00"));
-            document.getElementById("previewDate").textContent =
-              d.toLocaleDateString("en-NG", {
-                weekday: "short",
-                day: "numeric",
-                month: "short",
-              });
+          // Image or emoji
+          const previewMedia = document.getElementById("previewMedia");
+          if (state.imageData) {
+            previewMedia.innerHTML = `<img src="${state.imageData}" alt="" style="width:100%;height:100%;object-fit:cover;">`;
+          } else {
+            previewMedia.innerHTML = `<div class="event-card-media-placeholder" id="previewEmoji">${emojiMap[cat] || "🎫"}</div>`;
+          }
+
+          // Date
+          if (startDate) {
+            const d = new Date(startDate + "T00:00:00");
+            const dayLabel = d.toLocaleDateString("en-NG", {
+              weekday: "short",
+              day: "numeric",
+              month: "short",
+            });
+            if (state.schedule.length > 1) {
+              document.getElementById("previewDate").textContent =
+                `${dayLabel} → ${state.schedule.length} days`;
+            } else {
+              const time = state.schedule[0]?.startTime || "";
+              document.getElementById("previewDate").textContent =
+                `${dayLabel}${time ? " · " + time : ""}`;
+            }
           } else {
             document.getElementById("previewDate").textContent = "Date";
           }
 
-          if (city && state) {
+          // Location
+          if (city && stateName) {
             document.getElementById("previewLocation").textContent =
-              `${city}, ${state.replace(" (FCT)", "")}`;
+              `${city}, ${stateName.replace(" (FCT)", "")}`;
           } else {
             document.getElementById("previewLocation").textContent = "Location";
           }
         }
 
-        ["eventTitle", "eventCategory", "eventDate", "eventTime"].forEach(
-          (id) => {
-            document
-              .getElementById(id)
-              .addEventListener("input", updatePreview);
-            document
-              .getElementById(id)
-              .addEventListener("change", updatePreview);
-          },
-        );
+        ["eventTitle", "eventCategory"].forEach((id) => {
+          document.getElementById(id).addEventListener("input", updatePreview);
+          document.getElementById(id).addEventListener("change", updatePreview);
+        });
 
-        // =========================================
-        // VALIDATION & SUBMIT
-        // =========================================
+        /* =========================================
+         6. PUBLISH
+      ========================================= */
         document.getElementById("eventForm").addEventListener("submit", (e) => {
           e.preventDefault();
           let valid = true;
-          const fields = [
+
+          // Basic fields
+          [
             "eventTitle",
             "eventCategory",
             "eventDescription",
             "eventState",
             "eventCity",
             "eventVenue",
-            "eventDate",
-            "eventTime",
-          ];
-
-          fields.forEach((id) => {
+            "eventStartDate",
+            "eventEndDate",
+          ].forEach((id) => {
             const el = document.getElementById(id);
             PS.clearFieldError(el);
             if (!el.value.trim()) {
@@ -485,13 +1159,27 @@
             }
           });
 
-          if (!document.getElementById("agreeTerms").checked) {
-            PS.toast("Please confirm the event details are accurate.", "error");
+          // Schedule validation
+          if (state.schedule.length === 0) {
+            PS.toast("Please select event dates", "error");
+            valid = false;
+          } else if (!state.scheduleLocked) {
+            PS.toast("Please save your date schedule first", "error");
+            valid = false;
+          } else if (state.schedule.some((r) => !r.startTime)) {
+            PS.toast("Please set a start time for every day", "error");
             valid = false;
           }
 
-          if (ticketTypes.length === 0) {
-            PS.toast("Add at least one ticket type.", "error");
+          // Ticket types validation
+          if (state.ticketTypes.length === 0) {
+            PS.toast("Add at least one ticket type", "error");
+            valid = false;
+          }
+
+          // Terms
+          if (!document.getElementById("agreeTerms").checked) {
+            PS.toast("Please confirm the event details are accurate", "error");
             valid = false;
           }
 
@@ -501,8 +1189,22 @@
           btn.classList.add("is-loading");
           btn.disabled = true;
 
-          // Create the event in demo data
-          const id = "evt_" + Date.now().toString().slice(-6);
+          // Build event object
+          const id = "evt_" + Date.now().toString().slice(-8);
+          const firstDay = state.schedule[0];
+          const lastDay = state.schedule[state.schedule.length - 1];
+
+          // Clean promo codes — strip empty ones
+          const promos = state.promos
+            .filter((p) => p.code.trim())
+            .map((p) => ({
+              code: p.code.trim().toUpperCase(),
+              discountType: p.discountType,
+              discountValue: parseInt(p.discountValue) || 0,
+              maxUses: p.maxUses ? parseInt(p.maxUses) : null,
+              usedCount: 0,
+            }));
+
           const newEvent = {
             id,
             title: document.getElementById("eventTitle").value.trim(),
@@ -511,42 +1213,51 @@
             city: citySel.value,
             venue: document.getElementById("eventVenue").value.trim(),
             address: document.getElementById("eventAddress").value.trim(),
-            date:
-              document.getElementById("eventDate").value +
-              "T" +
-              document.getElementById("eventTime").value,
-            price: parseInt(ticketTypes[0]?.price) || 0,
+            description: document
+              .getElementById("eventDescription")
+              .value.trim(),
+            // Date fields
+            date: `${firstDay.date}T${firstDay.startTime}:00`,
+            endDate: `${lastDay.date}T${lastDay.startTime}:00`,
+            schedule: [...state.schedule],
+            // Ticket info
+            price: parseInt(state.ticketTypes[0]?.price) || 0,
             sold: 0,
-            capacity: ticketTypes.reduce(
+            capacity: state.ticketTypes.reduce(
               (sum, t) => sum + (parseInt(t.qty) || 0),
               0,
             ),
+            ticketTiers: state.ticketTypes.map((t) => ({
+              name: t.name,
+              price: parseInt(t.price) || 0,
+              qty: parseInt(t.qty) || 0,
+            })),
+            // Promo codes
+            promoCodes: promos,
+            // Image
+            imageData: state.imageData,
+            // Meta
             organizer: PS.session.getUser().name,
             emoji:
               emojiMap[document.getElementById("eventCategory").value] || "🎫",
+            createdAt: new Date().toISOString(),
           };
-          window.PS_DATA.DEMO_EVENTS.push(newEvent);
+
+          // Persist (works only if PS_DATA.saveEvent exists;
+          // otherwise pushes in memory for this session).
+          if (window.PS_DATA && typeof PS_DATA.saveEvent === "function") {
+            PS_DATA.saveEvent(newEvent);
+          } else if (window.PS_DATA && window.PS_DATA.DEMO_EVENTS) {
+            window.PS_DATA.DEMO_EVENTS.unshift(newEvent);
+          }
 
           setTimeout(() => {
             PS.toast("Event published successfully!", "success");
-            if (document.getElementById("enableAds").checked) {
-              setTimeout(() => {
-                window.location.href = "create-ad.html?eventId=" + id;
-              }, 700);
-            } else {
-              setTimeout(() => {
-                window.location.href = "my-events.html";
-              }, 700);
-            }
+            setTimeout(() => {
+              window.location.href = "my-events.html";
+            }, 700);
           }, 1000);
         });
-
-        // Save draft
-        document
-          .getElementById("saveDraftBtn")
-          .addEventListener("click", () => {
-            PS.toast("Draft saved to local storage", "info");
-          });
       });
     </script>
   </body>

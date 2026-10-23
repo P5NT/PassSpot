@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scan Ticket — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      .scan-header {
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--space-6);
+        border-bottom: 1px solid var(--border-color);
+        background-color: var(--surface-bg);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        gap: var(--space-4);
+      }
+      .scan-header .event-badge {
+        font-size: var(--fs-xs);
+        color: var(--text-secondary);
+        text-align: right;
+        line-height: 1.3;
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .scan-header .event-badge strong {
+        color: var(--text-primary);
+        display: block;
+      }
+
+      .scan-wrap {
+        max-width: 560px;
+        margin: 0 auto;
+        padding: var(--space-8) var(--space-6) var(--space-16);
+      }
+
+      .gate-screen {
+        max-width: 440px;
+        margin: 0 auto;
+        padding: var(--space-12) var(--space-6);
+        text-align: center;
+      }
+
+      .gate-icon {
+        width: 88px;
+        height: 88px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-5);
+      }
+
+      .gate-icon.error {
+        background: var(--error-bg);
+        color: var(--error-color);
+      }
+      .gate-icon.lock {
+        background: var(--surface-muted);
+        color: var(--text-tertiary);
+      }
+
+      .camera-frame {
+        aspect-ratio: 1;
+        background: linear-gradient(135deg, #0d0d0d, #27272a);
+        border-radius: var(--radius-xl);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: var(--space-5);
+        max-width: 340px;
+        margin-inline: auto;
+      }
+      .camera-frame::before,
+      .camera-frame::after {
+        content: "";
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border: 3px solid var(--accent-color);
+      }
+      .camera-frame::before {
+        top: 24px;
+        left: 24px;
+        border-right: none;
+        border-bottom: none;
+        border-radius: var(--radius-md) 0 0 0;
+      }
+      .camera-frame::after {
+        bottom: 24px;
+        right: 24px;
+        border-left: none;
+        border-top: none;
+        border-radius: 0 0 var(--radius-md) 0;
+      }
+      .camera-frame-text {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: var(--fs-sm);
+        text-align: center;
+        padding: var(--space-4);
+      }
+
+      .scan-result {
+        border-radius: var(--radius-lg);
+        padding: var(--space-6);
+        text-align: center;
+        margin-bottom: var(--space-5);
+      }
+      .scan-result.valid {
+        background-color: var(--success-bg);
+        border: 1px solid var(--success-color);
+      }
+      .scan-result.invalid {
+        background-color: var(--error-bg);
+        border: 1px solid var(--error-color);
+      }
+      .scan-result.warning {
+        background-color: var(--warning-bg);
+        border: 1px solid var(--warning-color);
+      }
+
+      .scan-result-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-3);
+      }
+      .scan-result.valid .scan-result-icon {
+        background: var(--success-color);
+        color: #fff;
+      }
+      .scan-result.invalid .scan-result-icon {
+        background: var(--error-color);
+        color: #fff;
+      }
+      .scan-result.warning .scan-result-icon {
+        background: var(--warning-color);
+        color: #fff;
+      }
+
+      .scan-result-title {
+        font-size: var(--fs-lg);
+        font-weight: 700;
+        margin-bottom: var(--space-2);
+      }
+      .scan-result-sub {
+        font-size: var(--fs-sm);
+        color: var(--text-secondary);
+      }
+
+      .counter-card {
+        background-color: var(--surface-muted);
+        border-radius: var(--radius-md);
+        padding: var(--space-4);
+        text-align: center;
+        margin-bottom: var(--space-5);
+      }
+      .counter-value {
+        font-family: var(--font-display);
+        font-size: var(--fs-2xl);
+        font-weight: 700;
+      }
+      .counter-label {
+        font-size: var(--fs-xs);
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="scan-header" id="scanHeader">
+      <a href="index.html" class="brand"
+        >Pass<span class="brand-accent">Spot</span>
+        <span
+          class="badge badge-error"
+          style="font-size: 10px; margin-left: 4px"
+          >SCAN</span
+        ></a
+      >
+      <div class="event-badge" id="eventBadge"></div>
+      <button class="icon-btn" id="themeToggle" aria-label="Toggle theme">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="4" />
+          <path
+            d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+          />
+        </svg>
+      </button>
+    </header>
+
+    <main id="scanMain"></main>
+
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const main = document.getElementById("scanMain");
+        const params = new URLSearchParams(window.location.search);
+        const passCode = params.get("pass");
+
+        // =========================================
+        // NO PASS SUPPLIED — ask for one
+        // =========================================
+        if (!passCode) {
+          renderPassEntry();
+          return;
+        }
+
+        // =========================================
+        // VALIDATE PASS
+        // =========================================
+        const validation = PS.scanners.validate(passCode.toUpperCase());
+
+        if (!validation.ok) {
+          renderInvalidPass(validation.reason);
+          return;
+        }
+
+        // Valid — render the scanner
+        renderScanner(validation.pass);
+
+        // =========================================
+        // SCREEN: Enter pass code
+        // =========================================
+        function renderPassEntry() {
+          main.innerHTML = `
+          <div class="gate-screen">
+            <div class="gate-icon lock">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+            </div>
+            <h1 class="page-title" style="margin-bottom:var(--space-2);">Scanner access</h1>
+            <p class="page-subtitle" style="margin-bottom:var(--space-6);">
+              Enter the scanner pass code you received from the event organizer.
+            </p>
+
+            <form id="passForm" class="card" style="text-align:left;">
+              <div class="form-group">
+                <label class="form-label" for="passInput">Scanner pass code <span class="required">*</span></label>
+                <input class="form-input mono" type="text" id="passInput" placeholder="SCAN-XXXX" autocomplete="off" autocapitalize="characters" required style="letter-spacing:0.1em;text-align:center;font-size:var(--fs-md);">
+                <span class="form-hint">Ask the organizer if you don't have one.</span>
+                <span class="form-error"></span>
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg btn-block">Continue</button>
+            </form>
+
+            <p class="text-xs text-muted mt-6">
+              Scanner passes are created by event organizers and can be revoked at any time.
+            </p>
+          </div>
+        `;
+
+          document
+            .getElementById("passForm")
+            .addEventListener("submit", (e) => {
+              e.preventDefault();
+              const input = document.getElementById("passInput");
+              const code = input.value.trim().toUpperCase();
+              PS.clearFieldError(input);
+
+              if (!code) {
+                PS.setFieldError(input, "Please enter your pass code.");
+                return;
+              }
+
+              const v = PS.scanners.validate(code);
+              if (!v.ok) {
+                PS.setFieldError(
+                  input,
+                  v.reason === "revoked"
+                    ? "This scanner pass has been revoked."
+                    : "Invalid scanner pass code.",
+                );
+                return;
+              }
+
+              // Redirect to scan.html?pass=CODE
+              window.location.href =
+                window.location.pathname + "?pass=" + encodeURIComponent(code);
+            });
+        }
+
+        // =========================================
+        // SCREEN: Invalid pass
+        // =========================================
+        function renderInvalidPass(reason) {
+          const message =
+            reason === "revoked"
+              ? "This scanner pass has been revoked by the organizer."
+              : "This pass code doesn't match an active scanner. Check the code or ask the organizer for a new one.";
+
+          document.getElementById("eventBadge").innerHTML = "";
+
+          main.innerHTML = `
+          <div class="gate-screen">
+            <div class="gate-icon error">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/>
+              </svg>
+            </div>
+            <h1 class="page-title" style="margin-bottom:var(--space-2);">Access denied</h1>
+            <p class="page-subtitle" style="margin-bottom:var(--space-6);">${message}</p>
+            <button class="btn btn-primary" onclick="window.location.href='scan.html'">Enter a different pass</button>
+          </div>
+        `;
+        }
+
+        // =========================================
+        // SCREEN: Working scanner
+        // =========================================
+        function renderScanner(pass) {
+          // Show event + gate in header
+          document.getElementById("eventBadge").innerHTML = `
+          <strong>${pass.eventTitle}</strong>
+          ${pass.label} · ${pass.code}
+        `;
+
+          main.innerHTML = `
+          <div class="scan-wrap">
+            <div class="mb-6 text-center">
+              <h1 class="page-title">Scan ticket</h1>
+              <p class="page-subtitle">Enter the ticket code or scan the QR at the entrance.</p>
+            </div>
+
+            <div class="counter-card">
+              <div class="counter-value" id="checkinCounter">— of —</div>
+              <div class="counter-label">Checked in</div>
+            </div>
+
+            <div class="camera-frame">
+              <div class="camera-frame-text">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 12px;opacity:0.5;">
+                  <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+                  <path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z"/>
+                </svg>
+                Camera scanning not available in demo.<br>Use manual entry below.
+              </div>
+            </div>
+
+            <form id="scanForm" class="card">
+              <div class="form-group">
+                <label class="form-label" for="tokenInput">Ticket code <span class="required">*</span></label>
+                <input class="form-input mono" type="text" id="tokenInput" placeholder="GS-XXXXXX-1-of-5" autocomplete="off" autocapitalize="characters" required>
+                <span class="form-hint">Type or paste the code from the buyer's ticket.</span>
+                <span class="form-error"></span>
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg btn-block" id="scanBtn">Validate ticket</button>
+            </form>
+
+            <div id="scanResultWrap" style="margin-top:var(--space-5);"></div>
+
+            <div class="mt-8">
+              <h3 class="section-title" style="font-size:var(--fs-lg);margin-bottom:var(--space-4);">Recent scans</h3>
+              <div class="table-wrap">
+                <div class="tx-list" id="scanHistory"></div>
+              </div>
+            </div>
+          </div>
+        `;
+
+          updateCounter(pass.eventId);
+
+          document
+            .getElementById("scanForm")
+            .addEventListener("submit", (e) => {
+              e.preventDefault();
+              const input = document.getElementById("tokenInput");
+              const token = input.value.trim().toUpperCase();
+              PS.clearFieldError(input);
+              if (!token) {
+                PS.setFieldError(input, "Please enter a ticket code.");
+                return;
+              }
+
+              const btn = document.getElementById("scanBtn");
+              btn.classList.add("is-loading");
+              btn.disabled = true;
+              setTimeout(() => {
+                processScan(token, pass);
+                btn.classList.remove("is-loading");
+                btn.disabled = false;
+              }, 500);
+            });
+
+          renderHistory();
+
+          // Optional auto-fill from URL
+          const autoToken = params.get("token");
+          if (autoToken) {
+            document.getElementById("tokenInput").value = autoToken;
+            setTimeout(
+              () => document.getElementById("scanForm").requestSubmit(),
+              300,
+            );
+          }
+        }
+
+        // =========================================
+        // COUNTER
+        // =========================================
+        function updateCounter(eventId) {
+          const stats = PS.guest.countByEvent(eventId);
+          const el = document.getElementById("checkinCounter");
+          if (el) el.textContent = `${stats.checkedIn} of ${stats.total}`;
+        }
+
+        // =========================================
+        // SCAN LOGIC
+        // =========================================
+        function processScan(token, pass) {
+          const resultWrap = document.getElementById("scanResultWrap");
+          resultWrap.innerHTML = "";
+
+          const ticket = PS.guest.findTicket(token);
+
+          // Ticket not found
+          if (!ticket) {
+            showResult(
+              "invalid",
+              "Invalid ticket",
+              `Ticket code ${token} was not found.`,
+              null,
+            );
+            PS.guest.logScan({
+              token,
+              eventTitle: pass.eventTitle,
+              attendeeName: "—",
+              result: "invalid",
+              reason: "Not found",
+            });
+            renderHistory();
+            return;
+          }
+
+          // Find the order this ticket belongs to
+          const order = PS.guest.getOrderForTicket(token);
+
+          // Wrong event
+          if (!order || order.eventId !== pass.eventId) {
+            showResult(
+              "warning",
+              "Wrong event",
+              "This ticket is for a different event. Do not admit.",
+              ticket,
+            );
+            PS.guest.logScan({
+              token,
+              eventTitle: order?.eventTitle || "—",
+              attendeeName: ticket.attendeeName,
+              result: "wrong_event",
+              reason: "Different event",
+            });
+            renderHistory();
+            return;
+          }
+
+          // Already used
+          if (ticket.used) {
+            const usedTime = PS.formatDateTime(ticket.usedAt);
+            showResult(
+              "warning",
+              "Already checked in",
+              `This ticket was scanned at ${usedTime}. Do not admit again.`,
+              ticket,
+            );
+            PS.guest.logScan({
+              token,
+              eventTitle: pass.eventTitle,
+              attendeeName: ticket.attendeeName,
+              result: "reused",
+              reason: `Used at ${usedTime}`,
+            });
+            renderHistory();
+            return;
+          }
+
+          // Valid — mark used
+          const updated = PS.guest.markUsed(token);
+          PS.scanners.incrementScan(pass.code);
+
+          showResult(
+            "valid",
+            "Admit attendee",
+            `${updated.attendeeName || "Unassigned"} · Ticket ${updated.index} of ${updated.total}`,
+            updated,
+          );
+          PS.guest.logScan({
+            token,
+            eventTitle: pass.eventTitle,
+            attendeeName: updated.attendeeName || "Unassigned",
+            result: "admitted",
+            reason: pass.label,
+          });
+
+          updateCounter(pass.eventId);
+          renderHistory();
+
+          const input = document.getElementById("tokenInput");
+          input.value = "";
+          input.focus();
+        }
+
+        // =========================================
+        // RESULT DISPLAY
+        // =========================================
+        function showResult(status, title, sub, ticket) {
+          const icons = {
+            valid:
+              '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+            invalid:
+              '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>',
+            warning:
+              '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01"/></svg>',
+          };
+
+          document.getElementById("scanResultWrap").innerHTML = `
+          <div class="scan-result ${status}">
+            <div class="scan-result-icon">${icons[status]}</div>
+            <div class="scan-result-title">${title}</div>
+            <div class="scan-result-sub">${sub}</div>
+            ${ticket ? `<div class="mt-4 text-xs mono" style="color:var(--text-tertiary);">${ticket.token}</div>` : ""}
+          </div>
+        `;
+        }
+
+        // =========================================
+        // SCAN HISTORY
+        // =========================================
+        function renderHistory() {
+          const scans = PS.guest.allScans().slice(0, 8);
+          const wrap = document.getElementById("scanHistory");
+
+          if (scans.length === 0) {
+            wrap.innerHTML = `<div class="empty-state" style="padding:var(--space-8);"><p class="text-sm text-muted">No scans yet.</p></div>`;
+            return;
+          }
+
+          wrap.innerHTML = scans
+            .map((s) => {
+              const isOk = s.result === "admitted";
+              const isWarn =
+                s.result === "reused" || s.result === "wrong_event";
+              const cls = isOk
+                ? "badge-success"
+                : isWarn
+                  ? "badge-warning"
+                  : "badge-error";
+              const iconCls = isOk ? "in" : isWarn ? "pending" : "out";
+              return `
+            <div class="tx-row" style="cursor:default;">
+              <div class="tx-icon ${iconCls}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                  ${isOk ? '<path d="M20 6 9 17l-5-5"/>' : '<circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/>'}
+                </svg>
+              </div>
+              <div class="tx-main">
+                <div class="tx-title text-sm mono">${s.token}</div>
+                <div class="tx-meta">${s.reason} · ${PS.formatDateTime(s.at)}</div>
+              </div>
+              <span class="badge ${cls}">${s.result.replace("_", " ")}</span>
+            </div>
+          `;
+            })
+            .join("");
+        }
+      });
+    </script>
+  </body>
+</html>

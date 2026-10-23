@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recover Tickets — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      .recovery-header {
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--space-6);
+        border-bottom: 1px solid var(--border-color);
+        background-color: var(--surface-bg);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+      }
+      .recovery-wrap {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: var(--space-10) var(--space-6) var(--space-16);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="recovery-header">
+      <a href="index.html" class="brand"
+        >Pass<span class="brand-accent">Spot</span></a
+      >
+      <button class="icon-btn" id="themeToggle" aria-label="Toggle theme">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="4" />
+          <path
+            d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+          />
+        </svg>
+      </button>
+    </header>
+
+    <main>
+      <div class="recovery-wrap">
+        <div class="text-center mb-8">
+          <h1 class="page-title">Find your tickets</h1>
+          <p class="page-subtitle">Enter the email you used at checkout.</p>
+        </div>
+
+        <form id="recoveryForm" class="card mb-6">
+          <div class="form-group">
+            <label class="form-label" for="recoverEmail"
+              >Email address <span class="required">*</span></label
+            >
+            <input
+              class="form-input"
+              type="email"
+              id="recoverEmail"
+              placeholder="you@example.com"
+              autocomplete="email"
+              required
+            />
+            <span class="form-error"></span>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg btn-block">
+            Find my orders
+          </button>
+        </form>
+
+        <div id="recoveryResults"></div>
+      </div>
+    </main>
+
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("recoveryForm");
+        const input = document.getElementById("recoverEmail");
+        const results = document.getElementById("recoveryResults");
+
+        form.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const email = input.value.trim();
+          PS.clearFieldError(input);
+
+          if (!email) {
+            PS.setFieldError(input, "Please enter your email.");
+            return;
+          }
+          if (!PS.validateEmail(email)) {
+            PS.setFieldError(input, "Please enter a valid email.");
+            return;
+          }
+
+          const orders = PS.guest.findOrdersByEmail(email);
+
+          if (orders.length === 0) {
+            results.innerHTML = `
+            <div class="card text-center">
+              <div class="empty-state">
+                <div class="empty-state-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                </div>
+                <h3 class="empty-state-title">No orders found</h3>
+                <p class="empty-state-text">We couldn't find any tickets under <strong>${email}</strong>.</p>
+                <a href="index.html" class="btn btn-primary">Discover events</a>
+              </div>
+            </div>`;
+            return;
+          }
+
+          results.innerHTML = orders
+            .map(
+              (order) => `
+          <div class="card mb-4">
+            <div class="flex justify-between items-start mb-3" style="flex-wrap:wrap;gap:var(--space-2);">
+              <div>
+                <div class="fw-bold">${order.eventTitle}</div>
+                <div class="text-xs text-muted">${PS.formatDate(order.eventDate)} · ${order.eventVenue}</div>
+              </div>
+              <span class="badge badge-success">${order.qty} ticket${order.qty > 1 ? "s" : ""}</span>
+            </div>
+
+            <div class="summary-row">
+              <span class="text-muted text-sm">Order ID</span>
+              <span class="mono fw-semibold text-sm">${order.orderId}</span>
+            </div>
+            <div class="summary-row">
+              <span class="text-muted text-sm">Ticket type</span>
+              <span class="fw-semibold text-sm">${order.ticketType}</span>
+            </div>
+            <div class="summary-row total">
+              <span>Total paid</span>
+              <span>${PS.formatMoney(order.total, order.currency)}</span>
+            </div>
+
+            <div class="mt-4">
+              <div class="text-xs text-muted mb-2">Ticket codes</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                ${order.tickets
+                  .map(
+                    (t) => `
+                  <div class="flex justify-between items-center text-xs mono" style="padding:6px 10px;background:var(--surface-muted);border-radius:var(--radius-sm);">
+                    <span>${t.token}</span>
+                    <span class="badge ${t.used ? "badge-error" : "badge-success"}">${t.used ? "Used" : "Valid"}</span>
+                  </div>
+                `,
+                  )
+                  .join("")}
+              </div>
+            </div>
+
+            <div class="info-panel success mt-4">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span>Present each ticket code at the entrance.</span>
+            </div>
+          </div>
+        `,
+            )
+            .join("");
+        });
+      });
+    </script>
+  </body>
+</html>

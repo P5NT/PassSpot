@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PassSpot — Wallet</title>
+    <title>Wallet — Pass Spot</title>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
@@ -18,18 +18,13 @@
   </head>
   <body>
     <div class="app-layout">
-      <!-- Sidebar (rendered by JS) -->
       <aside class="sidebar" id="appSidebar"></aside>
       <div class="sidebar-overlay"></div>
 
       <div class="main-area">
-        <!-- Topbar (rendered by JS) -->
         <header class="topbar" id="appTopbar"></header>
 
         <main class="page-content">
-          <!-- =========================================
-             PAGE HEADER
-        ========================================= -->
           <div class="page-header">
             <div>
               <h2 class="page-title">Wallet</h2>
@@ -69,12 +64,6 @@
             </div>
           </div>
 
-          <!-- =========================================
-             BALANCE HERO
-             Shows balance, available, pending, and
-             a currency switcher integrated for quick
-             access without leaving the page.
-        ========================================= -->
           <section class="balance-hero">
             <div class="balance-hero-content">
               <div
@@ -87,9 +76,7 @@
                     ₦125,000.00
                   </div>
                 </div>
-
-                <!-- Currency switcher (mirrors the header one) -->
-                <div
+                <!-- <div
                   class="currency-switch"
                   role="group"
                   aria-label="Currency"
@@ -98,8 +85,7 @@
                   <button
                     type="button"
                     data-currency-switch="NGN"
-                    class="is-active"
-                    style="color: #fff"
+                    style="color: var(--primary-color)"
                   >
                     ₦ NGN
                   </button>
@@ -110,7 +96,7 @@
                   >
                     $ USD
                   </button>
-                </div>
+                </div> -->
               </div>
 
               <div class="balance-split">
@@ -152,9 +138,6 @@
             </div>
           </section>
 
-          <!-- =========================================
-             QUICK STATS
-        ========================================= -->
           <section class="stats-grid" style="margin-top: var(--space-6)">
             <div class="stat-card">
               <div class="stat-card-head">
@@ -191,9 +174,7 @@
                   </svg>
                 </span>
               </div>
-              <div class="stat-value" id="statMoneyIn" data-money="250000">
-                ₦250,000.00
-              </div>
+              <div class="stat-value" id="statMoneyIn">₦250,000.00</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
@@ -211,9 +192,7 @@
                   </svg>
                 </span>
               </div>
-              <div class="stat-value" id="statMoneyOut" data-money="150000">
-                ₦150,000.00
-              </div>
+              <div class="stat-value" id="statMoneyOut">₦150,000.00</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
@@ -232,17 +211,10 @@
                   </svg>
                 </span>
               </div>
-              <div class="stat-value" id="statPending" data-money="15000">
-                ₦15,000.00
-              </div>
+              <div class="stat-value" id="statPending">₦15,000.00</div>
             </div>
           </section>
 
-          <!-- =========================================
-             TRANSACTION HISTORY
-             Tabs filter by type; search + status
-             filter are functional via JS.
-        ========================================= -->
           <div
             class="flex justify-between items-center mt-8 mb-4"
             style="flex-wrap: wrap; gap: var(--space-4)"
@@ -323,27 +295,16 @@
     <script src="js/data.js"></script>
     <script src="js/script.js"></script>
     <script>
-      /* =========================================
-       WALLET PAGE LOGIC
-       Handles balance display, stat totals,
-       transaction filtering, searching, and
-       sorting — all client-side.
-    ========================================= */
       document.addEventListener("DOMContentLoaded", () => {
-        // Inject the shared app shell
         window.PS_SHELL.renderSidebar("wallet");
         window.PS_SHELL.renderTopbar("Wallet");
 
-        // ---------- Local state ----------
         let activeTab = "all";
         let activeStatus = "";
         let activeSearch = "";
         let activeSort = "date-desc";
-
-        // Pending amount is a fixed demo value
         const PENDING = 15000;
 
-        // ---------- Balance rendering ----------
         function renderBalance() {
           const cur = PS.getCurrency();
           const balance = PS.wallet.getBalance();
@@ -359,7 +320,6 @@
             cur,
           );
 
-          // Compute total in / total out from demo transactions
           const allTx = window.PS_DATA.DEMO_TRANSACTIONS;
           const totalIn = allTx
             .filter((t) => t.amount > 0)
@@ -375,11 +335,9 @@
           document.getElementById("walletTotalOut").textContent =
             PS.formatMoney(totalOut, cur);
 
-          // Sync header wallet chip
           const headerBal = document.getElementById("headerBalance");
           if (headerBal) headerBal.textContent = PS.formatMoney(balance, cur);
 
-          // Sync stat cards
           document.getElementById("statMonthTx").textContent = allTx.length;
           document.getElementById("statMoneyIn").textContent = PS.formatMoney(
             totalIn,
@@ -395,24 +353,16 @@
           );
         }
 
-        // ---------- Transaction list rendering ----------
         function renderTransactions() {
           const listEl = document.getElementById("txList");
           let list = [...window.PS_DATA.DEMO_TRANSACTIONS];
 
-          // Type filter via tabs
-          if (activeTab !== "all") {
+          if (activeTab !== "all")
             list = list.filter((t) => t.type === activeTab);
-          }
-
-          // Status filter
-          if (activeStatus) {
+          if (activeStatus)
             list = list.filter(
               (t) => t.status.toLowerCase() === activeStatus.toLowerCase(),
             );
-          }
-
-          // Search
           if (activeSearch) {
             list = list.filter(
               (t) =>
@@ -422,7 +372,6 @@
             );
           }
 
-          // Sort
           if (activeSort === "date-desc")
             list.sort((a, b) => new Date(b.date) - new Date(a.date));
           else if (activeSort === "date-asc")
@@ -432,7 +381,6 @@
           else if (activeSort === "amount-asc")
             list.sort((a, b) => Math.abs(a.amount) - Math.abs(b.amount));
 
-          // Empty state
           if (list.length === 0) {
             listEl.innerHTML = `
             <div class="empty-state" style="padding:var(--space-12) var(--space-6);">
@@ -454,7 +402,6 @@
             return;
           }
 
-          // Render rows
           const cur = PS.getCurrency();
           const statusClass = {
             completed: "badge-success",
@@ -491,7 +438,6 @@
             .join("");
         }
 
-        // ---------- Tab switching ----------
         document.querySelectorAll(".tab").forEach((tab) => {
           tab.addEventListener("click", () => {
             document
@@ -503,7 +449,6 @@
           });
         });
 
-        // ---------- Filters ----------
         document.getElementById("txStatus").addEventListener("change", (e) => {
           activeStatus = e.target.value;
           renderTransactions();
@@ -519,13 +464,11 @@
           renderTransactions();
         });
 
-        // ---------- React to currency changes ----------
         document.addEventListener("ps:currencychange", () => {
           renderBalance();
           renderTransactions();
         });
 
-        // ---------- Initial render ----------
         renderBalance();
         renderTransactions();
       });

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PassSpot — Settings</title>
+    <title>Settings — Pass Spot</title>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
@@ -32,7 +32,6 @@
             </div>
           </div>
 
-          <!-- Settings navigation -->
           <div
             style="
               display: grid;
@@ -80,13 +79,64 @@
       </div>
     </div>
 
+    <div class="modal-overlay" id="upgradeModal">
+      <div class="modal modal-sm">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title">Become an organizer?</h3>
+            <p class="modal-subtitle">
+              You'll gain access to event creation, sales analytics, and
+              advertising.
+            </p>
+          </div>
+          <button
+            class="modal-close"
+            onclick="PS.closeModal('upgradeModal')"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="info-panel success">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+            <div>
+              <div class="fw-semibold text-sm">
+                You'll keep all attendee abilities
+              </div>
+              <div class="text-xs" style="margin-top: 4px">
+                Buy tickets, save favorites, and manage your wallet as before —
+                plus create events and earn revenue.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="PS.closeModal('upgradeModal')"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="confirmUpgrade">
+            Upgrade to organizer
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="js/data.js"></script>
     <script src="js/script.js"></script>
     <script>
-      /* =========================================
-       SETTINGS PAGE
-       Tabbed sections with local persistence.
-    ========================================= */
       document.addEventListener("DOMContentLoaded", () => {
         window.PS_SHELL.renderSidebar("settings");
         window.PS_SHELL.renderTopbar("Settings");
@@ -103,11 +153,51 @@
         });
 
         const user = PS.session.getUser();
+        const isOrganizer = PS.session.isOrganizer();
 
+        // =========================================
+        // SECTIONS
+        // =========================================
         const sections = {
           account: `
+          <div class="card mb-4">
+            <h3 class="card-title mb-4">Account status</h3>
+            <div class="flex justify-between items-center" style="gap:var(--space-4);flex-wrap:wrap;">
+              <div>
+                <div class="text-sm fw-semibold">${isOrganizer ? "Organizer" : "Attendee"}</div>
+                <div class="text-xs text-muted" style="margin-top:2px;">
+                  ${
+                    isOrganizer
+                      ? "You have full organizer and attendee abilities."
+                      : "You can buy tickets and manage your wallet. Upgrade anytime to start selling."
+                  }
+                </div>
+              </div>
+              <span class="badge ${isOrganizer ? "badge-primary" : "badge-neutral"}">${isOrganizer ? "Organizer" : "Attendee"}</span>
+            </div>
+            ${
+              isOrganizer
+                ? `
+              <div class="info-panel success mt-4">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+                <span>You're an organizer. Manage your events from the sidebar.</span>
+              </div>
+            `
+                : `
+              <div class="info-panel mt-4">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                <div>
+                  <div class="fw-semibold text-sm">Want to host events?</div>
+                  <div class="text-xs" style="margin-top:4px;">Upgrade to organizer to create events, track sales, and run ad campaigns. You keep all attendee abilities.</div>
+                  <button class="btn btn-primary btn-sm mt-3" id="openUpgrade">Become an organizer</button>
+                </div>
+              </div>
+            `
+            }
+          </div>
+
           <div class="card">
-            <h3 class="card-title mb-4">Account</h3>
+            <h3 class="card-title mb-4">Personal details</h3>
             <div class="form-group">
               <label class="form-label">Full name</label>
               <input class="form-input" type="text" id="setName" value="${user.name}">
@@ -237,6 +327,9 @@
         `,
         };
 
+        // =========================================
+        // RENDER + BIND
+        // =========================================
         function renderSection(key) {
           document.getElementById("settingsContent").innerHTML = sections[key];
           bindSection(key);
@@ -244,6 +337,14 @@
 
         function bindSection(key) {
           if (key === "account") {
+            // Upgrade button (attendees only)
+            const upgradeBtn = document.getElementById("openUpgrade");
+            if (upgradeBtn) {
+              upgradeBtn.addEventListener("click", () =>
+                PS.openModal("upgradeModal"),
+              );
+            }
+
             document
               .getElementById("saveAccount")
               .addEventListener("click", () => {
@@ -257,6 +358,7 @@
                 PS.toast("Account updated", "success");
               });
           }
+
           if (key === "appearance") {
             document.querySelectorAll("[data-theme-pick]").forEach((btn) => {
               btn.addEventListener("click", () => {
@@ -271,6 +373,7 @@
               });
             });
           }
+
           if (key === "notifications") {
             document
               .getElementById("saveNotif")
@@ -283,6 +386,7 @@
                 PS.toast("Notification preferences saved", "success");
               });
           }
+
           if (key === "currency") {
             document.querySelectorAll('input[name="prefCur"]').forEach((r) => {
               r.addEventListener("change", () => {
@@ -292,6 +396,7 @@
               });
             });
           }
+
           if (key === "location") {
             const stateSel = document.getElementById("setState");
             const citySel = document.getElementById("setCity");
@@ -325,6 +430,7 @@
                 PS.toast("Location updated", "success");
               });
           }
+
           if (key === "security") {
             document
               .getElementById("savePassword")
@@ -342,6 +448,7 @@
                 PS.toast("Password updated (demo only)", "success");
               });
           }
+
           if (key === "privacy") {
             document
               .getElementById("deleteAccount")
@@ -356,6 +463,28 @@
           }
         }
 
+        // =========================================
+        // UPGRADE MODAL
+        // =========================================
+        document
+          .getElementById("confirmUpgrade")
+          .addEventListener("click", (e) => {
+            const btn = e.currentTarget;
+            btn.classList.add("is-loading");
+            btn.disabled = true;
+
+            setTimeout(() => {
+              PS.session.upgradeToOrganizer();
+              PS.closeModal("upgradeModal");
+              PS.toast("You're now an organizer! 🎉", "success");
+              // Reload after a short delay so the sidebar/topbar re-render with the new role
+              setTimeout(() => window.location.reload(), 900);
+            }, 700);
+          });
+
+        // =========================================
+        // SECTION TABS
+        // =========================================
         document.querySelectorAll("[data-section]").forEach((btn) => {
           btn.addEventListener("click", () => {
             document

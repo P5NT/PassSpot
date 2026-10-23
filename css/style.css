@@ -1650,7 +1650,7 @@ h5 {
   padding: var(--space-1) var(--space-3);
   font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
-  color: var(--text-secondary);
+  color: var(--text-primary);
   border-radius: var(--radius-sm);
   transition: all var(--transition-fast);
 }
