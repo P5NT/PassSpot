@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Categories — Admin — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Categories</h2>
+              <p class="page-subtitle">
+                Manage event categories shown on discovery and creation.
+              </p>
+            </div>
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: var(--space-8);
+            "
+            id="catGrid"
+          >
+            <!-- ADD -->
+            <div>
+              <div class="card">
+                <h3 class="card-title mb-4">Add a category</h3>
+                <div class="form-group">
+                  <label class="form-label" for="newCatName"
+                    >Category name</label
+                  >
+                  <div class="flex gap-2">
+                    <input
+                      class="form-input"
+                      type="text"
+                      id="newCatName"
+                      placeholder="e.g. Wellness"
+                    />
+                    <button class="btn btn-primary" id="addCatBtn">Add</button>
+                  </div>
+                  <span class="form-error"></span>
+                </div>
+                <div class="info-panel">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 16v-4M12 8h.01" />
+                  </svg>
+                  <span
+                    >New categories are immediately available when organizers
+                    create events.</span
+                  >
+                </div>
+              </div>
+
+              <div class="card mt-4">
+                <h3 class="card-title mb-3">Category stats</h3>
+                <div class="summary-row">
+                  <span class="text-muted text-sm">Total categories</span>
+                  <span class="fw-semibold text-sm" id="catTotal">0</span>
+                </div>
+                <div class="summary-row">
+                  <span class="text-muted text-sm">Custom (admin-added)</span>
+                  <span class="fw-semibold text-sm" id="catCustom">0</span>
+                </div>
+                <div class="summary-row">
+                  <span class="text-muted text-sm">Default (built-in)</span>
+                  <span class="fw-semibold text-sm" id="catDefaults">0</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- LIST -->
+            <div>
+              <div class="card">
+                <h3 class="card-title mb-4">All categories</h3>
+                <div id="catList"></div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (!PS.session.requireAdmin()) return;
+
+        window.PS_ADMIN.renderSidebar("categories");
+        window.PS_ADMIN.renderTopbar("Categories");
+
+        const nameEl = document.getElementById("newCatName");
+        const addBtn = document.getElementById("addCatBtn");
+
+        // =========================================
+        // RENDER
+        // =========================================
+        function render() {
+          const all = PS_DATA.getCategories();
+          const custom = PS_DATA.loadCustomCategories();
+          const defaults = all.filter((c) => !custom.includes(c));
+
+          document.getElementById("catTotal").textContent = all.length;
+          document.getElementById("catCustom").textContent = custom.length;
+          document.getElementById("catDefaults").textContent = defaults.length;
+
+          const list = document.getElementById("catList");
+          if (all.length === 0) {
+            list.innerHTML = `<p class="text-sm text-muted" style="text-align:center;padding:var(--space-6);">No categories yet. Add the first one on the left.</p>`;
+            return;
+          }
+
+          list.innerHTML = `
+          <div class="flex gap-2" style="flex-wrap:wrap;">
+            ${all
+              .map((c) => {
+                const isCustom = custom.includes(c);
+                return `
+                <span class="badge ${isCustom ? "badge-primary" : "badge-neutral"}" style="padding:8px 12px;font-size:var(--fs-sm);display:inline-flex;align-items:center;gap:6px;">
+                  ${c}
+                  ${isCustom ? `<button type="button" data-remove="${c}" style="background:none;border:none;color:inherit;cursor:pointer;font-size:14px;line-height:1;opacity:0.7;" aria-label="Remove">✕</button>` : ""}
+                </span>
+              `;
+              })
+              .join("")}
+          </div>
+          <p class="form-hint mt-4">Custom categories (purple) can be removed. Default categories are built-in.</p>
+        `;
+
+          list.querySelectorAll("[data-remove]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const name = btn.dataset.remove;
+              if (!confirm(`Remove "${name}" from categories?`)) return;
+              PS_DATA.removeCategory(name);
+              PS.toast(`Category "${name}" removed`, "success");
+              render();
+            });
+          });
+        }
+
+        // =========================================
+        // ADD CATEGORY
+        // =========================================
+        addBtn.addEventListener("click", () => {
+          const name = nameEl.value.trim();
+          PS.clearFieldError(nameEl);
+          if (!name) {
+            PS.setFieldError(nameEl, "Please enter a category name.");
+            return;
+          }
+
+          const all = PS_DATA.getCategories();
+          if (all.map((c) => c.toLowerCase()).includes(name.toLowerCase())) {
+            PS.setFieldError(nameEl, "This category already exists.");
+            return;
+          }
+
+          const ok = PS_DATA.addCategory(name);
+          if (ok) {
+            nameEl.value = "";
+            PS.toast(`Category "${name}" added`, "success");
+            render();
+          } else {
+            PS.setFieldError(nameEl, "Could not add this category.");
+          }
+        });
+
+        nameEl.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            addBtn.click();
+          }
+        });
+
+        render();
+      });
+    </script>
+  </body>
+</html>

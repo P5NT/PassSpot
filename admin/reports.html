@@ -56,43 +56,41 @@
             </div>
           </div>
 
-          <!-- KPI GRID -->
           <section class="stats-grid">
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Revenue</span>
-                <span class="stat-icon success">💰</span>
+                <span class="stat-label">Revenue</span
+                ><span class="stat-icon success">💰</span>
               </div>
               <div class="stat-value" data-money="48200000">₦48,200,000.00</div>
               <div class="stat-change up">↑ 12.4%</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">New users</span>
-                <span class="stat-icon">👥</span>
+                <span class="stat-label">New users</span
+                ><span class="stat-icon">👥</span>
               </div>
               <div class="stat-value">2,148</div>
               <div class="stat-change up">↑ 8.1%</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Events created</span>
-                <span class="stat-icon info">🎫</span>
+                <span class="stat-label">Events created</span
+                ><span class="stat-icon info">🎫</span>
               </div>
               <div class="stat-value">184</div>
               <div class="stat-change up">↑ 22 new</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Ad revenue</span>
-                <span class="stat-icon warning">📊</span>
+                <span class="stat-label">Ad revenue</span
+                ><span class="stat-icon warning">📊</span>
               </div>
               <div class="stat-value" data-money="1240000">₦1,240,000.00</div>
               <div class="stat-change up">↑ 15.6%</div>
             </div>
           </section>
 
-          <!-- CHARTS -->
           <div
             style="
               display: grid;
@@ -147,7 +145,6 @@
             </div>
           </div>
 
-          <!-- AVAILABLE REPORTS -->
           <div class="card mb-6">
             <h3 class="card-title mb-4">Available reports</h3>
             <div
@@ -174,7 +171,7 @@
               >
                 <div class="feature-icon">👥</div>
                 <h3 class="feature-title">User activity</h3>
-                <p class="feature-desc">Signups, retention, and engagement.</p>
+                <p class="feature-desc">Signups, retention, engagement.</p>
               </div>
               <div
                 class="feature-card"
@@ -183,7 +180,7 @@
               >
                 <div class="feature-icon">🎫</div>
                 <h3 class="feature-title">Event performance</h3>
-                <p class="feature-desc">Sales, attendance, and conversion.</p>
+                <p class="feature-desc">Sales, attendance, conversion.</p>
               </div>
               <div
                 class="feature-card"
@@ -192,7 +189,7 @@
               >
                 <div class="feature-icon">📊</div>
                 <h3 class="feature-title">Advertising report</h3>
-                <p class="feature-desc">Impressions, clicks, CTR, and spend.</p>
+                <p class="feature-desc">Impressions, clicks, CTR, spend.</p>
               </div>
               <div
                 class="feature-card"
@@ -201,7 +198,7 @@
               >
                 <div class="feature-icon">🏦</div>
                 <h3 class="feature-title">Withdrawals report</h3>
-                <p class="feature-desc">Requests, approvals, and payouts.</p>
+                <p class="feature-desc">Requests, approvals, payouts.</p>
               </div>
               <div
                 class="feature-card"
@@ -215,7 +212,6 @@
             </div>
           </div>
 
-          <!-- RECENTLY GENERATED -->
           <div class="table-wrap">
             <div class="table-scroll">
               <table class="table">
@@ -277,32 +273,6 @@
                       </button>
                     </td>
                   </tr>
-                  <tr>
-                    <td data-label="Report">
-                      <span class="fw-semibold text-sm"
-                        >Advertising report</span
-                      >
-                    </td>
-                    <td data-label="Period">
-                      <span class="text-sm">Q4 2025</span>
-                    </td>
-                    <td data-label="Format">
-                      <span class="badge badge-neutral">CSV</span>
-                    </td>
-                    <td data-label="Generated">
-                      <span class="text-sm text-muted"
-                        >Nov 25, 2025 · 16:42</span
-                      >
-                    </td>
-                    <td data-label="Actions">
-                      <button
-                        class="btn btn-sm btn-secondary"
-                        onclick="PS.toast('Demo download', 'info')"
-                      >
-                        Download
-                      </button>
-                    </td>
-                  </tr>
                 </tbody>
               </table>
             </div>
@@ -314,15 +284,12 @@
     <script src="../js/data.js"></script>
     <script src="../js/script.js"></script>
     <script>
-      /* =========================================
-       ADMIN REPORTS PAGE
-       Aggregated analytics + report generation.
-    ========================================= */
       document.addEventListener("DOMContentLoaded", () => {
+        if (!PS.session.requireAdmin()) return;
+
         window.PS_ADMIN.renderSidebar("reports");
         window.PS_ADMIN.renderTopbar("Reports");
 
-        // ---------- Render revenue chart ----------
         const data = [55, 68, 60, 78, 88, 72, 95, 82, 90, 100, 88, 95];
         const max = Math.max(...data);
         const months = [
@@ -339,7 +306,6 @@
           "Nov",
           "Dec",
         ];
-
         document.getElementById("revChart").innerHTML = data
           .map(
             (v, i) => `
@@ -351,17 +317,13 @@
           )
           .join("");
 
-        // ---------- Click a report card to generate ----------
         document.querySelectorAll("[data-report]").forEach((card) => {
           card.addEventListener("click", () => {
             const report = card.dataset.report;
             const period = document.getElementById("reportPeriod").value;
             PS.toast(`Generating ${report} report (${period})…`, "info");
-
             setTimeout(() => {
               PS.toast(`${report} report ready to download`, "success");
-
-              // Prepend a new row to the history table
               const tbody = document.getElementById("reportHistory");
               const tr = document.createElement("tr");
               const now = new Date();
@@ -377,26 +339,24 @@
               <td data-label="Period"><span class="text-sm">${period}</span></td>
               <td data-label="Format"><span class="badge badge-neutral">CSV</span></td>
               <td data-label="Generated"><span class="text-sm text-muted">${dateStr}</span></td>
-              <td data-label="Actions">
-                <button class="btn btn-sm btn-secondary" onclick="PS.toast('Demo download','info')">Download</button>
-              </td>
+              <td data-label="Actions"><button class="btn btn-sm btn-secondary" onclick="PS.toast('Demo download','info')">Download</button></td>
             `;
               tbody.insertBefore(tr, tbody.firstChild);
             }, 900);
           });
         });
 
-        // ---------- Export button ----------
         document.getElementById("exportBtn").addEventListener("click", () => {
           PS.toast("Preparing export…", "info");
           setTimeout(() => PS.toast("Export downloaded", "success"), 800);
         });
 
-        // ---------- Currency updates ----------
         document.addEventListener("ps:currencychange", () => {
           PS.qsa("[data-money]").forEach((el) => {
-            const base = parseFloat(el.dataset.money);
-            el.textContent = PS.formatMoney(base, PS.getCurrency());
+            el.textContent = PS.formatMoney(
+              parseFloat(el.dataset.money),
+              PS.getCurrency(),
+            );
           });
         });
       });

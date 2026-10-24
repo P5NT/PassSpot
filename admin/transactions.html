@@ -32,39 +32,37 @@
             </div>
           </div>
 
-          <!-- STAT CARDS -->
           <section class="stats-grid">
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Total transactions</span>
-                <span class="stat-icon">📊</span>
+                <span class="stat-label">Total transactions</span
+                ><span class="stat-icon">📊</span>
               </div>
               <div class="stat-value" id="txTotal">0</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Total in</span>
-                <span class="stat-icon success">⬇</span>
+                <span class="stat-label">Total in</span
+                ><span class="stat-icon success">⬇</span>
               </div>
               <div class="stat-value" id="txIn">₦0.00</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Total out</span>
-                <span class="stat-icon error">⬆</span>
+                <span class="stat-label">Total out</span
+                ><span class="stat-icon error">⬆</span>
               </div>
               <div class="stat-value" id="txOut">₦0.00</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Pending</span>
-                <span class="stat-icon warning">⏳</span>
+                <span class="stat-label">Pending</span
+                ><span class="stat-icon warning">⏳</span>
               </div>
               <div class="stat-value" id="txPending">0</div>
             </div>
           </section>
 
-          <!-- FILTERS -->
           <div class="filter-bar">
             <div class="filter-search">
               <svg
@@ -122,7 +120,6 @@
             </select>
           </div>
 
-          <!-- TRANSACTIONS TABLE -->
           <div class="table-wrap">
             <div class="table-scroll">
               <table class="table">
@@ -148,12 +145,9 @@
     <script src="../js/data.js"></script>
     <script src="../js/script.js"></script>
     <script>
-      /* =========================================
-       ADMIN TRANSACTIONS PAGE
-       Read-only monitor of all financial
-       activity across the platform.
-    ========================================= */
       document.addEventListener("DOMContentLoaded", () => {
+        if (!PS.session.requireAdmin()) return;
+
         window.PS_ADMIN.renderSidebar("transactions");
         window.PS_ADMIN.renderTopbar("Transactions");
 
@@ -197,8 +191,6 @@
         function render() {
           let list = [...window.PS_DATA.DEMO_TRANSACTIONS];
           const q = searchEl.value.trim().toLowerCase();
-
-          // Search
           if (q) {
             list = list.filter(
               (t) =>
@@ -207,18 +199,12 @@
                 t.type.toLowerCase().includes(q),
             );
           }
-
-          // Type filter
           if (typeEl.value) list = list.filter((t) => t.type === typeEl.value);
-
-          // Status filter
-          if (statusEl.value) {
+          if (statusEl.value)
             list = list.filter(
               (t) => t.status.toLowerCase() === statusEl.value.toLowerCase(),
             );
-          }
 
-          // Sorting
           const sort = sortEl.value;
           if (sort === "date-desc")
             list.sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -230,20 +216,7 @@
             list.sort((a, b) => Math.abs(a.amount) - Math.abs(b.amount));
 
           if (list.length === 0) {
-            tbody.innerHTML = `
-            <tr>
-              <td colspan="7">
-                <div class="empty-state" style="padding:var(--space-8);">
-                  <div class="empty-state-icon">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-                    </svg>
-                  </div>
-                  <h3 class="empty-state-title">No transactions found</h3>
-                  <p class="empty-state-text">Try adjusting your filters.</p>
-                </div>
-              </td>
-            </tr>`;
+            tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state" style="padding:var(--space-8);"><h3 class="empty-state-title">No transactions found</h3><p class="empty-state-text">Try adjusting your filters.</p></div></td></tr>`;
             return;
           }
 
@@ -253,29 +226,13 @@
               const isIn = tx.amount > 0;
               return `
             <tr>
-              <td data-label="Transaction ID">
-                <span class="mono fw-semibold text-xs">${tx.id}</span>
-              </td>
-              <td data-label="Description">
-                <span class="text-sm">${tx.description}</span>
-              </td>
-              <td data-label="Type">
-                <span class="badge badge-neutral">${tx.type}</span>
-              </td>
-              <td data-label="Amount">
-                <span class="fw-bold ${isIn ? "text-success" : ""}" data-money="${tx.amount}">
-                  ${PS.formatMoney(tx.amount, cur)}
-                </span>
-              </td>
-              <td data-label="Status">
-                <span class="badge ${statusClass[tx.status] || "badge-neutral"}">${tx.status}</span>
-              </td>
-              <td data-label="Method">
-                <span class="text-sm text-muted">${tx.method || "—"}</span>
-              </td>
-              <td data-label="Date">
-                <span class="text-sm text-muted">${PS.formatDateTime(tx.date)}</span>
-              </td>
+              <td data-label="Transaction ID"><span class="mono fw-semibold text-xs">${tx.id}</span></td>
+              <td data-label="Description"><span class="text-sm">${tx.description}</span></td>
+              <td data-label="Type"><span class="badge badge-neutral">${tx.type}</span></td>
+              <td data-label="Amount"><span class="fw-bold ${isIn ? "text-success" : ""}" data-money="${tx.amount}">${PS.formatMoney(tx.amount, cur)}</span></td>
+              <td data-label="Status"><span class="badge ${statusClass[tx.status] || "badge-neutral"}">${tx.status}</span></td>
+              <td data-label="Method"><span class="text-sm text-muted">${tx.method || "—"}</span></td>
+              <td data-label="Date"><span class="text-sm text-muted">${PS.formatDateTime(tx.date)}</span></td>
             </tr>`;
             })
             .join("");

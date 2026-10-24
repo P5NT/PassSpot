@@ -87,22 +87,17 @@
     <script src="../js/script.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        if (window.PS_ADMIN?.renderSidebar) {
-          window.PS_ADMIN.renderSidebar("events");
-          window.PS_ADMIN.renderTopbar("Events");
-        } else {
-          document.getElementById("appSidebar").innerHTML =
-            `<div class="sidebar-brand"><a href="dashboard.html" class="brand">Pass<span class="brand-accent">Spot</span></a></div>`;
-          document.getElementById("appTopbar").innerHTML =
-            `<h1 class="topbar-title">Events</h1>`;
-        }
+        if (!PS.session.requireAdmin()) return;
+
+        window.PS_ADMIN.renderSidebar("events");
+        window.PS_ADMIN.renderTopbar("Events");
 
         const tbody = document.getElementById("eventsBody");
         const searchEl = document.getElementById("evSearch");
         const statusEl = document.getElementById("evStatus");
 
         function render() {
-          let list = [...window.PS_DATA.DEMO_EVENTS];
+          let list = window.PS_DATA.getEvents();
           const q = searchEl.value.toLowerCase();
           if (q)
             list = list.filter(
@@ -119,7 +114,7 @@
             <tr>
               <td data-label="Event">
                 <div class="flex items-center gap-3">
-                  <div style="font-size:20px;">${ev.emoji}</div>
+                  <div style="font-size:20px;">${ev.emoji || "🎫"}</div>
                   <div><div class="fw-semibold text-sm">${ev.title}</div><div class="text-xs text-muted">${ev.category}</div></div>
                 </div>
               </td>

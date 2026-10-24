@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deposits — Admin — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Deposits</h2>
+              <p class="page-subtitle">
+                All wallet deposits across the platform. Read-only — deposits
+                auto-confirm via payment providers.
+              </p>
+            </div>
+          </div>
+
+          <section class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Total deposits</span>
+                <span class="stat-icon">💳</span>
+              </div>
+              <div class="stat-value" id="depTotal">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Total volume</span>
+                <span class="stat-icon success">💰</span>
+              </div>
+              <div class="stat-value" id="depVolume">₦0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Completed</span>
+                <span class="stat-icon success">✅</span>
+              </div>
+              <div class="stat-value" id="depCompleted">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Pending / Failed</span>
+                <span class="stat-icon warning">⏳</span>
+              </div>
+              <div class="stat-value" id="depPending">0</div>
+            </div>
+          </section>
+
+          <div class="filter-bar">
+            <div class="filter-search">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input
+                class="form-input"
+                type="search"
+                id="depSearch"
+                placeholder="Search by ID, user, email, or reference…"
+              />
+            </div>
+            <select
+              class="form-select"
+              id="depMethod"
+              style="width: auto; min-width: 160px"
+            >
+              <option value="">All methods</option>
+              <option>Bank Transfer</option>
+              <option>Card</option>
+            </select>
+            <select
+              class="form-select"
+              id="depStatus"
+              style="width: auto; min-width: 150px"
+            >
+              <option value="">All statuses</option>
+              <option>Completed</option>
+              <option>Pending</option>
+              <option>Failed</option>
+            </select>
+          </div>
+
+          <div class="table-wrap">
+            <div class="table-scroll">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Deposit ID</th>
+                    <th>User</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Reference</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="depBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (!PS.session.requireAdmin()) return;
+
+        window.PS_ADMIN.renderSidebar("deposits");
+        window.PS_ADMIN.renderTopbar("Deposits");
+
+        // =========================================
+        // LOAD DEPOSITS
+        // Seeded deposits + real user deposits from
+        // their demo transaction history.
+        // =========================================
+        function loadDeposits() {
+          const seeded = window.PS_DATA.SEEDED_DEPOSITS.map((d) => ({ ...d }));
+
+          // Convert "Deposit" type transactions into deposit records
+          const realDeposits = window.PS_DATA.DEMO_TRANSACTIONS.filter(
+            (t) => t.type === "Deposit",
+          ).map((t) => ({
+            id: "DEP-" + t.id.replace("TX-", ""),
+            txId: t.id,
+            user: "Ada Okafor",
+            email: "ada.okafor@example.com",
+            amount: t.amount,
+            status: t.status,
+            method: t.method,
+            reference: "PS-" + t.id.slice(-6),
+            date: t.date,
+          }));
+
+          // Merge and de-dupe by ID
+          const all = [...realDeposits, ...seeded];
+          const seen = new Set();
+          return all.filter((d) => {
+            if (seen.has(d.id)) return false;
+            seen.add(d.id);
+            return true;
+          });
+        }
+
+        const deposits = loadDeposits();
+        let activeMethod = "";
+        let activeStatus = "";
+        let activeSearch = "";
+
+        function renderStats() {
+          const cur = PS.getCurrency();
+          const total = deposits.length;
+          const volume = deposits.reduce(
+            (s, d) => s + (d.status === "completed" ? d.amount : 0),
+            0,
+          );
+          const completed = deposits.filter(
+            (d) => d.status === "completed",
+          ).length;
+          const pending = deposits.filter(
+            (d) => d.status === "pending" || d.status === "failed",
+          ).length;
+
+          document.getElementById("depTotal").textContent = total;
+          document.getElementById("depVolume").textContent = PS.formatMoney(
+            volume,
+            cur,
+          );
+          document.getElementById("depCompleted").textContent = completed;
+          document.getElementById("depPending").textContent = pending;
+        }
+
+        function renderTable() {
+          let list = [...deposits];
+          if (activeSearch) {
+            list = list.filter(
+              (d) =>
+                d.id.toLowerCase().includes(activeSearch) ||
+                d.user.toLowerCase().includes(activeSearch) ||
+                d.email.toLowerCase().includes(activeSearch) ||
+                d.reference.toLowerCase().includes(activeSearch),
+            );
+          }
+          if (activeMethod)
+            list = list.filter((d) => d.method === activeMethod);
+          if (activeStatus)
+            list = list.filter((d) => d.status === activeStatus);
+
+          const tbody = document.getElementById("depBody");
+          if (list.length === 0) {
+            tbody.innerHTML = `
+            <tr><td colspan="7">
+              <div class="empty-state" style="padding:var(--space-8);">
+                <div class="empty-state-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                </div>
+                <h3 class="empty-state-title">No deposits found</h3>
+                <p class="empty-state-text">Try adjusting your filters.</p>
+              </div>
+            </td></tr>`;
+            return;
+          }
+
+          const cur = PS.getCurrency();
+          const statusClass = {
+            completed: "badge-success",
+            pending: "badge-warning",
+            failed: "badge-error",
+          };
+          tbody.innerHTML = list
+            .map(
+              (d) => `
+          <tr>
+            <td data-label="Deposit ID"><span class="mono fw-semibold text-sm">${d.id}</span></td>
+            <td data-label="User">
+              <div class="fw-semibold text-sm">${d.user}</div>
+              <div class="text-xs text-muted">${d.email}</div>
+            </td>
+            <td data-label="Amount"><span class="fw-bold" data-money="${d.amount}">${PS.formatMoney(d.amount, cur)}</span></td>
+            <td data-label="Method"><span class="badge badge-neutral">${d.method}</span></td>
+            <td data-label="Reference"><span class="mono text-xs">${d.reference}</span></td>
+            <td data-label="Status"><span class="badge ${statusClass[d.status] || "badge-neutral"}">${d.status}</span></td>
+            <td data-label="Date"><span class="text-sm text-muted">${PS.formatDateTime(d.date)}</span></td>
+          </tr>
+        `,
+            )
+            .join("");
+        }
+
+        document.getElementById("depSearch").addEventListener("input", (e) => {
+          activeSearch = e.target.value.toLowerCase();
+          renderTable();
+        });
+        document.getElementById("depMethod").addEventListener("change", (e) => {
+          activeMethod = e.target.value;
+          renderTable();
+        });
+        document.getElementById("depStatus").addEventListener("change", (e) => {
+          activeStatus = e.target.value;
+          renderTable();
+        });
+
+        document.addEventListener("ps:currencychange", () => {
+          renderStats();
+          renderTable();
+        });
+
+        renderStats();
+        renderTable();
+      });
+    </script>
+  </body>
+</html>

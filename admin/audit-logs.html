@@ -56,20 +56,15 @@
     <script src="../js/script.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        if (window.PS_ADMIN?.renderSidebar) {
-          window.PS_ADMIN.renderSidebar("audit");
-          window.PS_ADMIN.renderTopbar("Audit Logs");
-        } else {
-          document.getElementById("appSidebar").innerHTML =
-            `<div class="sidebar-brand"><a href="dashboard.html" class="brand">Pass<span class="brand-accent">Spot</span></a></div>`;
-          document.getElementById("appTopbar").innerHTML =
-            `<h1 class="topbar-title">Audit Logs</h1>`;
-        }
+        if (!PS.session.requireAdmin()) return;
+
+        window.PS_ADMIN.renderSidebar("audit");
+        window.PS_ADMIN.renderTopbar("Audit Logs");
 
         const logs = [
           {
             action: "Admin approved event",
-            actor: "admin@passspot",
+            actor: "admin@passspot.ng",
             target: "Lagos Music Festival",
             date: "2025-11-28 14:32",
             status: "success",
@@ -97,21 +92,21 @@
           },
           {
             action: "Advertisement approved",
-            actor: "admin@passspot",
+            actor: "admin@passspot.ng",
             target: "AD-002",
             date: "2025-11-27 16:20",
             status: "success",
           },
           {
             action: "User account suspended",
-            actor: "admin@passspot",
+            actor: "admin@passspot.ng",
             target: "chidi@example.com",
             date: "2025-11-27 09:15",
             status: "warning",
           },
           {
             action: "Withdrawal approved",
-            actor: "admin@passspot",
+            actor: "admin@passspot.ng",
             target: "WD-003",
             date: "2025-11-26 17:55",
             status: "success",

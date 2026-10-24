@@ -1,13 +1,7 @@
 /* =========================================
    PASS SPOT — CORE SCRIPT
-   Handles theme, currency, session,
-   toasts, modals, guest tickets,
-   scanner passes, and shared UI utilities.
 ========================================= */
 
-/* =========================================
-   1. SAFE STORAGE HELPERS
-========================================= */
 const PS = {
   store: {
     get(key, fallback = null) {
@@ -30,9 +24,6 @@ const PS = {
     },
   },
 
-  /* =========================================
-     2. FORMATTING UTILITIES
-  ========================================= */
   formatMoney(amount, currencyCode) {
     const cfg =
       window.PS_DATA.CURRENCIES[currencyCode] || window.PS_DATA.CURRENCIES.NGN;
@@ -76,9 +67,6 @@ const PS = {
     });
   },
 
-  /* =========================================
-     3. CURRENCY MANAGEMENT
-  ========================================= */
   getCurrency() {
     return PS.store.get("currency", "NGN");
   },
@@ -99,11 +87,6 @@ const PS = {
     });
   },
 
-  /* =========================================
-     4. THEME MANAGEMENT
-     Dispatches ps:themechange so any page can
-     listen and update in real time.
-  ========================================= */
   initTheme() {
     const saved = PS.store.get("theme", "light");
     document.documentElement.setAttribute("data-theme", saved);
@@ -112,8 +95,7 @@ const PS = {
 
   toggleTheme() {
     const current = document.documentElement.getAttribute("data-theme");
-    const next = current === "dark" ? "light" : "dark";
-    PS.setTheme(next);
+    PS.setTheme(current === "dark" ? "light" : "dark");
   },
 
   setTheme(theme) {
@@ -134,9 +116,6 @@ const PS = {
     });
   },
 
-  /* =========================================
-     5. TOAST NOTIFICATIONS (single)
-  ========================================= */
   toast(message, type = "success", title = "") {
     let container = document.querySelector(".toast-container");
     if (!container) {
@@ -186,9 +165,6 @@ const PS = {
     setTimeout(() => el.remove(), 200);
   },
 
-  /* =========================================
-     6. MODAL SYSTEM
-  ========================================= */
   openModal(id) {
     const overlay = document.getElementById(id);
     if (!overlay) return;
@@ -207,9 +183,6 @@ const PS = {
     document.body.style.overflow = "";
   },
 
-  /* =========================================
-     7. FORM VALIDATION HELPERS
-  ========================================= */
   validateEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   },
@@ -231,11 +204,16 @@ const PS = {
   },
 
   /* =========================================
-     8. SESSION
+     SESSION
+     Distinguishes admin vs regular user via
+     ps_isAdmin flag.
   ========================================= */
   session: {
     isLoggedIn() {
       return PS.store.get("loggedIn", false);
+    },
+    isAdmin() {
+      return PS.store.get("isAdmin", false) === true;
     },
     getUser() {
       return PS.store.get("user", {
@@ -248,10 +226,22 @@ const PS = {
     },
     login(user) {
       PS.store.set("loggedIn", true);
+      PS.store.set("isAdmin", false);
       PS.store.set("user", user || PS.session.getUser());
+    },
+    loginAsAdmin(admin) {
+      PS.store.set("loggedIn", true);
+      PS.store.set("isAdmin", true);
+      PS.store.set("user", {
+        name: admin.name,
+        email: admin.email,
+        role: "admin",
+        profilePic: null,
+      });
     },
     logout() {
       PS.store.remove("loggedIn");
+      PS.store.remove("isAdmin");
       PS.store.remove("user");
       window.location.href = "login.html";
     },
@@ -279,11 +269,19 @@ const PS = {
       PS.store.set("user", user);
       return user;
     },
+
+    // Guard for admin pages — call at top of
+    // every /admin/* script. Redirects to login
+    // if the visitor isn't an admin.
+    requireAdmin() {
+      if (!PS.session.isAdmin()) {
+        window.location.href = "../login.html";
+        return false;
+      }
+      return true;
+    },
   },
 
-  /* =========================================
-     9. FAVORITES
-  ========================================= */
   favorites: {
     all() {
       return PS.store.get("favorites", []);
@@ -301,9 +299,6 @@ const PS = {
     },
   },
 
-  /* =========================================
-     10. WALLET
-  ========================================= */
   wallet: {
     getBalance() {
       const stored = PS.store.get("wallet_balance", null);
@@ -324,9 +319,6 @@ const PS = {
     },
   },
 
-  /* =========================================
-     11. GUEST TICKETS
-  ========================================= */
   guest: {
     allOrders() {
       return PS.store.get("guest_orders", []);
@@ -401,9 +393,6 @@ const PS = {
     },
   },
 
-  /* =========================================
-     12. SCANNER PASSES
-  ========================================= */
   scanners: {
     all() {
       return PS.store.get("scanner_passes", []);
@@ -467,8 +456,42 @@ const PS = {
   },
 
   /* =========================================
-     13. DOM HELPERS
+     ADMIN NOTIFICATIONS (platform-wide
+     announcements admins send).
   ========================================= */
+  announcements: {
+    all() {
+      return PS.store.get("announcements", []);
+    },
+    send({ title, body, audience }) {
+      const list = PS.announcements.all();
+      const record = {
+        id: "ANN-" + Date.now().toString(36).toUpperCase(),
+        title,
+        body,
+        audience,
+        sentBy: PS.session.getUser().name,
+        sentAt: new Date().toISOString(),
+        recipientCount: PS.announcements.estimateRecipients(audience),
+      };
+      list.unshift(record);
+      PS.store.set("announcements", list.slice(0, 50));
+      return record;
+    },
+    delete(id) {
+      const list = PS.announcements.all().filter((a) => a.id !== id);
+      PS.store.set("announcements", list);
+    },
+    estimateRecipients(audience) {
+      // Demo estimate — count seeded users matching the audience
+      const base = 24518; // total registered users (demo)
+      if (audience === "all") return base;
+      if (audience === "attendees") return 23676;
+      if (audience === "organizers") return 842;
+      return 0;
+    },
+  },
+
   qs(sel, ctx = document) {
     return ctx.querySelector(sel);
   },
@@ -476,9 +499,6 @@ const PS = {
     return Array.from(ctx.querySelectorAll(sel));
   },
 
-  /* =========================================
-     14. INITIALIZATION
-  ========================================= */
   init() {
     PS.initTheme();
 
@@ -695,7 +715,6 @@ window.PS_SHELL = {
       ? "badge-primary"
       : "badge-neutral";
 
-    // Avatar: photo if set, else initials
     const avatarHTML = user.profilePic
       ? `<span class="avatar" style="padding:0;overflow:hidden;"><img src="${user.profilePic}" alt="" style="width:100%;height:100%;object-fit:cover;"></span>`
       : `<span class="avatar">${initials}</span>`;
@@ -765,6 +784,7 @@ window.PS_SHELL = {
 
 /* =========================================
    ADMIN SHELL RENDERER
+   Updated sidebar to include the 4 new pages.
 ========================================= */
 window.PS_ADMIN = {
   renderSidebar(active) {
@@ -774,15 +794,27 @@ window.PS_ADMIN = {
     const links = {
       dashboard: ["dashboard.html", "Dashboard"],
       users: ["users.html", "Users"],
+      organizers: ["organizers.html", "Organizers"],
       events: ["events.html", "Events"],
       tickets: ["tickets.html", "Tickets"],
       transactions: ["transactions.html", "Transactions"],
+      deposits: ["deposits.html", "Deposits"],
       withdrawals: ["withdrawals.html", "Withdrawals"],
       advertisements: ["advertisements.html", "Advertisements"],
+      categories: ["categories.html", "Categories"],
+      notifications: ["notifications.html", "Notifications"],
       reports: ["reports.html", "Reports"],
       audit: ["audit-logs.html", "Audit Logs"],
       settings: ["settings.html", "Settings"],
     };
+
+    const user = PS.session.getUser();
+    const initials = user.name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
 
     sidebar.innerHTML = `
       <div class="sidebar-brand">
@@ -805,19 +837,35 @@ window.PS_ADMIN = {
       </nav>
       <div class="sidebar-footer">
         <a href="../dashboard.html" class="sidebar-link">← Exit admin</a>
+        <button class="sidebar-link" id="adminLogoutBtn" style="width:100%;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Log out
+        </button>
       </div>
     `;
+
+    document.getElementById("adminLogoutBtn").addEventListener("click", () => {
+      if (confirm("Log out of Pass Spot?")) PS.session.logout();
+    });
   },
 
   renderTopbar(title) {
     const topbar = document.getElementById("appTopbar");
     if (!topbar) return;
     const currency = PS.getCurrency();
+    const user = PS.session.getUser();
+    const initials = user.name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
 
     topbar.innerHTML = `
       <button class="icon-btn" data-sidebar-toggle aria-label="Open menu" style="display:none;" id="mobileMenuBtn">☰</button>
       <h1 class="topbar-title">${title}</h1>
       <div class="topbar-actions">
+        <span class="text-xs text-muted" style="margin-right:var(--space-2);">${user.name}</span>
         <div class="currency-switch" role="group" aria-label="Currency">
           <button type="button" data-currency-switch="NGN" class="${currency === "NGN" ? "is-active" : ""}">₦ NGN</button>
           <button type="button" data-currency-switch="USD" class="${currency === "USD" ? "is-active" : ""}">$ USD</button>
@@ -828,7 +876,7 @@ window.PS_ADMIN = {
             <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
           </svg>
         </button>
-        <span class="avatar">AD</span>
+        <span class="avatar" style="background:var(--error-color);">${initials}</span>
       </div>
     `;
 

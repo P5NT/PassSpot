@@ -92,7 +92,6 @@
       </div>
     </div>
 
-    <!-- Suspend/Activate Modal -->
     <div class="modal-overlay" id="userModal">
       <div class="modal modal-sm">
         <div class="modal-header">
@@ -119,23 +118,11 @@
     <script src="../js/data.js"></script>
     <script src="../js/script.js"></script>
     <script>
-      /* =========================================
-       ADMIN USERS PAGE
-    ========================================= */
-      window.PS_ADMIN = window.PS_ADMIN || {};
-
       document.addEventListener("DOMContentLoaded", () => {
-        // Load admin shell (defined in dashboard)
-        if (window.PS_ADMIN.renderSidebar) {
-          window.PS_ADMIN.renderSidebar("users");
-          window.PS_ADMIN.renderTopbar("Users");
-        } else {
-          // Fallback: inline renderer
-          document.getElementById("appSidebar").innerHTML =
-            `<div class="sidebar-brand"><a href="dashboard.html" class="brand">Pass<span class="brand-accent">Spot</span></a></div><div class="sidebar-footer"><a href="dashboard.html" class="sidebar-link is-active">← Dashboard</a></div>`;
-          document.getElementById("appTopbar").innerHTML =
-            `<h1 class="topbar-title">Users</h1>`;
-        }
+        if (!PS.session.requireAdmin()) return;
+
+        window.PS_ADMIN.renderSidebar("users");
+        window.PS_ADMIN.renderTopbar("Users");
 
         const demoUsers = [
           {

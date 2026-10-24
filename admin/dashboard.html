@@ -15,6 +15,27 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../css/style.css" />
+    <style>
+      /* =========================================
+       MOBILE TOPBAR FIX
+       Forces the title to take available space
+       and pushes actions to the right.
+    ========================================= */
+      @media (max-width: 860px) {
+        .topbar-title {
+          flex: 1;
+          min-width: 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          margin-right: var(--space-2);
+        }
+        /* Hide admin name from topbar on mobile */
+        .topbar-actions > span.text-xs {
+          display: none !important;
+        }
+      }
+    </style>
   </head>
   <body>
     <div class="app-layout">
@@ -231,72 +252,9 @@
     <script src="../js/data.js"></script>
     <script src="../js/script.js"></script>
     <script>
-      /* =========================================
-       ADMIN SHELL RENDERER
-    ========================================= */
-      window.PS_ADMIN = {
-        renderSidebar(active) {
-          const sidebar = document.getElementById("appSidebar");
-          if (!sidebar) return;
-          const links = {
-            dashboard: { href: "dashboard.html", label: "Dashboard" },
-            users: { href: "users.html", label: "Users" },
-            events: { href: "events.html", label: "Events" },
-            tickets: { href: "tickets.html", label: "Tickets" },
-            transactions: { href: "transactions.html", label: "Transactions" },
-            withdrawals: { href: "withdrawals.html", label: "Withdrawals" },
-            advertisements: {
-              href: "advertisements.html",
-              label: "Advertisements",
-            },
-            reports: { href: "reports.html", label: "Reports" },
-            audit: { href: "audit-logs.html", label: "Audit Logs" },
-            settings: { href: "settings.html", label: "Settings" },
-          };
-          sidebar.innerHTML = `
-          <div class="sidebar-brand"><a href="dashboard.html" class="brand">Pass<span class="brand-accent">Spot</span> <span class="badge badge-error" style="font-size:10px;">ADMIN</span></a></div>
-          <nav class="sidebar-section">
-            <div class="sidebar-section-label">Platform</div>
-            <div class="sidebar-nav">
-              ${Object.entries(links)
-                .map(
-                  ([k, l]) => `
-                <a href="${l.href}" class="sidebar-link ${active === k ? "is-active" : ""}">${l.label}</a>
-              `,
-                )
-                .join("")}
-            </div>
-          </nav>
-          <div class="sidebar-footer">
-            <a href="../dashboard.html" class="sidebar-link">← Exit admin</a>
-          </div>
-        `;
-        },
-        renderTopbar(title) {
-          const topbar = document.getElementById("appTopbar");
-          if (!topbar) return;
-          topbar.innerHTML = `
-          <button class="icon-btn" data-sidebar-toggle aria-label="Menu" style="display:none;" id="mobileMenuBtn">☰</button>
-          <h1 class="topbar-title">${title}</h1>
-          <div class="topbar-actions">
-            <div class="currency-switch">
-              <button type="button" data-currency-switch="NGN" class="${PS.getCurrency() === "NGN" ? "is-active" : ""}">₦ NGN</button>
-              <button type="button" data-currency-switch="USD" class="${PS.getCurrency() === "USD" ? "is-active" : ""}">$ USD</button>
-            </div>
-            <button class="icon-btn" id="themeToggle" aria-label="Toggle theme"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
-            <span class="avatar">AD</span>
-          </div>
-        `;
-          if (window.innerWidth <= 860)
-            document.getElementById("mobileMenuBtn").style.display = "flex";
-          window.addEventListener("resize", () => {
-            document.getElementById("mobileMenuBtn").style.display =
-              window.innerWidth <= 860 ? "flex" : "none";
-          });
-        },
-      };
-
       document.addEventListener("DOMContentLoaded", () => {
+        if (!PS.session.requireAdmin()) return;
+
         window.PS_ADMIN.renderSidebar("dashboard");
         window.PS_ADMIN.renderTopbar("Admin dashboard");
 

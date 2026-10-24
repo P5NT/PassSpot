@@ -78,15 +78,10 @@
     <script src="../js/script.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        if (window.PS_ADMIN?.renderSidebar) {
-          window.PS_ADMIN.renderSidebar("advertisements");
-          window.PS_ADMIN.renderTopbar("Advertisements");
-        } else {
-          document.getElementById("appSidebar").innerHTML =
-            `<div class="sidebar-brand"><a href="dashboard.html" class="brand">Pass<span class="brand-accent">Spot</span></a></div>`;
-          document.getElementById("appTopbar").innerHTML =
-            `<h1 class="topbar-title">Advertisements</h1>`;
-        }
+        if (!PS.session.requireAdmin()) return;
+
+        window.PS_ADMIN.renderSidebar("advertisements");
+        window.PS_ADMIN.renderTopbar("Advertisements");
 
         const tbody = document.getElementById("adminAdsBody");
         const statusClass = {

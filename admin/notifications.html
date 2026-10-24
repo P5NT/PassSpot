@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notifications — Admin — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Notifications</h2>
+              <p class="page-subtitle">
+                Send announcements to all users or specific segments.
+              </p>
+            </div>
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1.2fr 1fr;
+              gap: var(--space-8);
+            "
+            id="notifGrid"
+          >
+            <!-- COMPOSE -->
+            <div>
+              <div class="card">
+                <h3 class="card-title mb-4">New announcement</h3>
+
+                <div class="form-group">
+                  <label class="form-label" for="annTitle"
+                    >Title <span class="required">*</span></label
+                  >
+                  <input
+                    class="form-input"
+                    type="text"
+                    id="annTitle"
+                    placeholder="e.g. Scheduled maintenance this weekend"
+                  />
+                  <span class="form-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="annBody"
+                    >Message <span class="required">*</span></label
+                  >
+                  <textarea
+                    class="form-textarea"
+                    id="annBody"
+                    placeholder="Write your announcement…"
+                  ></textarea>
+                  <span class="form-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Audience</label>
+                  <select class="form-select" id="annAudience">
+                    <option value="all">Everyone</option>
+                    <option value="attendees">Attendees only</option>
+                    <option value="organizers">Organizers only</option>
+                  </select>
+                  <span class="form-hint" id="audienceHint"
+                    >≈ 24,518 users will receive this</span
+                  >
+                </div>
+
+                <div class="info-panel mb-4">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 16v-4M12 8h.01" />
+                  </svg>
+                  <span
+                    >Demo only — announcements are stored locally and not
+                    actually sent.</span
+                  >
+                </div>
+
+                <button class="btn btn-primary btn-lg btn-block" id="sendBtn">
+                  Send announcement
+                </button>
+              </div>
+            </div>
+
+            <!-- HISTORY -->
+            <div>
+              <div class="card">
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="card-title">Sent announcements</h3>
+                  <span class="badge badge-neutral" id="annCount">0</span>
+                </div>
+                <div id="annHistory"></div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Confirm send modal -->
+    <div class="modal-overlay" id="confirmSendModal">
+      <div class="modal modal-sm">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title">Send announcement?</h3>
+            <p class="modal-subtitle">
+              This will be sent to all selected recipients.
+            </p>
+          </div>
+          <button
+            class="modal-close"
+            onclick="PS.closeModal('confirmSendModal')"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="summary-row">
+            <span class="text-muted text-sm">Title</span
+            ><span class="fw-semibold text-sm" id="confTitle">—</span>
+          </div>
+          <div class="summary-row">
+            <span class="text-muted text-sm">Audience</span
+            ><span class="fw-semibold text-sm" id="confAudience">—</span>
+          </div>
+          <div class="summary-row total">
+            <span>Recipients</span><span id="confRecipients">—</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="PS.closeModal('confirmSendModal')"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="confirmSend">Send now</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (!PS.session.requireAdmin()) return;
+
+        window.PS_ADMIN.renderSidebar("notifications");
+        window.PS_ADMIN.renderTopbar("Notifications");
+
+        const titleEl = document.getElementById("annTitle");
+        const bodyEl = document.getElementById("annBody");
+        const audienceEl = document.getElementById("annAudience");
+        const sendBtn = document.getElementById("sendBtn");
+
+        // =========================================
+        // UPDATE AUDIENCE HINT
+        // =========================================
+        function updateAudienceHint() {
+          const count = PS.announcements.estimateRecipients(audienceEl.value);
+          document.getElementById("audienceHint").textContent =
+            `≈ ${count.toLocaleString()} users will receive this`;
+        }
+        audienceEl.addEventListener("change", updateAudienceHint);
+        updateAudienceHint();
+
+        // =========================================
+        // RENDER HISTORY
+        // =========================================
+        function renderHistory() {
+          const list = PS.announcements.all();
+          const wrap = document.getElementById("annHistory");
+          document.getElementById("annCount").textContent = list.length;
+
+          if (list.length === 0) {
+            wrap.innerHTML = `
+            <div class="empty-state" style="padding:var(--space-6) 0;">
+              <div class="empty-state-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 003.4 0"/></svg>
+              </div>
+              <p class="empty-state-text">No announcements sent yet.</p>
+            </div>`;
+            return;
+          }
+
+          wrap.innerHTML = list
+            .map(
+              (a) => `
+          <div class="card" style="padding:var(--space-4);margin-bottom:var(--space-3);background:var(--surface-muted);">
+            <div class="flex justify-between items-start mb-2" style="gap:var(--space-3);">
+              <div class="fw-semibold text-sm" style="flex:1;">${a.title}</div>
+              <button class="btn btn-ghost btn-sm" data-delete="${a.id}" style="color:var(--error-color);padding:2px 6px;">✕</button>
+            </div>
+            <p class="text-xs text-muted mb-2" style="line-height:1.5;">${a.body}</p>
+            <div class="flex gap-2 items-center text-xs text-tertiary" style="flex-wrap:wrap;">
+              <span class="badge badge-neutral">${a.audience}</span>
+              <span>${a.recipientCount.toLocaleString()} recipients</span>
+              <span>·</span>
+              <span>${PS.formatDateTime(a.sentAt)}</span>
+            </div>
+          </div>
+        `,
+            )
+            .join("");
+
+          wrap.querySelectorAll("[data-delete]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              if (!confirm("Delete this announcement record?")) return;
+              PS.announcements.delete(btn.dataset.delete);
+              renderHistory();
+              PS.toast("Announcement removed", "info");
+            });
+          });
+        }
+
+        // =========================================
+        // SEND FLOW
+        // =========================================
+        sendBtn.addEventListener("click", () => {
+          const title = titleEl.value.trim();
+          const body = bodyEl.value.trim();
+          let valid = true;
+
+          PS.clearFieldError(titleEl);
+          PS.clearFieldError(bodyEl);
+          if (!title) {
+            PS.setFieldError(titleEl, "Please enter a title.");
+            valid = false;
+          }
+          if (!body) {
+            PS.setFieldError(bodyEl, "Please enter a message.");
+            valid = false;
+          }
+          if (!valid) return;
+
+          const audience = audienceEl.value;
+          const count = PS.announcements.estimateRecipients(audience);
+
+          document.getElementById("confTitle").textContent = title;
+          document.getElementById("confAudience").textContent = audience;
+          document.getElementById("confRecipients").textContent =
+            count.toLocaleString();
+          PS.openModal("confirmSendModal");
+        });
+
+        document
+          .getElementById("confirmSend")
+          .addEventListener("click", (e) => {
+            const btn = e.currentTarget;
+            btn.classList.add("is-loading");
+            btn.disabled = true;
+
+            setTimeout(() => {
+              const record = PS.announcements.send({
+                title: titleEl.value.trim(),
+                body: bodyEl.value.trim(),
+                audience: audienceEl.value,
+              });
+
+              titleEl.value = "";
+              bodyEl.value = "";
+              audienceEl.value = "all";
+              updateAudienceHint();
+
+              PS.closeModal("confirmSendModal");
+              PS.toast(
+                `Announcement sent to ${record.recipientCount.toLocaleString()} users`,
+                "success",
+              );
+              renderHistory();
+
+              btn.classList.remove("is-loading");
+              btn.disabled = false;
+            }, 900);
+          });
+
+        renderHistory();
+      });
+    </script>
+  </body>
+</html>

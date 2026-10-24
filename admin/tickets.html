@@ -15,6 +15,56 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../css/style.css" />
+    <style>
+      /* =========================================
+       MOBILE TOPBAR FIX
+    ========================================= */
+      @media (max-width: 860px) {
+        .topbar-title {
+          flex: 1;
+          min-width: 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          margin-right: var(--space-2);
+        }
+        .topbar-actions > span.text-xs {
+          display: none !important;
+        }
+      }
+
+      /* =========================================
+       MOBILE TICKET CARDS
+       Adds a card aesthetic to the stacked rows
+       on small screens for a more premium look.
+    ========================================= */
+      @media (max-width: 540px) {
+        .table tbody tr {
+          background-color: var(--surface-elevated);
+          border: 1px solid var(--border-color);
+          border-radius: var(--radius-lg);
+          margin-bottom: var(--space-3);
+          padding: var(--space-4);
+          box-shadow: var(--shadow-sm);
+        }
+        .table tbody tr:last-child {
+          margin-bottom: 0;
+        }
+        /* Slightly refine the label style inside the card */
+        .table td::before {
+          color: var(--text-secondary);
+          font-weight: 700;
+        }
+        /* Give the value side a bit more breathing room */
+        .table td {
+          padding: var(--space-2) 0;
+          align-items: center;
+        }
+        .table td:last-child {
+          border-bottom: none;
+        }
+      }
+    </style>
   </head>
   <body>
     <div class="app-layout">
@@ -32,39 +82,37 @@
             </div>
           </div>
 
-          <!-- STAT CARDS -->
           <section class="stats-grid">
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Total tickets</span>
-                <span class="stat-icon">🎫</span>
+                <span class="stat-label">Total tickets</span
+                ><span class="stat-icon">🎫</span>
               </div>
               <div class="stat-value" id="tkTotal">0</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Valid</span>
-                <span class="stat-icon success">✅</span>
+                <span class="stat-label">Valid</span
+                ><span class="stat-icon success">✅</span>
               </div>
               <div class="stat-value" id="tkValid">0</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Used</span>
-                <span class="stat-icon info">📌</span>
+                <span class="stat-label">Used</span
+                ><span class="stat-icon info">📌</span>
               </div>
               <div class="stat-value" id="tkUsed">0</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Cancelled</span>
-                <span class="stat-icon error">✖</span>
+                <span class="stat-label">Cancelled</span
+                ><span class="stat-icon error">✖</span>
               </div>
               <div class="stat-value" id="tkCancelled">0</div>
             </div>
           </section>
 
-          <!-- FILTERS -->
           <div class="filter-bar">
             <div class="filter-search">
               <svg
@@ -97,7 +145,6 @@
             </select>
           </div>
 
-          <!-- TICKETS TABLE -->
           <div class="table-wrap">
             <div class="table-scroll">
               <table class="table">
@@ -123,14 +170,9 @@
     <script src="../js/data.js"></script>
     <script src="../js/script.js"></script>
     <script>
-      /* =========================================
-       ADMIN TICKETS PAGE
-       Read-only monitor of all tickets issued.
-       Uses DEMO_TICKETS from data.js — real
-       data would come from the backend.
-    ========================================= */
       document.addEventListener("DOMContentLoaded", () => {
-        // Load admin shell
+        if (!PS.session.requireAdmin()) return;
+
         window.PS_ADMIN.renderSidebar("tickets");
         window.PS_ADMIN.renderTopbar("Tickets");
 
@@ -138,7 +180,6 @@
         const searchEl = document.getElementById("tkSearch");
         const statusEl = document.getElementById("tkStatus");
 
-        // Status badge mapping
         const statusClass = {
           valid: "badge-success",
           used: "badge-neutral",
@@ -151,11 +192,8 @@
         };
 
         function render() {
-          // Start from demo data — clone so filters don't mutate source
           let list = [...window.PS_DATA.DEMO_TICKETS];
           const q = searchEl.value.trim().toLowerCase();
-
-          // Search
           if (q) {
             list = list.filter(
               (t) =>
@@ -164,15 +202,11 @@
                 (t.attendee || "").toLowerCase().includes(q),
             );
           }
-
-          // Status filter (matches lowercase values)
-          if (statusEl.value) {
+          if (statusEl.value)
             list = list.filter(
               (t) => t.status === statusEl.value.toLowerCase(),
             );
-          }
 
-          // Update stat cards using the *unfiltered* data set
           const all = window.PS_DATA.DEMO_TICKETS;
           document.getElementById("tkTotal").textContent = all.length;
           document.getElementById("tkValid").textContent = all.filter(
@@ -185,22 +219,8 @@
             (t) => t.status === "cancelled",
           ).length;
 
-          // Empty state
           if (list.length === 0) {
-            tbody.innerHTML = `
-            <tr>
-              <td colspan="7">
-                <div class="empty-state" style="padding:var(--space-8);">
-                  <div class="empty-state-icon">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M2 9a3 3 0 010-6h20a3 3 0 010 6M2 15a3 3 0 000 6h20a3 3 0 000-6M2 9v6M22 9v6"/>
-                    </svg>
-                  </div>
-                  <h3 class="empty-state-title">No tickets found</h3>
-                  <p class="empty-state-text">Try adjusting your search or filters.</p>
-                </div>
-              </td>
-            </tr>`;
+            tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state" style="padding:var(--space-8);"><h3 class="empty-state-title">No tickets found</h3></div></td></tr>`;
             return;
           }
 
@@ -209,40 +229,23 @@
             .map(
               (t) => `
           <tr>
-            <td data-label="Ticket ID">
-              <span class="mono fw-semibold text-sm">${t.id}</span>
-            </td>
-            <td data-label="Event">
-              <div class="fw-semibold text-sm">${t.eventTitle}</div>
-              <div class="text-xs text-muted">${t.venue || ""}</div>
-            </td>
-            <td data-label="Attendee">
-              <span class="text-sm">${t.attendee || "—"}</span>
-            </td>
-            <td data-label="Type">
-              <span class="badge badge-neutral">${t.ticketType}</span>
-            </td>
-            <td data-label="Price">
-              <span class="fw-bold" data-money="${t.price}">${PS.formatMoney(t.price, cur)}</span>
-            </td>
-            <td data-label="Status">
-              <span class="badge ${statusClass[t.status] || "badge-neutral"}">${statusLabel[t.status] || t.status}</span>
-            </td>
-            <td data-label="Purchased">
-              <span class="text-sm text-muted">${PS.formatDateTime(t.purchasedAt)}</span>
-            </td>
+            <td data-label="Ticket ID"><span class="mono fw-semibold text-sm">${t.id}</span></td>
+            <td data-label="Event"><div class="fw-semibold text-sm">${t.eventTitle}</div><div class="text-xs text-muted">${t.venue || ""}</div></td>
+            <td data-label="Attendee"><span class="text-sm">${t.attendee || "—"}</span></td>
+            <td data-label="Type"><span class="badge badge-neutral">${t.ticketType}</span></td>
+            <td data-label="Price"><span class="fw-bold" data-money="${t.price}">${PS.formatMoney(t.price, cur)}</span></td>
+            <td data-label="Status"><span class="badge ${statusClass[t.status] || "badge-neutral"}">${statusLabel[t.status] || t.status}</span></td>
+            <td data-label="Purchased"><span class="text-sm text-muted">${PS.formatDateTime(t.purchasedAt)}</span></td>
           </tr>
         `,
             )
             .join("");
         }
 
-        // Re-render on filter changes
         [searchEl, statusEl].forEach((el) =>
           el.addEventListener("input", render),
         );
         document.addEventListener("ps:currencychange", render);
-
         render();
       });
     </script>

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PassSpot — Log in</title>
+    <title>Log in — Pass Spot</title>
     <link
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
@@ -18,9 +18,6 @@
   </head>
   <body>
     <div class="auth-layout">
-      <!-- =========================================
-         FORM PANEL
-    ========================================= -->
       <div class="auth-panel">
         <div class="auth-form-wrap">
           <a href="index.html" class="brand mb-6" style="display: inline-block"
@@ -31,7 +28,6 @@
           <p class="auth-subheading">Log in to your Pass Spot account.</p>
 
           <form id="loginForm" novalidate>
-            <!-- Email -->
             <div class="form-group">
               <label class="form-label" for="loginEmail">
                 Email address <span class="required">*</span>
@@ -48,7 +44,6 @@
               <span class="form-error"></span>
             </div>
 
-            <!-- Password -->
             <div class="form-group">
               <label class="form-label" for="loginPassword">
                 Password <span class="required">*</span>
@@ -137,9 +132,6 @@
         </div>
       </div>
 
-      <!-- =========================================
-         VISUAL PANEL
-    ========================================= -->
       <div class="auth-visual">
         <div class="auth-visual-content">
           <h2 class="auth-visual-title">
@@ -149,7 +141,6 @@
             Discover, buy, create, and manage — Pass Spot is built for Nigeria's
             vibrant event scene.
           </p>
-
           <div class="auth-visual-points">
             <div class="auth-visual-point">
               <span class="auth-visual-point-icon">
@@ -212,8 +203,14 @@
     <script>
       /* =========================================
        LOGIN PAGE LOGIC
-       Client-side validation only.
-       Real authentication must be backend.
+       Routes admin vs user based on
+       PS_DATA.isAdminEmail().
+
+       ⚠️ Frontend-only simulation. The email
+       check below gets replaced by a backend
+       call:
+         POST /api/auth/login { email, password }
+       The server verifies both, returns a token.
     ========================================= */
       document.addEventListener("DOMContentLoaded", () => {
         const form = document.getElementById("loginForm");
@@ -225,7 +222,6 @@
           e.preventDefault();
           let valid = true;
 
-          // Email validation
           PS.clearFieldError(email);
           if (!email.value.trim()) {
             PS.setFieldError(email, "Please enter your email address.");
@@ -235,7 +231,6 @@
             valid = false;
           }
 
-          // Password validation
           PS.clearFieldError(password);
           if (!password.value) {
             PS.setFieldError(password, "Please enter your password.");
@@ -250,23 +245,34 @@
 
           if (!valid) return;
 
-          // Simulate login
           btn.classList.add("is-loading");
           btn.disabled = true;
+          const emailVal = email.value.trim();
+
           setTimeout(() => {
-            PS.session.login({
-              name: email.value.split("@")[0].replace(/\./g, " "),
-              email: email.value.trim(),
-              role: "attendee",
-            });
-            PS.toast("Welcome back to Pass Spot", "success");
-            setTimeout(() => {
-              window.location.href = "dashboard.html";
-            }, 600);
+            // ⬇ The only "auth" the frontend performs:
+            //   is this email an admin?
+            if (window.PS_DATA.isAdminEmail(emailVal)) {
+              const admin = window.PS_DATA.findAdmin(emailVal);
+              PS.session.loginAsAdmin(admin);
+              PS.toast(`Welcome back, ${admin.name}`, "success");
+              setTimeout(() => {
+                window.location.href = "admin/dashboard.html";
+              }, 600);
+            } else {
+              PS.session.login({
+                name: emailVal.split("@")[0].replace(/\./g, " "),
+                email: emailVal,
+                role: "attendee",
+              });
+              PS.toast("Welcome back to Pass Spot", "success");
+              setTimeout(() => {
+                window.location.href = "dashboard.html";
+              }, 600);
+            }
           }, 900);
         });
 
-        // Clear errors on input
         [email, password].forEach((f) => {
           f.addEventListener("input", () => PS.clearFieldError(f));
         });

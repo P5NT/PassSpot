@@ -40,7 +40,6 @@
             "
             id="settingsGrid"
           >
-            <!-- SETTINGS NAV -->
             <nav
               class="sidebar-section"
               style="
@@ -58,9 +57,6 @@
                 </button>
                 <button class="sidebar-link" data-admin-section="limits">
                   Limits
-                </button>
-                <button class="sidebar-link" data-admin-section="categories">
-                  Categories
                 </button>
                 <button class="sidebar-link" data-admin-section="notifications">
                   Notifications
@@ -80,18 +76,12 @@
     <script src="../js/data.js"></script>
     <script src="../js/script.js"></script>
     <script>
-      /* =========================================
-       ADMIN SETTINGS PAGE
-       Platform-wide configuration UI. All
-       values are stored in localStorage for
-       the demo, but real settings must live
-       on the backend.
-    ========================================= */
       document.addEventListener("DOMContentLoaded", () => {
+        if (!PS.session.requireAdmin()) return;
+
         window.PS_ADMIN.renderSidebar("settings");
         window.PS_ADMIN.renderTopbar("Platform settings");
 
-        // Load or seed default settings
         const settings = PS.store.get("admin_settings", {
           platformFee: 5,
           serviceFee: 2,
@@ -104,7 +94,6 @@
           allowNewSignups: true,
         });
 
-        // ---------- Section templates ----------
         const sections = {
           fees: `
           <div class="card">
@@ -154,38 +143,12 @@
             <button class="btn btn-primary" id="saveLimits">Save limits</button>
           </div>
         `,
-          categories: `
-          <div class="card">
-            <h3 class="card-title mb-4">Event categories</h3>
-            <p class="text-sm text-muted mb-4">Manage the categories available to organizers.</p>
-            <div class="flex gap-2" style="flex-wrap:wrap;margin-bottom:var(--space-4);">
-              ${window.PS_DATA.EVENT_CATEGORIES.map(
-                (c) => `
-                <span class="badge badge-primary" style="padding:6px 12px;">
-                  ${c}
-                  <button type="button" data-remove-cat="${c}" style="background:none;border:none;color:inherit;cursor:pointer;margin-left:6px;">✕</button>
-                </span>
-              `,
-              ).join("")}
-            </div>
-            <div class="form-group">
-              <label class="form-label">Add new category</label>
-              <div class="flex gap-2">
-                <input class="form-input" type="text" id="newCategoryInput" placeholder="e.g. Wellness">
-                <button class="btn btn-primary" id="addCategoryBtn">Add</button>
-              </div>
-            </div>
-          </div>
-        `,
           notifications: `
           <div class="card">
             <h3 class="card-title mb-4">Platform notifications</h3>
             <label class="checkbox mb-4" style="display:flex;">
               <input type="checkbox" id="setEmailNotif" ${settings.emailNotif ? "checked" : ""}>
-              <span>
-                <strong>Email notifications</strong><br>
-                <span class="text-xs text-muted">Send transactional emails to users (deposits, purchases, withdrawals).</span>
-              </span>
+              <span><strong>Email notifications</strong><br><span class="text-xs text-muted">Send transactional emails to users.</span></span>
             </label>
             <button class="btn btn-primary" id="saveNotifs">Save preferences</button>
           </div>
@@ -195,24 +158,17 @@
             <h3 class="card-title mb-4">Maintenance & access</h3>
             <label class="checkbox mb-4" style="display:flex;">
               <input type="checkbox" id="setMaintenance" ${settings.maintenanceMode ? "checked" : ""}>
-              <span>
-                <strong>Maintenance mode</strong><br>
-                <span class="text-xs text-muted">Temporarily disable public access to Pass Spot.</span>
-              </span>
+              <span><strong>Maintenance mode</strong><br><span class="text-xs text-muted">Temporarily disable public access to Pass Spot.</span></span>
             </label>
             <label class="checkbox mb-4" style="display:flex;">
               <input type="checkbox" id="setAllowSignups" ${settings.allowNewSignups ? "checked" : ""}>
-              <span>
-                <strong>Allow new signups</strong><br>
-                <span class="text-xs text-muted">Let new users create Pass Spot accounts.</span>
-              </span>
+              <span><strong>Allow new signups</strong><br><span class="text-xs text-muted">Let new users create Pass Spot accounts.</span></span>
             </label>
             <button class="btn btn-primary" id="saveMaintenance">Save</button>
           </div>
         `,
         };
 
-        // ---------- Render + bind section ----------
         function renderSection(key) {
           document.getElementById("adminSettingsContent").innerHTML =
             sections[key];
@@ -234,7 +190,6 @@
                 PS.toast("Fees updated", "success");
               });
           }
-
           if (key === "limits") {
             document
               .getElementById("saveLimits")
@@ -257,38 +212,6 @@
                 PS.toast("Limits updated", "success");
               });
           }
-
-          if (key === "categories") {
-            // Remove a category (visual only, we don't mutate the shared array)
-            document.querySelectorAll("[data-remove-cat]").forEach((btn) => {
-              btn.addEventListener("click", () => {
-                btn.parentElement.remove();
-                PS.toast(`Category "${btn.dataset.removeCat}" removed`, "info");
-              });
-            });
-            // Add category (visual only)
-            document
-              .getElementById("addCategoryBtn")
-              .addEventListener("click", () => {
-                const inp = document.getElementById("newCategoryInput");
-                const val = inp.value.trim();
-                if (!val) {
-                  PS.toast("Enter a category name", "error");
-                  return;
-                }
-                const span = document.createElement("span");
-                span.className = "badge badge-primary";
-                span.style.padding = "6px 12px";
-                span.innerHTML = `${val}<button type="button" style="background:none;border:none;color:inherit;cursor:pointer;margin-left:6px;">✕</button>`;
-                inp
-                  .closest(".card")
-                  .querySelector(".flex.gap-2")
-                  .appendChild(span);
-                inp.value = "";
-                PS.toast(`Category "${val}" added`, "success");
-              });
-          }
-
           if (key === "notifications") {
             document
               .getElementById("saveNotifs")
@@ -299,7 +222,6 @@
                 PS.toast("Notification preferences saved", "success");
               });
           }
-
           if (key === "maintenance") {
             document
               .getElementById("saveMaintenance")
@@ -314,7 +236,6 @@
           }
         }
 
-        // ---------- Section tabs ----------
         document.querySelectorAll("[data-admin-section]").forEach((btn) => {
           btn.addEventListener("click", () => {
             document
@@ -325,7 +246,6 @@
           });
         });
 
-        // Initial render
         renderSection("fees");
       });
     </script>

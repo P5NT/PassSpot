@@ -1,13 +1,11 @@
 /* =========================================
    PASS SPOT — DATA & CONSTANTS
-   Central location for demo data and
-   reference tables (states, banks, etc.)
+   Central location for demo data,
+   reference tables, and admin accounts.
 ========================================= */
 
 /* =========================================
    NIGERIAN STATES + FCT
-   Used in event creation, filtering,
-   advertisement targeting, and settings.
 ========================================= */
 const NIGERIAN_STATES = [
   "Abia",
@@ -51,7 +49,6 @@ const NIGERIAN_STATES = [
 
 /* =========================================
    MAJOR CITIES BY STATE
-   Extensible: add more cities as needed.
 ========================================= */
 const NIGERIAN_CITIES = {
   Lagos: [
@@ -104,7 +101,6 @@ const NIGERIAN_CITIES = {
 
 /* =========================================
    NIGERIAN BANKS
-   For withdrawal account selection.
 ========================================= */
 const NIGERIAN_BANKS = [
   "Access Bank",
@@ -134,9 +130,12 @@ const NIGERIAN_BANKS = [
 ];
 
 /* =========================================
-   EVENT CATEGORIES
+   EVENT CATEGORIES (defaults)
+   Admins can add/remove via
+   admin/categories.html — those changes
+   are stored in localStorage and merged.
 ========================================= */
-const EVENT_CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   "Music",
   "Concert",
   "Sports",
@@ -161,8 +160,6 @@ const EVENT_CATEGORIES = [
 
 /* =========================================
    CURRENCY CONFIGURATION
-   MOCK exchange rate — NOT live.
-   Architecture ready for real API later.
 ========================================= */
 const CURRENCIES = {
   NGN: { symbol: "₦", code: "NGN", name: "Nigerian Naira", base: true },
@@ -170,9 +167,38 @@ const CURRENCIES = {
 };
 
 /* =========================================
-   DEMO EVENTS
-   Sample events for discovery, purchase,
-   and organizer dashboards.
+   ADMIN ACCOUNTS
+   Team members with full admin access.
+   No roles, no super-admin — flat structure.
+
+   HOW TO ADD AN ADMIN (before backend):
+   1. Add an entry to ADMIN_ACCOUNTS below
+   2. Commit + redeploy
+   3. New admin logs in at login.html with
+      that email + any 8+ char password.
+
+   ⚠️ Frontend-only placeholder. With a real
+   backend, admin accounts live in the
+   database and this array is deleted.
+========================================= */
+const ADMIN_ACCOUNTS = [
+  { email: "admin@passspot.ng", name: "Platform Admin" },
+  // { email: "tunde@passspot.ng", name: "Tunde Bakare" },
+  // { email: "ngozi@passspot.ng", name: "Ngozi Adeyemi" },
+];
+
+function isAdminEmail(email) {
+  const normalized = (email || "").toLowerCase().trim();
+  return ADMIN_ACCOUNTS.some((a) => a.email.toLowerCase() === normalized);
+}
+
+function findAdmin(email) {
+  const normalized = (email || "").toLowerCase().trim();
+  return ADMIN_ACCOUNTS.find((a) => a.email.toLowerCase() === normalized);
+}
+
+/* =========================================
+   SEEDED DEMO EVENTS
 ========================================= */
 const DEMO_EVENTS = [
   {
@@ -352,7 +378,140 @@ const DEMO_EVENTS = [
 ];
 
 /* =========================================
-   DEMO TICKETS (user's purchased tickets)
+   USER-CREATED EVENTS PERSISTENCE
+========================================= */
+const EVENT_STORAGE_KEY = "user_events";
+
+function loadUserEvents() {
+  try {
+    const raw = localStorage.getItem(EVENT_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveUserEvents(events) {
+  try {
+    localStorage.setItem(EVENT_STORAGE_KEY, JSON.stringify(events));
+  } catch (e) {
+    console.warn("Could not save user events:", e);
+  }
+}
+
+function saveEvent(event) {
+  const userEvents = loadUserEvents();
+  const idx = userEvents.findIndex((e) => e.id === event.id);
+  if (idx >= 0) userEvents[idx] = event;
+  else userEvents.unshift(event);
+  saveUserEvents(userEvents);
+  return event;
+}
+
+function deleteEvent(eventId) {
+  const userEvents = loadUserEvents().filter((e) => e.id !== eventId);
+  saveUserEvents(userEvents);
+}
+
+function getEvents() {
+  const userEvents = loadUserEvents();
+  const userIds = new Set(userEvents.map((e) => e.id));
+  const seeded = DEMO_EVENTS.filter((e) => !userIds.has(e.id));
+  return [...userEvents, ...seeded];
+}
+
+function getEventById(id) {
+  return getEvents().find((e) => e.id === id);
+}
+
+/* =========================================
+   CATEGORIES PERSISTENCE
+   Admin custom categories merge with defaults.
+========================================= */
+const CATEGORY_STORAGE_KEY = "custom_categories";
+
+function loadCustomCategories() {
+  try {
+    const raw = localStorage.getItem(CATEGORY_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomCategories(cats) {
+  try {
+    localStorage.setItem(CATEGORY_STORAGE_KEY, JSON.stringify(cats));
+  } catch (e) {
+    console.warn("Could not save categories:", e);
+  }
+}
+
+function getCategories() {
+  // Admin-added categories first, then defaults
+  const custom = loadCustomCategories();
+  const defaults = DEFAULT_CATEGORIES.filter((c) => !custom.includes(c));
+  return [...custom, ...defaults];
+}
+
+function addCategory(name) {
+  const clean = (name || "").trim();
+  if (!clean) return false;
+  const all = getCategories();
+  if (all.map((c) => c.toLowerCase()).includes(clean.toLowerCase()))
+    return false;
+  const custom = loadCustomCategories();
+  custom.push(clean);
+  saveCustomCategories(custom);
+  return true;
+}
+
+function removeCategory(name) {
+  // Can only remove custom ones, not defaults
+  const custom = loadCustomCategories();
+  const filtered = custom.filter((c) => c !== name);
+  saveCustomCategories(filtered);
+  return filtered.length !== custom.length;
+}
+
+/* =========================================
+   SEEDED DEMO ORGANIZERS
+   Used on admin/organizers.html so the page
+   has content on first view. When real
+   organizers exist (users with role =
+   "organizer"), those merge in too.
+========================================= */
+const SEEDED_ORGANIZERS = [
+  {
+    id: "org_seed_1",
+    name: "SoundWave NG",
+    email: "hello@soundwave.ng",
+    phone: "+234 803 111 2233",
+    state: "Lagos",
+    city: "Lekki",
+    joined: "2025-02-14",
+    status: "active",
+    eventCount: 2,
+    grossRevenue: 21150000,
+    totalWithdrawn: 12000000,
+  },
+  {
+    id: "org_seed_2",
+    name: "Innovate Lagos",
+    email: "team@innovatelagos.com",
+    phone: "+234 809 555 7788",
+    state: "Lagos",
+    city: "Yaba",
+    joined: "2025-05-08",
+    status: "active",
+    eventCount: 2,
+    grossRevenue: 8885000,
+    totalWithdrawn: 5000000,
+  },
+];
+
+/* =========================================
+   DEMO TICKETS
 ========================================= */
 const DEMO_TICKETS = [
   {
@@ -394,7 +553,7 @@ const DEMO_TICKETS = [
 ];
 
 /* =========================================
-   DEMO WALLET TRANSACTIONS
+   DEMO TRANSACTIONS
 ========================================= */
 const DEMO_TRANSACTIONS = [
   {
@@ -472,7 +631,81 @@ const DEMO_TRANSACTIONS = [
 ];
 
 /* =========================================
-   DEMO ADVERTISEMENT CAMPAIGNS
+   SEEDED DEPOSITS
+   These are the deposit-type transactions
+   with extra fields (reference, bank).
+========================================= */
+const SEEDED_DEPOSITS = [
+  {
+    id: "DEP-20251118-001",
+    txId: "TX-20251118-7712",
+    user: "Ada Okafor",
+    email: "ada.okafor@example.com",
+    amount: 100000,
+    status: "completed",
+    method: "Bank Transfer",
+    reference: "GTB-REF-884211",
+    date: "2025-11-18T11:05:00",
+  },
+  {
+    id: "DEP-20251110-002",
+    txId: "TX-20251110-5401",
+    user: "Ada Okafor",
+    email: "ada.okafor@example.com",
+    amount: 50000,
+    status: "completed",
+    method: "Card",
+    reference: "PS-CARD-993421",
+    date: "2025-11-10T08:22:00",
+  },
+  {
+    id: "DEP-20251105-003",
+    txId: "TX-20251105-0003",
+    user: "Emeka Nwosu",
+    email: "emeka.nwosu@example.com",
+    amount: 250000,
+    status: "completed",
+    method: "Bank Transfer",
+    reference: "ZEN-REF-114730",
+    date: "2025-11-05T15:44:00",
+  },
+  {
+    id: "DEP-20251102-004",
+    txId: "TX-20251102-0004",
+    user: "Fatima Bello",
+    email: "fatima.bello@example.com",
+    amount: 75000,
+    status: "pending",
+    method: "Bank Transfer",
+    reference: "GTB-REF-449123",
+    date: "2025-11-02T09:12:00",
+  },
+  {
+    id: "DEP-20251028-005",
+    txId: "TX-20251028-0005",
+    user: "Chidi Okeke",
+    email: "chidi.okeke@example.com",
+    amount: 30000,
+    status: "completed",
+    method: "Card",
+    reference: "PS-CARD-772801",
+    date: "2025-10-28T17:30:00",
+  },
+  {
+    id: "DEP-20251022-006",
+    txId: "TX-20251022-0006",
+    user: "Ngozi Adeyemi",
+    email: "ngozi.a@example.com",
+    amount: 150000,
+    status: "failed",
+    method: "Bank Transfer",
+    reference: "ACC-REF-558822",
+    date: "2025-10-22T12:03:00",
+  },
+];
+
+/* =========================================
+   DEMO ADVERTISEMENTS
 ========================================= */
 const DEMO_ADS = [
   {
@@ -586,11 +819,30 @@ window.PS_DATA = {
   NIGERIAN_STATES,
   NIGERIAN_CITIES,
   NIGERIAN_BANKS,
-  EVENT_CATEGORIES,
+  EVENT_CATEGORIES: DEFAULT_CATEGORIES, // legacy alias
   CURRENCIES,
   DEMO_EVENTS,
   DEMO_TICKETS,
   DEMO_TRANSACTIONS,
   DEMO_ADS,
   DEMO_NOTIFICATIONS,
+  SEEDED_ORGANIZERS,
+  SEEDED_DEPOSITS,
+  ADMIN_ACCOUNTS,
+
+  // Persistence API
+  getEvents,
+  getEventById,
+  saveEvent,
+  deleteEvent,
+  loadUserEvents,
+
+  // Categories
+  getCategories,
+  addCategory,
+  removeCategory,
+
+  // Admin
+  isAdminEmail,
+  findAdmin,
 };

@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Organizers — Admin — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Organizers</h2>
+              <p class="page-subtitle">
+                Manage event organizers on the platform.
+              </p>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <section class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Total organizers</span>
+                <span class="stat-icon">📣</span>
+              </div>
+              <div class="stat-value" id="orgTotal">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Active</span>
+                <span class="stat-icon success">✅</span>
+              </div>
+              <div class="stat-value" id="orgActive">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Suspended</span>
+                <span class="stat-icon warning">⏸</span>
+              </div>
+              <div class="stat-value" id="orgSuspended">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Total gross revenue</span>
+                <span class="stat-icon info">💰</span>
+              </div>
+              <div class="stat-value" id="orgRevenue">₦0</div>
+            </div>
+          </section>
+
+          <!-- Filters -->
+          <div class="filter-bar">
+            <div class="filter-search">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input
+                class="form-input"
+                type="search"
+                id="orgSearch"
+                placeholder="Search organizers by name or email…"
+              />
+            </div>
+            <select
+              class="form-select"
+              id="orgStatus"
+              style="width: auto; min-width: 150px"
+            >
+              <option value="">All statuses</option>
+              <option value="active">Active</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
+
+          <!-- Table -->
+          <div class="table-wrap">
+            <div class="table-scroll">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Organizer</th>
+                    <th>Location</th>
+                    <th>Events</th>
+                    <th>Gross revenue</th>
+                    <th>Withdrawn</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="orgBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Action modal -->
+    <div class="modal-overlay" id="actionModal">
+      <div class="modal modal-sm">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title" id="actionTitle">Confirm</h3>
+            <p class="modal-subtitle" id="actionSub">Are you sure?</p>
+          </div>
+          <button class="modal-close" onclick="PS.closeModal('actionModal')">
+            ✕
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="PS.closeModal('actionModal')"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="confirmAction">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/data.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Guard: redirect to login if not admin
+        if (!PS.session.requireAdmin()) return;
+
+        window.PS_ADMIN.renderSidebar("organizers");
+        window.PS_ADMIN.renderTopbar("Organizers");
+
+        // =========================================
+        // LOAD ORGANIZERS
+        // Seeded demo organizers + any real users
+        // whose role is "organizer" (from session).
+        // =========================================
+        function loadOrganizers() {
+          const seeded = window.PS_DATA.SEEDED_ORGANIZERS.map((o) => ({
+            ...o,
+            source: "seed",
+          }));
+          // Any real organizers currently logged in
+          // (in a real app this would be a user list
+          // from the backend)
+          const currentUser = PS.session.getUser();
+          const realOrganizers = [];
+          if (currentUser.role === "organizer") {
+            realOrganizers.push({
+              id: "org_real_1",
+              name: currentUser.name,
+              email: currentUser.email,
+              phone: currentUser.phone || "—",
+              state: "—",
+              city: "—",
+              joined: new Date().toISOString().split("T")[0],
+              status: "active",
+              eventCount: 0,
+              grossRevenue: 0,
+              totalWithdrawn: 0,
+              source: "real",
+            });
+          }
+          return [...realOrganizers, ...seeded];
+        }
+
+        let organizers = loadOrganizers();
+        let activeStatus = "";
+        let activeSearch = "";
+
+        // =========================================
+        // RENDER STATS
+        // =========================================
+        function renderStats() {
+          const cur = PS.getCurrency();
+          const total = organizers.length;
+          const active = organizers.filter((o) => o.status === "active").length;
+          const suspended = organizers.filter(
+            (o) => o.status === "suspended",
+          ).length;
+          const revenue = organizers.reduce(
+            (s, o) => s + (o.grossRevenue || 0),
+            0,
+          );
+
+          document.getElementById("orgTotal").textContent = total;
+          document.getElementById("orgActive").textContent = active;
+          document.getElementById("orgSuspended").textContent = suspended;
+          document.getElementById("orgRevenue").textContent = PS.formatMoney(
+            revenue,
+            cur,
+          );
+        }
+
+        // =========================================
+        // RENDER TABLE
+        // =========================================
+        function renderTable() {
+          let list = [...organizers];
+          if (activeSearch) {
+            list = list.filter(
+              (o) =>
+                o.name.toLowerCase().includes(activeSearch) ||
+                o.email.toLowerCase().includes(activeSearch),
+            );
+          }
+          if (activeStatus)
+            list = list.filter((o) => o.status === activeStatus);
+
+          const tbody = document.getElementById("orgBody");
+          if (list.length === 0) {
+            tbody.innerHTML = `
+            <tr>
+              <td colspan="7">
+                <div class="empty-state" style="padding:var(--space-8);">
+                  <div class="empty-state-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </div>
+                  <h3 class="empty-state-title">No organizers found</h3>
+                  <p class="empty-state-text">Try adjusting your search or filters.</p>
+                </div>
+              </td>
+            </tr>`;
+            return;
+          }
+
+          const cur = PS.getCurrency();
+          tbody.innerHTML = list
+            .map(
+              (o) => `
+          <tr>
+            <td data-label="Organizer">
+              <div class="flex items-center gap-3">
+                <span class="avatar avatar-sm">${o.name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .join("")
+                  .slice(0, 2)}</span>
+                <div>
+                  <div class="fw-semibold text-sm">${o.name}</div>
+                  <div class="text-xs text-muted">${o.email}</div>
+                </div>
+              </div>
+            </td>
+            <td data-label="Location">
+              <span class="text-sm text-muted">${o.city}, ${o.state.replace(" (FCT)", "")}</span>
+            </td>
+            <td data-label="Events">
+              <span class="fw-semibold text-sm">${o.eventCount}</span>
+            </td>
+            <td data-label="Gross revenue">
+              <span class="fw-bold" data-money="${o.grossRevenue}">${PS.formatMoney(o.grossRevenue, cur)}</span>
+            </td>
+            <td data-label="Withdrawn">
+              <span class="text-sm" data-money="${o.totalWithdrawn}">${PS.formatMoney(o.totalWithdrawn, cur)}</span>
+            </td>
+            <td data-label="Status">
+              <span class="badge ${o.status === "active" ? "badge-success" : "badge-error"}">${o.status}</span>
+            </td>
+            <td data-label="Actions">
+              <div class="table-actions">
+                <button class="btn btn-sm btn-secondary" data-view="${o.id}">View</button>
+                <button class="btn btn-sm ${o.status === "active" ? "btn-ghost" : "btn-primary"}" data-toggle="${o.id}">
+                  ${o.status === "active" ? "Suspend" : "Activate"}
+                </button>
+              </div>
+            </td>
+          </tr>
+        `,
+            )
+            .join("");
+
+          tbody.querySelectorAll("[data-toggle]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const o = organizers.find((x) => x.id === btn.dataset.toggle);
+              const nextStatus = o.status === "active" ? "suspended" : "active";
+              document.getElementById("actionTitle").textContent =
+                `${nextStatus === "suspended" ? "Suspend" : "Activate"} organizer?`;
+              document.getElementById("actionSub").textContent =
+                `${o.name} will be ${nextStatus === "suspended" ? "suspended — they can't create events or withdraw funds" : "reactivated"}.`;
+              document.getElementById("confirmAction").onclick = () => {
+                o.status = nextStatus;
+                PS.closeModal("actionModal");
+                PS.toast(
+                  `Organizer ${nextStatus === "suspended" ? "suspended" : "activated"}`,
+                  "success",
+                );
+                renderTable();
+                renderStats();
+              };
+              PS.openModal("actionModal");
+            });
+          });
+
+          tbody.querySelectorAll("[data-view]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const o = organizers.find((x) => x.id === btn.dataset.view);
+              alert(
+                `${o.name}\n\n${o.email}\n${o.phone}\n\nJoined: ${o.joined}\nEvents: ${o.eventCount}\nGross revenue: ${PS.formatMoney(o.grossRevenue, cur)}\nWithdrawn: ${PS.formatMoney(o.totalWithdrawn, cur)}\n\n(Full organizer detail page coming soon)`,
+              );
+            });
+          });
+        }
+
+        // Filter bindings
+        document.getElementById("orgSearch").addEventListener("input", (e) => {
+          activeSearch = e.target.value.toLowerCase();
+          renderTable();
+        });
+        document.getElementById("orgStatus").addEventListener("change", (e) => {
+          activeStatus = e.target.value;
+          renderTable();
+        });
+
+        document.addEventListener("ps:currencychange", () => {
+          renderStats();
+          renderTable();
+        });
+
+        renderStats();
+        renderTable();
+      });
+    </script>
+  </body>
+</html>
