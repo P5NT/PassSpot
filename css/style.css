@@ -4053,3 +4053,82 @@ h5 {
     font-size: var(--fs-xs);
   }
 }
+
+/* =========================================
+   ADMIN MOBILE FIXES (OVERFLOW & LAYOUT)
+   ========================================= */
+
+@media (max-width: 768px) {
+  /* 1. Kill horizontal overflow globally for the page */
+  .main-area,
+  .page-content {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
+  /* 2. Fix the page header layout */
+  .page-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: var(--space-4) !important;
+  }
+
+  .page-title {
+    font-size: var(--fs-2xl) !important;
+    word-wrap: break-word;
+  }
+
+  /* 3. FORCE the inline grids to stack and shrink */
+  /* min-width: 0 is the magic fix that stops them from pushing off-screen */
+  #adminDashGrid,
+  #reportChartsGrid,
+  #settingsGrid,
+  #catGrid,
+  #notifGrid {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    gap: var(--space-5) !important;
+  }
+
+  /* 4. Fix the inner grids inside Reports/Dashboard so charts don't overflow */
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .table-wrap,
+  .table-scroll {
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
+  /* 5. Settings Sidebar navigation (turn into a scrollable top row) */
+  #settingsGrid > nav {
+    position: static !important;
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    padding-bottom: var(--space-2) !important;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: var(--space-2);
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
+  #settingsGrid > nav .sidebar-nav {
+    flex-direction: row !important;
+    gap: var(--space-2) !important;
+  }
+
+  #settingsGrid > nav .sidebar-link {
+    white-space: nowrap !important;
+    padding: var(--space-2) var(--space-4) !important;
+    border-radius: var(--radius-full) !important;
+  }
+
+  #settingsGrid > nav .sidebar-link.is-active::before {
+    display: none !important;
+  }
+}
