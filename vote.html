@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vote — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      .checkout-header {
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--space-6);
+        border-bottom: 1px solid var(--border-color);
+        background-color: var(--surface-bg);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+      }
+      .vote-hero {
+        position: relative;
+        background-color: var(--surface-muted);
+        padding: var(--space-10) var(--space-6);
+        text-align: center;
+        border-bottom: 1px solid var(--border-color);
+        overflow: hidden;
+      }
+      .vote-hero-bg {
+        position: absolute;
+        inset: 0;
+        opacity: 0.15;
+        background-size: cover;
+        background-position: center;
+        z-index: 0;
+      }
+      .vote-hero-content {
+        position: relative;
+        z-index: 1;
+        max-width: 720px;
+        margin: 0 auto;
+      }
+      .cat-tabs {
+        display: flex;
+        gap: var(--space-2);
+        overflow-x: auto;
+        padding-bottom: var(--space-2);
+        margin-bottom: var(--space-6);
+        scrollbar-width: thin;
+      }
+      .cat-tabs::-webkit-scrollbar {
+        height: 4px;
+      }
+      .cat-tabs::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: var(--radius-full);
+      }
+      .cat-tab {
+        padding: var(--space-3) var(--space-5);
+        border-radius: var(--radius-full);
+        background-color: var(--surface-elevated);
+        border: 1.5px solid var(--border-color);
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-semibold);
+        color: var(--text-secondary);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all var(--transition-fast);
+      }
+      .cat-tab:hover {
+        border-color: var(--primary-300);
+        color: var(--primary-color);
+      }
+      .cat-tab.is-active {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: #ffffff;
+        box-shadow: var(--shadow-primary);
+      }
+      .cat-tab .cat-count {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 1px 6px;
+        border-radius: var(--radius-full);
+        background-color: rgba(0, 0, 0, 0.08);
+        font-size: var(--fs-xs);
+      }
+      .cat-tab.is-active .cat-count {
+        background-color: rgba(255, 255, 255, 0.25);
+      }
+
+      /* Quick vote buttons */
+      .quick-votes {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: var(--space-2);
+      }
+      .quick-vote-btn {
+        padding: 6px 14px;
+        border: 1.5px solid var(--border-color);
+        border-radius: var(--radius-full);
+        background: var(--surface-elevated);
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-semibold);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+      }
+      .quick-vote-btn:hover {
+        border-color: var(--primary-300);
+        color: var(--primary-color);
+      }
+      .quick-vote-btn.is-active {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+        color: #fff;
+      }
+
+      /* Highlighted contestant (from direct share link) */
+      .event-card.is-highlighted {
+        border-color: var(--primary-color);
+        box-shadow:
+          0 0 0 3px var(--primary-50),
+          var(--shadow-lg);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="checkout-header">
+      <a href="index.html" class="brand"
+        >Pass<span class="brand-accent">Spot</span></a
+      >
+      <div class="flex items-center gap-2">
+        <button class="icon-btn" id="themeToggle" aria-label="Toggle theme">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+            />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main id="voteMain"></main>
+
+    <!-- Vote Modal -->
+    <div class="modal-overlay" id="voteModal">
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title">Cast your vote</h3>
+            <p class="modal-subtitle" id="voteContestantName">—</p>
+          </div>
+          <button class="modal-close" onclick="PS.closeModal('voteModal')">
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="summary-row">
+            <span class="text-muted text-sm">Price per vote</span>
+            <span class="fw-semibold text-sm" id="votePriceDisplay">—</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label"
+              >Number of Votes <span class="required">*</span></label
+            >
+            <div class="flex items-center gap-3">
+              <button type="button" class="btn btn-secondary" id="voteMinus">
+                −
+              </button>
+              <input
+                class="form-input"
+                type="number"
+                id="voteQty"
+                value="1"
+                min="1"
+                max="10000"
+                style="max-width: 120px; text-align: center"
+              />
+              <button type="button" class="btn btn-secondary" id="votePlus">
+                +
+              </button>
+            </div>
+            <div class="quick-votes" id="quickVotes">
+              <button type="button" class="quick-vote-btn" data-qty="1">
+                1
+              </button>
+              <button type="button" class="quick-vote-btn" data-qty="5">
+                5
+              </button>
+              <button type="button" class="quick-vote-btn" data-qty="10">
+                10
+              </button>
+              <button type="button" class="quick-vote-btn" data-qty="50">
+                50
+              </button>
+              <button type="button" class="quick-vote-btn" data-qty="100">
+                100
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label"
+              >Email Address <span class="required">*</span></label
+            >
+            <input
+              class="form-input"
+              type="email"
+              id="voteEmail"
+              placeholder="you@example.com"
+            />
+            <span class="form-hint">We'll send your vote receipt here.</span>
+            <span class="form-error"></span>
+          </div>
+          <div class="divider"></div>
+          <div class="summary-row total">
+            <span>Total</span>
+            <span id="voteTotalDisplay">₦0.00</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="PS.closeModal('voteModal')"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="confirmVoteBtn">
+            Pay & Vote
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Receipt Modal -->
+    <div class="modal-overlay" id="receiptModal">
+      <div class="modal">
+        <div
+          class="modal-body"
+          style="text-align: center; padding: var(--space-8)"
+        >
+          <div
+            style="
+              width: 72px;
+              height: 72px;
+              border-radius: 50%;
+              background: var(--success-bg);
+              color: var(--success-color);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto var(--space-4);
+            "
+          >
+            <svg
+              width="36"
+              height="36"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+          </div>
+          <h3 class="modal-title" style="margin-bottom: var(--space-2)">
+            Vote recorded! 🎉
+          </h3>
+          <p class="modal-subtitle mb-4">
+            Your vote for <strong id="receiptContestant">—</strong> was
+            successful.
+          </p>
+
+          <div
+            class="card"
+            style="
+              background: var(--surface-muted);
+              padding: var(--space-4);
+              text-align: left;
+              margin-top: var(--space-4);
+            "
+          >
+            <div class="summary-row">
+              <span class="text-muted text-sm">Receipt ID</span
+              ><span class="mono fw-semibold text-sm" id="receiptId">—</span>
+            </div>
+            <div class="summary-row">
+              <span class="text-muted text-sm">Event</span
+              ><span class="fw-semibold text-sm text-right" id="receiptEvent"
+                >—</span
+              >
+            </div>
+            <div class="summary-row">
+              <span class="text-muted text-sm">Votes</span
+              ><span class="fw-semibold text-sm" id="receiptVotes">—</span>
+            </div>
+            <div class="summary-row">
+              <span class="text-muted text-sm">Sent to</span
+              ><span class="fw-semibold text-sm text-right" id="receiptEmail"
+                >—</span
+              >
+            </div>
+            <div class="summary-row total">
+              <span>Total Paid</span><span id="receiptTotal">—</span>
+            </div>
+          </div>
+
+          <p class="text-xs text-muted" style="margin-top: var(--space-4)">
+            A copy of this receipt has been sent to your email.
+          </p>
+        </div>
+        <div
+          class="modal-footer"
+          style="justify-content: center; flex-wrap: wrap"
+        >
+          <button class="btn btn-secondary" id="downloadReceiptBtn">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path
+                d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"
+              />
+            </svg>
+            Download as PNG
+          </button>
+          <button class="btn btn-primary" id="voteAgainBtn">Vote Again</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const voteId = params.get("id");
+        const directContestantId = params.get("contestant"); // For share-specific links
+
+        const votingEvents = PS.store.get("voting_events", []);
+        const currentVote = votingEvents.find((v) => v.id === voteId);
+        const main = document.getElementById("voteMain");
+
+        if (!currentVote) {
+          main.innerHTML = `
+          <div class="empty-state" style="padding:var(--space-16);">
+            <h3 class="empty-state-title">Voting event not found</h3>
+            <p class="empty-state-text">The link is invalid or the vote has ended.</p>
+            <a href="index.html" class="btn btn-primary">Go Home</a>
+          </div>`;
+          return;
+        }
+
+        const isClosed =
+          currentVote.status === "closed" ||
+          new Date() > new Date(currentVote.endDate);
+        const cur = PS.getCurrency();
+        const allContestants = currentVote.contestants || [];
+        const categoriesList = (currentVote.categories || []).sort((a, b) =>
+          a.localeCompare(b),
+        );
+
+        // Determine active category (from share link if provided)
+        let activeCategory = categoriesList[0] || "";
+        let highlightedContestantId = null;
+
+        if (directContestantId) {
+          const direct = allContestants.find(
+            (c) => c.id === directContestantId,
+          );
+          if (direct) {
+            activeCategory = direct.category;
+            highlightedContestantId = direct.id;
+          }
+        }
+
+        let selectedContestant = null;
+        let lastReceipt = null;
+
+        function renderPage() {
+          const heroStyle = currentVote.imageData
+            ? `background-image:url(${currentVote.imageData});`
+            : `background: linear-gradient(135deg, var(--primary-500), var(--primary-700));`;
+
+          main.innerHTML = `
+          <div class="vote-hero">
+            <div class="vote-hero-bg" style="${heroStyle}"></div>
+            <div class="vote-hero-content">
+              ${isClosed ? '<span class="badge badge-error mb-3">Voting Closed</span>' : '<span class="badge badge-success mb-3">Voting Open</span>'}
+              <h1 style="font-size:clamp(1.75rem, 4vw, 2.5rem); margin-bottom:var(--space-3);">${currentVote.title}</h1>
+              <p class="text-muted" style="max-width:600px; margin:0 auto;">${currentVote.description}</p>
+              <div class="fw-bold mt-4" style="font-size:var(--fs-lg); color:var(--primary-color);">₦${currentVote.pricePerVote.toLocaleString()} per vote</div>
+            </div>
+          </div>
+          
+          <div class="container" style="padding:var(--space-10) var(--space-6);">
+            ${
+              categoriesList.length === 0
+                ? `
+              <div class="empty-state">
+                <h3 class="empty-state-title">No categories yet</h3>
+                <p class="empty-state-text">The organizer hasn't set up any categories.</p>
+              </div>
+            `
+                : `
+              <div class="cat-tabs" id="catTabs">
+                ${categoriesList
+                  .map((cat) => {
+                    const count = allContestants.filter(
+                      (c) => c.category === cat,
+                    ).length;
+                    return `
+                    <button class="cat-tab ${cat === activeCategory ? "is-active" : ""}" data-cat="${cat}">
+                      ${cat} <span class="cat-count">${count}</span>
+                    </button>
+                  `;
+                  })
+                  .join("")}
+              </div>
+              
+              <div class="event-grid" id="contestantGrid"></div>
+            `
+            }
+          </div>
+        `;
+
+          main.querySelectorAll("[data-cat]").forEach((tab) => {
+            tab.addEventListener("click", () => {
+              activeCategory = tab.dataset.cat;
+              main
+                .querySelectorAll(".cat-tab")
+                .forEach((t) => t.classList.remove("is-active"));
+              tab.classList.add("is-active");
+              renderContestants();
+            });
+          });
+
+          renderContestants();
+        }
+
+        function renderContestants() {
+          const grid = document.getElementById("contestantGrid");
+          if (!grid) return;
+
+          const list = allContestants.filter(
+            (c) => c.category === activeCategory,
+          );
+
+          if (list.length === 0) {
+            grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><p class="empty-state-text">No contestants in this category yet.</p></div>`;
+            return;
+          }
+
+          grid.innerHTML = list
+            .map(
+              (c) => `
+          <article class="event-card ${c.id === highlightedContestantId ? "is-highlighted" : ""}" id="card-${c.id}">
+            <div class="event-card-media" style="aspect-ratio:1/1;">
+              ${c.image ? `<img src="${c.image}" style="width:100%;height:100%;object-fit:cover;">` : `<div class="event-card-media-placeholder">👤</div>`}
+            </div>
+            <div class="event-card-body">
+              <div class="event-card-title">${c.name}</div>
+              <div class="flex flex-col gap-1 mt-2 mb-2">
+                ${Object.entries(c.customData || {})
+                  .map(([key, val]) =>
+                    val
+                      ? `
+                  <div class="text-xs text-muted flex justify-between">
+                    <span>${key}:</span> <span class="fw-semibold text-primary">${val}</span>
+                  </div>
+                `
+                      : "",
+                  )
+                  .join("")}
+              </div>
+              <div class="event-card-footer" style="padding-top:var(--space-3);border-top:1px solid var(--border-color);">
+                <div class="event-card-price">${c.votes || 0}<span class="event-card-price-label">votes</span></div>
+                <button class="btn btn-sm btn-primary" data-vote="${c.id}" ${isClosed ? "disabled" : ""}>
+                  ${isClosed ? "Closed" : "Vote"}
+                </button>
+              </div>
+            </div>
+          </article>
+        `,
+            )
+            .join("");
+
+          grid.querySelectorAll("[data-vote]").forEach((btn) => {
+            btn.addEventListener("click", () =>
+              openVoteModal(btn.dataset.vote),
+            );
+          });
+
+          // Scroll to highlighted contestant
+          if (highlightedContestantId) {
+            const card = document.getElementById(
+              `card-${highlightedContestantId}`,
+            );
+            if (card)
+              setTimeout(
+                () =>
+                  card.scrollIntoView({ behavior: "smooth", block: "center" }),
+                300,
+              );
+            // Clear highlight after 3 seconds so it doesn't stay permanent
+            setTimeout(() => {
+              document
+                .querySelectorAll(".event-card.is-highlighted")
+                .forEach((el) => el.classList.remove("is-highlighted"));
+            }, 3000);
+            highlightedContestantId = null;
+          }
+        }
+
+        // --- MODAL LOGIC ---
+        const voteQty = document.getElementById("voteQty");
+        const voteEmail = document.getElementById("voteEmail");
+        const votePriceDisplay = document.getElementById("votePriceDisplay");
+        const voteTotalDisplay = document.getElementById("voteTotalDisplay");
+        const quickVotes = document.getElementById("quickVotes");
+
+        function openVoteModal(contestantId) {
+          selectedContestant = allContestants.find(
+            (c) => c.id === contestantId,
+          );
+          if (!selectedContestant) return;
+
+          document.getElementById("voteContestantName").textContent =
+            `Voting for ${selectedContestant.name}`;
+          votePriceDisplay.textContent = PS.formatMoney(
+            currentVote.pricePerVote,
+            cur,
+          );
+
+          voteQty.value = 1;
+          voteEmail.value = "";
+          PS.clearFieldError(voteEmail);
+          updateVoteTotal();
+          updateQuickButtons();
+
+          PS.openModal("voteModal");
+        }
+
+        function updateVoteTotal() {
+          const qty = parseInt(voteQty.value) || 1;
+          const total = qty * currentVote.pricePerVote;
+          voteTotalDisplay.textContent = PS.formatMoney(total, cur);
+          updateQuickButtons();
+        }
+
+        function updateQuickButtons() {
+          const currentQty = parseInt(voteQty.value) || 1;
+          quickVotes.querySelectorAll(".quick-vote-btn").forEach((btn) => {
+            btn.classList.toggle(
+              "is-active",
+              parseInt(btn.dataset.qty) === currentQty,
+            );
+          });
+        }
+
+        document.getElementById("voteMinus").addEventListener("click", () => {
+          if (parseInt(voteQty.value) > 1) {
+            voteQty.value = parseInt(voteQty.value) - 1;
+            updateVoteTotal();
+          }
+        });
+
+        document.getElementById("votePlus").addEventListener("click", () => {
+          voteQty.value = (parseInt(voteQty.value) || 0) + 1;
+          updateVoteTotal();
+        });
+
+        voteQty.addEventListener("input", updateVoteTotal);
+
+        quickVotes.querySelectorAll(".quick-vote-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            voteQty.value = btn.dataset.qty;
+            updateVoteTotal();
+          });
+        });
+
+        // --- SUBMIT VOTE ---
+        document
+          .getElementById("confirmVoteBtn")
+          .addEventListener("click", (e) => {
+            const email = voteEmail.value.trim();
+            const qty = parseInt(voteQty.value) || 1;
+
+            PS.clearFieldError(voteEmail);
+            if (!email) {
+              PS.setFieldError(voteEmail, "Please enter your email.");
+              return;
+            }
+            if (!PS.validateEmail(email)) {
+              PS.setFieldError(voteEmail, "Please enter a valid email.");
+              return;
+            }
+
+            const btn = e.currentTarget;
+            btn.classList.add("is-loading");
+            btn.disabled = true;
+
+            setTimeout(() => {
+              // Record the receipt data before updating
+              const receiptId =
+                "VOTE-" + Math.random().toString(36).slice(2, 8).toUpperCase();
+              const totalPaid = qty * currentVote.pricePerVote;
+
+              lastReceipt = {
+                id: receiptId,
+                contestant: selectedContestant.name,
+                event: currentVote.title,
+                votes: qty,
+                email: email,
+                total: totalPaid,
+                currency: cur,
+                date: new Date().toISOString(),
+              };
+
+              // Update vote counts
+              selectedContestant.votes = (selectedContestant.votes || 0) + qty;
+              currentVote.totalVotes = (currentVote.totalVotes || 0) + qty;
+
+              // Save
+              const idx = votingEvents.findIndex(
+                (v) => v.id === currentVote.id,
+              );
+              votingEvents[idx] = currentVote;
+              PS.store.set("voting_events", votingEvents);
+
+              PS.closeModal("voteModal");
+              showReceipt(lastReceipt);
+
+              btn.classList.remove("is-loading");
+              btn.disabled = false;
+            }, 1500);
+          });
+
+        // --- RECEIPT MODAL ---
+        function showReceipt(receipt) {
+          document.getElementById("receiptId").textContent = receipt.id;
+          document.getElementById("receiptContestant").textContent =
+            receipt.contestant;
+          document.getElementById("receiptEvent").textContent = receipt.event;
+          document.getElementById("receiptVotes").textContent = receipt.votes;
+          document.getElementById("receiptEmail").textContent = receipt.email;
+          document.getElementById("receiptTotal").textContent = PS.formatMoney(
+            receipt.total,
+            receipt.currency,
+          );
+
+          PS.openModal("receiptModal");
+
+          // Refresh vote counts on cards behind the modal
+          renderContestants();
+        }
+
+        // Download Receipt as PNG
+        document
+          .getElementById("downloadReceiptBtn")
+          .addEventListener("click", () => {
+            if (!lastReceipt) return;
+            const r = lastReceipt;
+
+            const canvas = document.createElement("canvas");
+            canvas.width = 800;
+            canvas.height = 1000;
+            const ctx = canvas.getContext("2d");
+
+            // 1. Background
+            ctx.fillStyle = "#FFFFFF";
+            ctx.fillRect(0, 0, 800, 1000);
+
+            // 2. Header (Purple Bar)
+            ctx.fillStyle = "#6C2BD9";
+            ctx.fillRect(0, 0, 800, 140);
+
+            // 3. Header Text
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "700 42px Inter, sans-serif";
+            ctx.textBaseline = "middle";
+            ctx.fillText("Pass Spot", 40, 70);
+
+            ctx.font = "500 18px Inter, sans-serif";
+            ctx.fillStyle = "rgba(255,255,255,0.75)";
+            ctx.fillText("OFFICIAL VOTE RECEIPT", 40, 110);
+
+            // 4. Success Icon / Badge
+            ctx.beginPath();
+            ctx.arc(400, 210, 40, 0, Math.PI * 2);
+            ctx.fillStyle = "#F0FDF4";
+            ctx.fill();
+            ctx.fillStyle = "#16A34A";
+            ctx.font = "bold 36px Inter, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText("✓", 400, 210);
+
+            // 5. Title
+            ctx.fillStyle = "#0D0D0D";
+            ctx.font = "700 28px Inter, sans-serif";
+            ctx.fillText("Vote Successful", 400, 285);
+
+            ctx.fillStyle = "#52525B";
+            ctx.font = "400 18px Inter, sans-serif";
+            ctx.fillText("Thank you for voting on Pass Spot", 400, 320);
+
+            // Reset text align for left-aligned content
+            ctx.textAlign = "left";
+
+            // 6. Details Box
+            ctx.fillStyle = "#F4F4F6";
+            ctx.beginPath();
+            ctx.roundRect(60, 380, 680, 480, 16);
+            ctx.fill();
+
+            // Helper for drawing rows
+            function drawRow(label, value, y, isTotal = false) {
+              ctx.fillStyle = "#71717D";
+              ctx.font = "500 16px Inter, sans-serif";
+              ctx.fillText(label, 100, y);
+
+              ctx.fillStyle = isTotal ? "#0D0D0D" : "#0D0D0D";
+              ctx.font = isTotal
+                ? "700 22px Inter, sans-serif"
+                : "600 18px Inter, sans-serif";
+              ctx.textAlign = "right";
+
+              // Handle long text wrapping if necessary (simplified for receipt)
+              ctx.fillText(value, 700, y);
+              ctx.textAlign = "left";
+
+              if (!isTotal) {
+                ctx.strokeStyle = "#E8E8EC";
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(100, y + 20);
+                ctx.lineTo(700, y + 20);
+                ctx.stroke();
+              }
+            }
+
+            drawRow("Receipt ID", r.id, 430);
+            drawRow("Date", PS.formatDateTime(r.date), 500);
+            drawRow(
+              "Event",
+              r.event.substring(0, 35) + (r.event.length > 35 ? "..." : ""),
+              570,
+            );
+            drawRow("Contestant", r.contestant, 640);
+            drawRow("Votes Cast", r.votes.toString(), 710);
+            drawRow("Sent To", r.email, 780);
+
+            // 7. Total Paid
+            ctx.fillStyle = "#0D0D0D";
+            ctx.font = "700 18px Inter, sans-serif";
+            ctx.fillText("Total Paid", 100, 900);
+
+            ctx.fillStyle = "#16A34A";
+            ctx.font = "700 28px Inter, sans-serif";
+            ctx.textAlign = "right";
+            ctx.fillText(PS.formatMoney(r.total, r.currency), 700, 900);
+            ctx.textAlign = "left";
+
+            // 8. Footer
+            ctx.fillStyle = "#A1A1AC";
+            ctx.font = "400 14px Inter, sans-serif";
+            ctx.textAlign = "center";
+            ctx.fillText(
+              "This is a demo receipt — no real payment was processed.",
+              400,
+              960,
+            );
+
+            // Export PNG
+            canvas.toBlob((blob) => {
+              if (!blob) {
+                PS.toast("Could not generate receipt", "error");
+                return;
+              }
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `passspot-receipt-${r.id}.png`;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+              PS.toast("Receipt downloaded", "success");
+            }, "image/png");
+          });
+
+        // Vote Again
+        document
+          .getElementById("voteAgainBtn")
+          .addEventListener("click", () => {
+            PS.closeModal("receiptModal");
+          });
+
+        renderPage();
+      });
+    </script>
+  </body>
+</html>

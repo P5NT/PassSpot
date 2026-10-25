@@ -1,0 +1,508 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Event — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      .schedule-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: var(--space-4);
+        align-items: center;
+        padding: var(--space-3) var(--space-4);
+        background-color: var(--surface-muted);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--space-2);
+      }
+      .schedule-row-label {
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-semibold);
+      }
+      .schedule-row .form-input {
+        height: 40px;
+        width: 130px;
+      }
+      .schedule-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-4);
+        background-color: var(--primary-50);
+        border: 1px solid var(--primary-200);
+        border-radius: var(--radius-md);
+        gap: var(--space-3);
+        flex-wrap: wrap;
+      }
+      .schedule-summary-text {
+        font-size: var(--fs-sm);
+        color: var(--primary-700);
+        font-weight: var(--fw-semibold);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Edit Event</h2>
+              <p class="page-subtitle">
+                Update your event details, schedule, or ticket pricing.
+              </p>
+            </div>
+          </div>
+
+          <form id="eventForm" novalidate>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1.6fr 1fr;
+                gap: var(--space-8);
+              "
+              id="formGrid"
+            >
+              <div>
+                <!-- Event Image -->
+                <div class="card mb-6">
+                  <h3 class="card-title mb-4">Event image</h3>
+                  <div id="imageUploadArea"></div>
+                </div>
+
+                <!-- Event Type -->
+                <div class="card mb-6">
+                  <h3 class="card-title mb-4">Event Type</h3>
+                  <div
+                    class="radio-cards"
+                    style="grid-template-columns: 1fr 1fr"
+                  >
+                    <label class="radio-card">
+                      <input type="radio" name="eventType" value="physical" />
+                      <div class="radio-card-content">
+                        <div class="radio-card-title">📍 Physical Event</div>
+                      </div>
+                    </label>
+                    <label class="radio-card">
+                      <input type="radio" name="eventType" value="online" />
+                      <div class="radio-card-content">
+                        <div class="radio-card-title">💻 Online Event</div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Basic Info -->
+                <div class="card mb-6">
+                  <h3 class="card-title mb-4">Basic information</h3>
+                  <div class="form-group">
+                    <label class="form-label" for="eventTitle"
+                      >Event title <span class="required">*</span></label
+                    >
+                    <input
+                      class="form-input"
+                      type="text"
+                      id="eventTitle"
+                      required
+                    />
+                    <span class="form-error"></span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="eventDescription"
+                      >Description <span class="required">*</span></label
+                    >
+                    <textarea
+                      class="form-textarea"
+                      id="eventDescription"
+                      required
+                    ></textarea>
+                    <span class="form-error"></span>
+                  </div>
+                </div>
+
+                <!-- Location (Physical Only) -->
+                <div class="card mb-6" id="physicalLocationCard">
+                  <h3 class="card-title mb-4">Location</h3>
+                  <div class="auth-form-row">
+                    <div class="form-group">
+                      <label class="form-label" for="eventState">State</label>
+                      <select class="form-select" id="eventState">
+                        <option value="">Select state</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="eventCity">City</label>
+                      <input
+                        class="form-input"
+                        type="text"
+                        id="eventCity"
+                        placeholder="e.g. Ikeja"
+                      />
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="eventVenue"
+                      >Venue name</label
+                    >
+                    <input class="form-input" type="text" id="eventVenue" />
+                  </div>
+                </div>
+
+                <!-- Online Link (Online Only) -->
+                <div
+                  class="card mb-6"
+                  id="onlineLocationCard"
+                  style="display: none"
+                >
+                  <h3 class="card-title mb-4">Online Details</h3>
+                  <div class="form-group">
+                    <label class="form-label" for="onlineLink"
+                      >Meeting Link</label
+                    >
+                    <input class="form-input" type="url" id="onlineLink" />
+                  </div>
+                </div>
+
+                <!-- Date & Time -->
+                <div class="card mb-6">
+                  <h3 class="card-title mb-4">Date & time</h3>
+                  <div class="auth-form-row">
+                    <div class="form-group">
+                      <label class="form-label" for="eventStartDate"
+                        >Start date <span class="required">*</span></label
+                      >
+                      <input
+                        class="form-input"
+                        type="date"
+                        id="eventStartDate"
+                        required
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="eventEndDate"
+                        >End date <span class="required">*</span></label
+                      >
+                      <input
+                        class="form-input"
+                        type="date"
+                        id="eventEndDate"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div id="scheduleArea"></div>
+                </div>
+
+                <!-- Ticket Types -->
+                <div class="card mb-6">
+                  <div class="flex justify-between items-center mb-4">
+                    <h3 class="card-title">Ticket types</h3>
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm"
+                      id="addTicketType"
+                    >
+                      + Add type
+                    </button>
+                  </div>
+                  <div id="ticketTypesList"></div>
+                </div>
+              </div>
+
+              <!-- Preview & Publish -->
+              <div>
+                <div
+                  class="card"
+                  style="
+                    position: sticky;
+                    top: calc(var(--header-height) + var(--space-4));
+                  "
+                >
+                  <h3 class="card-title mb-3">Preview</h3>
+                  <div
+                    class="event-card"
+                    style="
+                      box-shadow: none;
+                      border: 1px solid var(--border-color);
+                    "
+                  >
+                    <div class="event-card-media" id="previewMedia">
+                      <div
+                        class="event-card-media-placeholder"
+                        id="previewEmoji"
+                      >
+                        🎫
+                      </div>
+                    </div>
+                    <div class="event-card-body">
+                      <div class="event-card-date" id="previewDate">Date</div>
+                      <div class="event-card-title" id="previewTitle">
+                        Event title
+                      </div>
+                      <div class="event-card-meta">
+                        <div class="event-card-meta-row">
+                          📍 <span id="previewLocation">Location</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    class="btn btn-primary btn-lg btn-block mt-6"
+                    id="publishBtn"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </main>
+      </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_SHELL.renderSidebar("myEvents");
+        window.PS_SHELL.renderTopbar("Edit Event");
+
+        // Get event ID from URL
+        const params = new URLSearchParams(window.location.search);
+        const eventId = params.get("id");
+        const allEvents = PS_DATA.getEvents();
+        const currentEvent = allEvents.find((e) => e.id === eventId);
+
+        if (!currentEvent) {
+          window.location.href = "my-events.html";
+          return;
+        }
+
+        // --- Populate Form with Existing Data ---
+        document.getElementById("eventTitle").value = currentEvent.title || "";
+        document.getElementById("eventDescription").value =
+          currentEvent.description || "";
+
+        // Event Type
+        const isOnline = currentEvent.eventType === "online";
+        document.querySelector(
+          `input[name="eventType"][value="${isOnline ? "online" : "physical"}"]`,
+        ).checked = true;
+        document.getElementById("physicalLocationCard").style.display = isOnline
+          ? "none"
+          : "block";
+        document.getElementById("onlineLocationCard").style.display = isOnline
+          ? "block"
+          : "none";
+
+        // Location
+        document.getElementById("eventState").value = currentEvent.state || "";
+        document.getElementById("eventCity").value = currentEvent.city || "";
+        document.getElementById("eventVenue").value = currentEvent.venue || "";
+        document.getElementById("onlineLink").value =
+          currentEvent.onlineLink || "";
+
+        // Dates
+        // Format dates to YYYY-MM-DD
+        const formatForInput = (isoStr) => {
+          if (!isoStr) return "";
+          return isoStr.split("T")[0];
+        };
+
+        document.getElementById("eventStartDate").value = formatForInput(
+          currentEvent.date,
+        );
+        document.getElementById("eventEndDate").value = formatForInput(
+          currentEvent.endDate || currentEvent.date,
+        );
+
+        // Populate States
+        const stateSel = document.getElementById("eventState");
+        window.PS_DATA.NIGERIAN_STATES.forEach((s) => {
+          const o = document.createElement("option");
+          o.value = s;
+          o.textContent = s;
+          stateSel.appendChild(o);
+        });
+        stateSel.value = currentEvent.state || "";
+
+        // --- Load Existing Tickets ---
+        let ticketTypes = [];
+        let ticketTypeCounter = 0;
+
+        function renderTicketTypes() {
+          const wrap = document.getElementById("ticketTypesList");
+          wrap.innerHTML = ticketTypes
+            .map(
+              (tt, idx) => `
+          <div class="card" style="padding:var(--space-4);margin-bottom:var(--space-3);background:var(--surface-muted);">
+            <div class="flex justify-between items-center mb-3">
+              <span class="fw-semibold text-sm">Ticket type ${idx + 1}</span>
+              ${ticketTypes.length > 1 ? `<button type="button" class="btn btn-ghost btn-sm" data-remove="${idx}" style="color:var(--error-color);">Remove</button>` : ""}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Name</label>
+              <input class="form-input" type="text" data-field="name" data-idx="${idx}" value="${tt.name}">
+            </div>
+            <div class="auth-form-row">
+              <div class="form-group">
+                <label class="form-label">Price (₦)</label>
+                <input class="form-input" type="number" min="0" data-field="price" data-idx="${idx}" value="${tt.price}">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Quantity available</label>
+                <input class="form-input" type="number" min="0" data-field="qty" data-idx="${idx}" value="${tt.qty}">
+              </div>
+            </div>
+          </div>
+        `,
+            )
+            .join("");
+
+          wrap.querySelectorAll("input").forEach((inp) => {
+            inp.addEventListener("input", (e) => {
+              const idx = parseInt(e.target.dataset.idx);
+              const field = e.target.dataset.field;
+              ticketTypes[idx][field] = e.target.value;
+            });
+          });
+          wrap.querySelectorAll("[data-remove]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              ticketTypes.splice(parseInt(btn.dataset.remove), 1);
+              renderTicketTypes();
+            });
+          });
+        }
+
+        // Populate tickets from existing event
+        if (currentEvent.ticketTiers && currentEvent.ticketTiers.length > 0) {
+          ticketTypes = currentEvent.ticketTiers.map((t) => ({ ...t }));
+        } else {
+          ticketTypes = [
+            { name: "Regular", price: currentEvent.price, qty: 100 },
+          ];
+        }
+        renderTicketTypes();
+
+        document
+          .getElementById("addTicketType")
+          .addEventListener("click", () => {
+            ticketTypes.push({ name: "", price: 0, qty: 100 });
+            renderTicketTypes();
+          });
+
+        // --- Event Type Toggle ---
+        document
+          .querySelectorAll('input[name="eventType"]')
+          .forEach((radio) => {
+            radio.addEventListener("change", (e) => {
+              if (e.target.value === "online") {
+                document.getElementById("physicalLocationCard").style.display =
+                  "none";
+                document.getElementById("onlineLocationCard").style.display =
+                  "block";
+              } else {
+                document.getElementById("physicalLocationCard").style.display =
+                  "block";
+                document.getElementById("onlineLocationCard").style.display =
+                  "none";
+              }
+            });
+          });
+
+        // --- Submit Update ---
+        document.getElementById("eventForm").addEventListener("submit", (e) => {
+          e.preventDefault();
+
+          // Update data
+          currentEvent.title = document
+            .getElementById("eventTitle")
+            .value.trim();
+          currentEvent.description = document
+            .getElementById("eventDescription")
+            .value.trim();
+          currentEvent.eventType = document.querySelector(
+            'input[name="eventType"]:checked',
+          ).value;
+
+          if (currentEvent.eventType === "online") {
+            currentEvent.onlineLink = document
+              .getElementById("onlineLink")
+              .value.trim();
+          } else {
+            currentEvent.state = document.getElementById("eventState").value;
+            currentEvent.city = document
+              .getElementById("eventCity")
+              .value.trim();
+            currentEvent.venue = document
+              .getElementById("eventVenue")
+              .value.trim();
+          }
+
+          // Update date (keep the start time logic simple for edit)
+          currentEvent.date =
+            document.getElementById("eventStartDate").value +
+            "T" +
+            (currentEvent.date.split("T")[1] || "19:00");
+          currentEvent.endDate =
+            document.getElementById("eventEndDate").value +
+            "T" +
+            (currentEvent.endDate?.split("T")[1] || "23:59");
+
+          // Update tickets
+          currentEvent.ticketTiers = ticketTypes;
+          currentEvent.price = ticketTypes[0].price;
+
+          // Save using the same saveEvent function we built earlier
+          PS_DATA.saveEvent(currentEvent);
+
+          PS.toast("Event updated successfully!", "success");
+          setTimeout(() => {
+            window.location.href = "my-events.html";
+          }, 1000);
+        });
+
+        // Simple preview updates
+        const updatePreview = () => {
+          document.getElementById("previewTitle").textContent =
+            document.getElementById("eventTitle").value || "Event title";
+          if (isOnline) {
+            document.getElementById("previewLocation").textContent =
+              "Online Event";
+          } else {
+            document.getElementById("previewLocation").textContent =
+              `${document.getElementById("eventVenue").value}, ${document.getElementById("eventCity").value}`;
+          }
+        };
+
+        document
+          .getElementById("eventTitle")
+          .addEventListener("input", updatePreview);
+        document
+          .getElementById("eventVenue")
+          .addEventListener("input", updatePreview);
+        document
+          .getElementById("eventCity")
+          .addEventListener("input", updatePreview);
+
+        updatePreview();
+      });
+    </script>
+  </body>
+</html>

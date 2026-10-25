@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manage Contestants — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="flex items-center gap-2 mb-4">
+            <a href="my-voting-events.html" class="btn btn-ghost btn-sm">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              Back to Votes
+            </a>
+          </div>
+
+          <div class="page-header">
+            <div>
+              <h2 class="page-title" id="pageTitle">Manage Contestants</h2>
+              <p class="page-subtitle" id="pageSubtitle">
+                Add and manage nominees for this voting event.
+              </p>
+            </div>
+            <div class="page-actions">
+              <button class="btn btn-primary" id="openAddModal">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                Add Contestant
+              </button>
+            </div>
+          </div>
+
+          <div class="event-grid" id="contestantGrid"></div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Add / Edit Contestant Modal -->
+    <div class="modal-overlay" id="contestantModal">
+      <div class="modal modal-lg">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title" id="modalTitle">Add Contestant</h3>
+            <p class="modal-subtitle" id="modalSubtitle">
+              Fill in the details for this nominee.
+            </p>
+          </div>
+          <button
+            class="modal-close"
+            onclick="PS.closeModal('contestantModal')"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editContestantId" />
+
+          <!-- Image Upload -->
+          <div
+            class="avatar-upload mb-4"
+            style="
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 12px;
+            "
+          >
+            <div
+              class="avatar-upload-inner"
+              id="contestantImageInner"
+              style="
+                width: 120px;
+                height: 120px;
+                border-radius: 12px;
+                position: relative;
+                overflow: hidden;
+                border: 2px dashed var(--border-color);
+                background: var(--surface-muted);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+              "
+            >
+              <input
+                type="file"
+                id="contestantFileInput"
+                accept="image/*"
+                style="
+                  position: absolute;
+                  inset: 0;
+                  opacity: 0;
+                  cursor: pointer;
+                "
+              />
+              <span
+                id="imgPreviewPlaceholder"
+                class="text-muted"
+                style="font-size: 32px"
+                >📷</span
+              >
+              <img
+                id="imgPreview"
+                src=""
+                alt=""
+                style="
+                  display: none;
+                  width: 100%;
+                  height: 100%;
+                  object-fit: cover;
+                "
+              />
+            </div>
+            <span class="text-xs text-muted">Click to upload image</span>
+          </div>
+
+          <!-- Category Selection -->
+          <div class="form-group">
+            <label class="form-label"
+              >Category <span class="required">*</span></label
+            >
+            <select class="form-select" id="contestantCategory">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+
+          <!-- Base Fields -->
+          <div class="form-group">
+            <label class="form-label"
+              >Contestant Name <span class="required">*</span></label
+            >
+            <input
+              class="form-input"
+              type="text"
+              id="contestantName"
+              placeholder="e.g. Jane Doe"
+            />
+            <span class="form-error"></span>
+          </div>
+
+          <!-- Dynamic Custom Fields (Populated by JS) -->
+          <div id="dynamicFieldsContainer"></div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="PS.closeModal('contestantModal')"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="saveContestantBtn">
+            Save Contestant
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_SHELL.renderSidebar("voting");
+        window.PS_SHELL.renderTopbar("Manage Contestants");
+
+        const params = new URLSearchParams(window.location.search);
+        const voteId = params.get("id");
+
+        let votingEvents = PS.store.get("voting_events", []);
+        let currentVote = votingEvents.find((v) => v.id === voteId);
+
+        if (!currentVote) {
+          document.querySelector(".page-content").innerHTML =
+            `<div class="empty-state"><h3 class="empty-state-title">Voting event not found</h3><a href="my-voting-events.html" class="btn btn-primary mt-4">Go Back</a></div>`;
+          return;
+        }
+
+        document.getElementById("pageTitle").textContent = currentVote.title;
+        document.getElementById("pageSubtitle").textContent =
+          `Managing contestants for ${currentVote.title}.`;
+
+        // Populate Category Dropdown
+        const catSelect = document.getElementById("contestantCategory");
+        currentVote.categories.forEach((cat) => {
+          const opt = document.createElement("option");
+          opt.value = cat;
+          opt.textContent = cat;
+          catSelect.appendChild(opt);
+        });
+
+        // Render Custom Fields into the Modal
+        const dynamicContainer = document.getElementById(
+          "dynamicFieldsContainer",
+        );
+        currentVote.customFields.forEach((field) => {
+          dynamicContainer.innerHTML += `
+          <div class="form-group">
+            <label class="form-label">${field}</label>
+            <input class="form-input" type="text" data-custom-field="${field}" placeholder="Enter ${field.toLowerCase()}">
+          </div>
+        `;
+        });
+
+        // Image Upload Logic
+        let uploadedImageData = null;
+        const fileInput = document.getElementById("contestantFileInput");
+        const imgPreview = document.getElementById("imgPreview");
+        const imgPlaceholder = document.getElementById("imgPreviewPlaceholder");
+
+        fileInput.addEventListener("change", (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            uploadedImageData = evt.target.result;
+            imgPreview.src = uploadedImageData;
+            imgPreview.style.display = "block";
+            imgPlaceholder.style.display = "none";
+          };
+          reader.readAsDataURL(file);
+        });
+
+        // Render Contestants Grouped by Category
+        function renderContestants() {
+          const container = document.getElementById("contestantGrid");
+          const list = currentVote.contestants || [];
+
+          if (list.length === 0) {
+            container.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1;">
+              <div class="empty-state-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <h3 class="empty-state-title">No contestants yet</h3>
+              <p class="empty-state-text">Click "Add Contestant" to add the first nominee.</p>
+            </div>`;
+            return;
+          }
+
+          const categoriesPresent = [...new Set(list.map((c) => c.category))];
+          categoriesPresent.sort((a, b) => a.localeCompare(b));
+
+          let html = "";
+
+          categoriesPresent.forEach((categoryName) => {
+            const contestantsInCat = list.filter(
+              (c) => c.category === categoryName,
+            );
+
+            html += `
+            <div style="grid-column: 1 / -1; margin-top: var(--space-6); margin-bottom: var(--space-2); display: flex; align-items: center; gap: var(--space-3);">
+              <h3 class="section-title" style="font-size: var(--fs-xl); margin: 0;">${categoryName}</h3>
+              <span class="badge badge-primary">${contestantsInCat.length}</span>
+            </div>
+
+            ${contestantsInCat
+              .map(
+                (c) => `
+              <article class="event-card">
+                <div class="event-card-media" style="aspect-ratio:1/1;">
+                  ${c.image ? `<img src="${c.image}" style="width:100%;height:100%;object-fit:cover;">` : `<div class="event-card-media-placeholder">👤</div>`}
+                </div>
+                <div class="event-card-body">
+                  <div class="event-card-title">${c.name}</div>
+                  
+                  <div class="flex flex-col gap-1 mt-2 mb-2">
+                    ${Object.entries(c.customData)
+                      .map(([key, val]) =>
+                        val
+                          ? `
+                      <div class="text-xs text-muted flex justify-between">
+                        <span>${key}:</span> <span class="fw-semibold text-primary">${val}</span>
+                      </div>
+                    `
+                          : "",
+                      )
+                      .join("")}
+                  </div>
+                  
+                  <div class="event-card-footer" style="padding-top:var(--space-3);border-top:1px solid var(--border-color); flex-wrap:wrap; gap:var(--space-2);">
+                    <div class="event-card-price">${c.votes || 0}<span class="event-card-price-label">votes</span></div>
+                    <div class="flex gap-1">
+                      <button class="btn btn-sm btn-secondary" data-edit-contestant="${c.id}">Edit</button>
+                      <button class="btn btn-sm btn-primary" data-share-contestant="${c.id}">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+                        Share
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            `,
+              )
+              .join("")}
+          `;
+          });
+
+          container.innerHTML = html;
+
+          // Attach Edit Listeners
+          container
+            .querySelectorAll("[data-edit-contestant]")
+            .forEach((btn) => {
+              btn.addEventListener("click", () => {
+                openEditContestant(btn.dataset.editContestant);
+              });
+            });
+
+          // Attach Share Listeners
+          container
+            .querySelectorAll("[data-share-contestant]")
+            .forEach((btn) => {
+              btn.addEventListener("click", async () => {
+                const contestantId = btn.dataset.shareContestant;
+                const contestant = list.find((c) => c.id === contestantId);
+                // Include contestant ID so the shared link auto-focuses on them
+                const voteLink = `${window.location.origin}${window.location.pathname.replace("manage-contestants.html", "vote.html")}?id=${currentVote.id}&contestant=${contestantId}`;
+                const shareText = `Vote for ${contestant ? contestant.name : "me"} in ${currentVote.title} on Pass Spot! Cast your vote here: ${voteLink}`;
+
+                if (navigator.share) {
+                  try {
+                    await navigator.share({
+                      title: currentVote.title,
+                      text: shareText,
+                      url: voteLink,
+                    });
+                  } catch (e) {
+                    // User cancelled
+                  }
+                } else {
+                  try {
+                    await navigator.clipboard.writeText(shareText);
+                    PS.toast("Voting link copied to clipboard", "success");
+                  } catch {
+                    PS.toast("Here is the link: " + voteLink, "info");
+                  }
+                }
+              });
+            });
+        }
+
+        // Open Modal for Edit
+        function openEditContestant(contestantId) {
+          const contestant = currentVote.contestants.find(
+            (c) => c.id === contestantId,
+          );
+          if (!contestant) return;
+
+          document.getElementById("modalTitle").textContent = "Edit Contestant";
+          document.getElementById("modalSubtitle").textContent =
+            "Update this nominee's details.";
+          document.getElementById("editContestantId").value = contestant.id;
+
+          document.getElementById("contestantName").value = contestant.name;
+          document.getElementById("contestantCategory").value =
+            contestant.category;
+
+          // Load custom fields
+          dynamicContainer
+            .querySelectorAll("[data-custom-field]")
+            .forEach((inp) => {
+              const fieldName = inp.dataset.customField;
+              inp.value = contestant.customData[fieldName] || "";
+            });
+
+          // Load image
+          if (contestant.image) {
+            uploadedImageData = contestant.image;
+            imgPreview.src = contestant.image;
+            imgPreview.style.display = "block";
+            imgPlaceholder.style.display = "none";
+          } else {
+            uploadedImageData = null;
+            imgPreview.style.display = "none";
+            imgPlaceholder.style.display = "block";
+          }
+
+          PS.openModal("contestantModal");
+        }
+
+        // Handle Save (Add or Update)
+        document
+          .getElementById("saveContestantBtn")
+          .addEventListener("click", () => {
+            const id = document.getElementById("editContestantId").value;
+            const name = document.getElementById("contestantName").value.trim();
+            const category = catSelect.value;
+
+            if (!name) {
+              PS.toast("Please enter a name", "error");
+              return;
+            }
+
+            const customData = {};
+            dynamicContainer
+              .querySelectorAll("[data-custom-field]")
+              .forEach((inp) => {
+                customData[inp.dataset.customField] = inp.value.trim();
+              });
+
+            if (id) {
+              // EDIT EXISTING
+              const contestant = currentVote.contestants.find(
+                (c) => c.id === id,
+              );
+              contestant.name = name;
+              contestant.category = category;
+              contestant.image = uploadedImageData;
+              contestant.customData = customData;
+            } else {
+              // ADD NEW
+              const newContestant = {
+                id: "cont_" + Date.now(),
+                name,
+                category,
+                image: uploadedImageData,
+                customData,
+                votes: 0,
+              };
+              if (!currentVote.contestants) currentVote.contestants = [];
+              currentVote.contestants.push(newContestant);
+            }
+
+            // Save to localStorage
+            const idx = votingEvents.findIndex((v) => v.id === voteId);
+            votingEvents[idx] = currentVote;
+            PS.store.set("voting_events", votingEvents);
+
+            PS.closeModal("contestantModal");
+            PS.toast(id ? "Contestant updated" : "Contestant added", "success");
+            renderContestants();
+          });
+
+        // Open Modal for Add
+        document
+          .getElementById("openAddModal")
+          .addEventListener("click", () => {
+            document.getElementById("modalTitle").textContent =
+              "Add Contestant";
+            document.getElementById("modalSubtitle").textContent =
+              "Fill in the details for this nominee.";
+            document.getElementById("editContestantId").value = "";
+            document.getElementById("contestantName").value = "";
+
+            // Reset image
+            uploadedImageData = null;
+            imgPreview.style.display = "none";
+            imgPlaceholder.style.display = "block";
+
+            // Clear custom fields
+            dynamicContainer
+              .querySelectorAll("[data-custom-field]")
+              .forEach((inp) => (inp.value = ""));
+
+            PS.openModal("contestantModal");
+          });
+
+        renderContestants();
+      });
+    </script>
+  </body>
+</html>

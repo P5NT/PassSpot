@@ -26,137 +26,7 @@
       </div>
     </div>
 
-    <div class="modal-overlay" id="purchaseModal">
-      <div class="modal modal-lg">
-        <div class="modal-header">
-          <div>
-            <h3 class="modal-title">Buy tickets</h3>
-            <p class="modal-subtitle" id="purchaseEventName">—</p>
-          </div>
-          <button
-            class="modal-close"
-            onclick="PS.closeModal('purchaseModal')"
-            aria-label="Close"
-          >
-            ✕
-          </button>
-        </div>
-        <div class="modal-body">
-          <div id="ticketTypes"></div>
-          <div class="divider"></div>
-          <div class="summary-row">
-            <span>Subtotal</span><span id="checkoutSubtotal">₦0.00</span>
-          </div>
-          <div class="summary-row">
-            <span>Service fee (2%)</span><span id="checkoutFee">₦0.00</span>
-          </div>
-          <div class="summary-row total">
-            <span>Total</span><span id="checkoutTotal">₦0.00</span>
-          </div>
-          <div class="divider"></div>
-          <div class="flex justify-between items-center text-sm">
-            <span class="text-muted">Wallet balance</span>
-            <strong id="checkoutWallet">₦0.00</strong>
-          </div>
-          <div
-            id="insufficientNotice"
-            class="info-panel warning mt-4"
-            style="display: none"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path
-                d="M10.29 3.86 1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"
-              />
-              <path d="M12 9v4M12 17h.01" />
-            </svg>
-            <div>
-              <strong>Insufficient wallet balance</strong>
-              <div style="margin-top: 4px; font-size: var(--fs-xs)">
-                Deposit funds to continue.
-              </div>
-              <a href="deposits.html" class="btn btn-sm btn-primary mt-2"
-                >Deposit funds</a
-              >
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button
-            class="btn btn-secondary"
-            onclick="PS.closeModal('purchaseModal')"
-          >
-            Cancel
-          </button>
-          <button class="btn btn-primary" id="confirmPurchase">
-            Confirm purchase
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-overlay" id="successModal">
-      <div class="modal modal-sm">
-        <div
-          class="modal-body"
-          style="text-align: center; padding: var(--space-8)"
-        >
-          <div
-            style="
-              width: 64px;
-              height: 64px;
-              border-radius: 50%;
-              background: var(--success-bg);
-              color: var(--success-color);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              margin: 0 auto var(--space-4);
-            "
-          >
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M20 6 9 17l-5-5" />
-            </svg>
-          </div>
-          <h3 class="modal-title">Purchase successful!</h3>
-          <p class="modal-subtitle mb-4">Your tickets have been issued.</p>
-          <div class="info-panel success" style="text-align: left">
-            <div>
-              <div class="text-xs text-muted">Transaction ID</div>
-              <div class="mono fw-semibold" id="successTxId">—</div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer" style="justify-content: center">
-          <a href="my-tickets.html" class="btn btn-primary">View tickets</a>
-          <button
-            class="btn btn-secondary"
-            onclick="
-              PS.closeModal('successModal');
-              window.location.href = 'wallet.html';
-            "
-          >
-            View transaction
-          </button>
-        </div>
-      </div>
-    </div>
-
+    <script src="js/api.js"></script>
     <script src="js/data.js"></script>
     <script src="js/script.js"></script>
     <script>
@@ -167,7 +37,6 @@
         const params = new URLSearchParams(window.location.search);
         const eventId = params.get("id") || "evt_001";
 
-        // Use persistent lookup when available
         const events =
           window.PS_DATA && typeof PS_DATA.getEvents === "function"
             ? PS_DATA.getEvents()
@@ -182,62 +51,37 @@
 
         const cur = PS.getCurrency();
         const isFav = PS.favorites.isFav(ev.id);
+        const isOnline = ev.eventType === "online";
+        const isFree =
+          ev.price === 0 || (ev.ticketTiers && ev.ticketTiers[0]?.price === 0);
 
-        // Build media: image if present, else emoji placeholder
         const mediaHTML = ev.imageData
           ? `<img src="${ev.imageData}" alt="${ev.title}" style="width:100%;height:100%;object-fit:cover;">`
           : `<div style="display:flex;align-items:center;justify-content:center;font-size:80px;">${ev.emoji || "🎫"}</div>`;
 
-        // Build date display — multi-day support
-        const dateDisplay =
-          ev.schedule && ev.schedule.length > 1
-            ? `${PS.formatDate(ev.schedule[0].date)} → ${PS.formatDate(ev.schedule[ev.schedule.length - 1].date)} · ${ev.schedule.length} days`
-            : `${PS.formatDate(ev.date)} · ${PS.formatTime(ev.date)}`;
+        const locationDisplay = isOnline
+          ? `<div class="flex items-center gap-2 text-sm text-muted">
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l4.55-2.27a1 1 0 011.45.89v6.76a1 1 0 01-1.45.89L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+             <span>Online Event</span>
+           </div>`
+          : `<div class="flex items-center gap-2 text-sm text-muted">
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+             <span>${ev.venue}, ${ev.city}, ${ev.state.replace(" (FCT)", "")}</span>
+           </div>`;
 
-        // Promo codes section (only if any exist)
-        const promoSection =
-          ev.promoCodes && ev.promoCodes.length > 0
-            ? `
-        <div class="card mb-6">
-          <h3 class="card-title mb-3">Promo codes</h3>
-          <p class="text-sm text-muted mb-3">Use these codes at checkout for a discount.</p>
-          <div class="flex gap-2" style="flex-wrap:wrap;">
-            ${ev.promoCodes
-              .map(
-                (p) => `
-              <div class="badge badge-primary" style="padding:8px 14px;font-size:var(--fs-sm);">
-                <span class="mono fw-bold">${p.code}</span>
-                <span style="margin-left:8px;">${p.discountType === "percent" ? p.discountValue + "% off" : PS.formatMoney(p.discountValue, cur) + " off"}</span>
-              </div>
-            `,
-              )
-              .join("")}
-          </div>
-        </div>
-      `
-            : "";
-
-        // Schedule rows (only if multi-day)
-        const scheduleSection =
-          ev.schedule && ev.schedule.length > 1
-            ? `
-        <div class="card mb-6">
-          <h3 class="card-title mb-3">Daily schedule</h3>
-          <div class="flex flex-col gap-2">
-            ${ev.schedule
-              .map(
-                (d) => `
-              <div class="flex justify-between items-center" style="padding:var(--space-2) 0;border-bottom:1px solid var(--border-color);">
-                <span class="text-sm">${PS.formatDate(d.date)}</span>
-                <span class="fw-semibold text-sm">${d.startTime}</span>
-              </div>
-            `,
-              )
-              .join("")}
-          </div>
-        </div>
-      `
-            : "";
+        const mapSection = isOnline
+          ? `<div class="card mt-6">
+             <h3 class="card-title mb-3">This is an online event</h3>
+             <p class="text-sm text-muted">You will receive a link to join the meeting after purchasing your ticket.</p>
+           </div>`
+          : `<div class="card mt-6">
+             <h3 class="card-title mb-3">Venue & location</h3>
+             <p class="text-sm text-muted">${ev.venue}${ev.address ? `, ${ev.address}` : ""}</p>
+             <p class="text-sm text-muted">${ev.city}, ${ev.state.replace(" (FCT)", "")}</p>
+             <div style="margin-top:var(--space-4);height:180px;background:var(--surface-muted);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:var(--fs-sm);">
+               📍 Map preview
+             </div>
+           </div>`;
 
         document.getElementById("eventContent").innerHTML = `
         <div class="flex items-center gap-2 mb-4">
@@ -254,10 +98,10 @@
             </div>
 
             <div class="flex items-center gap-2 mb-3 flex-wrap">
-              <span class="badge badge-primary">${ev.category}</span>
+              ${(ev.categories || [ev.category]).map((c) => `<span class="badge badge-primary">${c}</span>`).join("")}
+              ${isOnline ? '<span class="badge badge-info">Online</span>' : ""}
+              ${isFree ? '<span class="badge badge-success">Free Entry</span>' : ""}
               ${ev.trending ? '<span class="badge badge-warning">🔥 Trending</span>' : ""}
-              ${ev.featured ? '<span class="badge badge-info">Featured</span>' : ""}
-              ${ev.schedule && ev.schedule.length > 1 ? `<span class="badge badge-neutral">${ev.schedule.length} days</span>` : ""}
             </div>
 
             <h1 style="font-size:var(--fs-3xl);margin-bottom:var(--space-4);">${ev.title}</h1>
@@ -265,12 +109,9 @@
             <div class="flex gap-6 mb-6" style="flex-wrap:wrap;">
               <div class="flex items-center gap-2 text-sm text-muted">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                <span>${dateDisplay}</span>
+                <span>${PS.formatDate(ev.date)}</span>
               </div>
-              <div class="flex items-center gap-2 text-sm text-muted">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                <span>${ev.venue}, ${ev.city}, ${ev.state.replace(" (FCT)", "")}</span>
-              </div>
+              ${locationDisplay}
               <div class="flex items-center gap-2 text-sm text-muted">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 <span>By <strong>${ev.organizer}</strong></span>
@@ -280,21 +121,11 @@
             <div class="card mb-6">
               <h3 class="card-title mb-3">About this event</h3>
               <p class="text-sm text-muted" style="line-height:var(--lh-relaxed);">
-                ${ev.description || `Join us for an unforgettable experience at ${ev.title}. Featuring an incredible lineup, premium production, and a vibrant atmosphere. This event brings together fans, creators, and communities for a night you won't want to miss.`}
+                ${ev.description || `Join us for an unforgettable experience at ${ev.title}.`}
               </p>
             </div>
 
-            ${scheduleSection}
-            ${promoSection}
-
-            <div class="card">
-              <h3 class="card-title mb-3">Venue & location</h3>
-              <p class="text-sm text-muted">${ev.venue}${ev.address ? `, ${ev.address}` : ""}</p>
-              <p class="text-sm text-muted">${ev.city}, ${ev.state.replace(" (FCT)", "")}</p>
-              <div style="margin-top:var(--space-4);height:180px;background:var(--surface-muted);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:var(--fs-sm);">
-                📍 Map preview
-              </div>
-            </div>
+            ${mapSection}
           </div>
 
           <div>
@@ -302,7 +133,7 @@
               <div class="card-header" style="margin-bottom:var(--space-4);">
                 <div>
                   <div class="text-xs text-muted">Tickets from</div>
-                  <div class="stat-value" style="font-size:var(--fs-2xl);">${PS.formatMoney(ev.price, cur)}</div>
+                  <div class="stat-value" style="font-size:var(--fs-2xl);">${isFree ? '<span class="text-success">Free</span>' : PS.formatMoney(ev.price, cur)}</div>
                 </div>
                 <button class="event-card-fav ${isFav ? "is-active" : ""}" id="favBtn" style="position:static;background:var(--surface-muted);">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFav ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
@@ -315,7 +146,9 @@
                 <span>${(ev.capacity - ev.sold).toLocaleString()} left</span>
               </div>
 
-              <button class="btn btn-primary btn-lg btn-block" id="openPurchase">Buy tickets</button>
+              <a href="checkout.html?eventId=${ev.id}" class="btn btn-primary btn-lg btn-block" style="text-align:center;">
+                ${isFree ? "Claim Free Tickets" : "Buy Tickets"}
+              </a>
             </div>
           </div>
         </div>
@@ -332,132 +165,6 @@
             now ? "success" : "info",
           );
         });
-
-        // Ticket purchase logic
-        const tiers =
-          ev.ticketTiers && ev.ticketTiers.length > 0
-            ? ev.ticketTiers.map((t, i) => ({
-                id: `tier_${i}`,
-                name: t.name,
-                price: t.price,
-                desc:
-                  t.name === "Regular"
-                    ? "General admission"
-                    : `Access to ${t.name.toLowerCase()} experience`,
-              }))
-            : [
-                {
-                  id: "regular",
-                  name: "Regular",
-                  price: ev.price,
-                  desc: "General admission",
-                },
-                {
-                  id: "vip",
-                  name: "VIP",
-                  price: Math.round(ev.price * 2.5),
-                  desc: "VIP lounge + early entry",
-                },
-              ];
-
-        const quantities = {};
-        tiers.forEach((t) => (quantities[t.id] = 0));
-
-        function renderTiers() {
-          const c = PS.getCurrency();
-          document.getElementById("ticketTypes").innerHTML = tiers
-            .map(
-              (t) => `
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-4);border:1px solid var(--border-color);border-radius:var(--radius-md);margin-bottom:var(--space-3);">
-            <div>
-              <div class="fw-semibold text-sm">${t.name}</div>
-              <div class="text-xs text-muted">${t.desc}</div>
-              <div class="fw-bold text-sm mt-1">${PS.formatMoney(t.price, c)}</div>
-            </div>
-            <div class="flex items-center gap-2">
-              <button class="btn btn-secondary btn-sm" data-minus="${t.id}">−</button>
-              <span class="fw-bold" style="min-width:24px;text-align:center;" id="qty-${t.id}">${quantities[t.id]}</span>
-              <button class="btn btn-secondary btn-sm" data-plus="${t.id}">+</button>
-            </div>
-          </div>
-        `,
-            )
-            .join("");
-
-          document.querySelectorAll("[data-plus]").forEach((b) =>
-            b.addEventListener("click", () => {
-              quantities[b.dataset.plus]++;
-              updateTotals();
-            }),
-          );
-          document.querySelectorAll("[data-minus]").forEach((b) =>
-            b.addEventListener("click", () => {
-              if (quantities[b.dataset.minus] > 0)
-                quantities[b.dataset.minus]--;
-              updateTotals();
-            }),
-          );
-        }
-
-        function updateTotals() {
-          const c = PS.getCurrency();
-          tiers.forEach((t) => {
-            document.getElementById(`qty-${t.id}`).textContent =
-              quantities[t.id];
-          });
-          let subtotal = 0;
-          tiers.forEach((t) => (subtotal += t.price * quantities[t.id]));
-          const fee = subtotal * 0.02;
-          const total = subtotal + fee;
-          document.getElementById("checkoutSubtotal").textContent =
-            PS.formatMoney(subtotal, c);
-          document.getElementById("checkoutFee").textContent = PS.formatMoney(
-            fee,
-            c,
-          );
-          document.getElementById("checkoutTotal").textContent = PS.formatMoney(
-            total,
-            c,
-          );
-          const bal = PS.wallet.getBalance();
-          document.getElementById("checkoutWallet").textContent =
-            PS.formatMoney(bal, c);
-          document.getElementById("insufficientNotice").style.display =
-            total > bal ? "block" : "none";
-          document.getElementById("confirmPurchase").disabled =
-            subtotal === 0 || total > bal;
-        }
-
-        document
-          .getElementById("openPurchase")
-          .addEventListener("click", () => {
-            document.getElementById("purchaseEventName").textContent = ev.title;
-            renderTiers();
-            updateTotals();
-            PS.openModal("purchaseModal");
-          });
-
-        document
-          .getElementById("confirmPurchase")
-          .addEventListener("click", (e) => {
-            const btn = e.currentTarget;
-            btn.classList.add("is-loading");
-            btn.disabled = true;
-            let subtotal = 0;
-            tiers.forEach((t) => (subtotal += t.price * quantities[t.id]));
-            const fee = subtotal * 0.02;
-            const total = subtotal + fee;
-            setTimeout(() => {
-              PS.wallet.deduct(total);
-              const txId = "TX-" + Date.now().toString().slice(-10);
-              PS.closeModal("purchaseModal");
-              document.getElementById("successTxId").textContent = txId;
-              PS.openModal("successModal");
-              PS.toast("Purchase complete", "success");
-              btn.classList.remove("is-loading");
-              btn.disabled = false;
-            }, 1200);
-          });
       });
     </script>
   </body>

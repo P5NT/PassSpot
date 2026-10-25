@@ -101,10 +101,6 @@
         border-color: var(--border-strong);
         box-shadow: var(--shadow-md);
       }
-      .ticket-wallet-card.is-used {
-        opacity: 0.55;
-        background-color: var(--surface-muted);
-      }
       .qr-box {
         background: #ffffff;
         border: 1px solid var(--border-color);
@@ -124,11 +120,6 @@
         font-size: var(--fs-xs);
         color: var(--text-tertiary);
         letter-spacing: 0.02em;
-      }
-      .ticket-wallet-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--space-2);
       }
       .wallet-summary {
         background-color: var(--surface-muted);
@@ -180,6 +171,7 @@
 
     <main id="checkoutMain"></main>
 
+    <script src="js/api.js"></script>
     <script src="js/data.js"></script>
     <script src="js/script.js"></script>
     <script>
@@ -209,6 +201,14 @@
           return;
         }
 
+        const feeHandling = event.feeHandling || "absorb";
+        const adminSettings = PS.store.get("admin_settings", {
+          platformFee: 5,
+        });
+        const PLATFORM_FEE_PERCENT =
+          (event.platformFee || adminSettings.platformFee) / 100;
+        const isOnline = event.eventType === "online";
+
         const state = {
           ticketType: null,
           qty: 1,
@@ -236,12 +236,6 @@
                   price: event.price,
                   desc: "General admission",
                 },
-                {
-                  id: "vip",
-                  name: "VIP",
-                  price: Math.round(event.price * 2.5),
-                  desc: "VIP lounge + early entry",
-                },
               ];
 
         state.ticketType = tiers[0].id;
@@ -250,18 +244,17 @@
           ? `<img src="${event.imageData}" alt="${event.title}" style="width:60px;height:60px;border-radius:var(--radius-md);object-fit:cover;flex-shrink:0;">`
           : `<div style="width:60px;height:60px;border-radius:var(--radius-md);background:var(--primary-50);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">${event.emoji || "🎫"}</div>`;
 
-        // Multi-day date display
-        const dateText =
-          event.schedule && event.schedule.length > 1
-            ? `${PS.formatDate(event.schedule[0].date)} → ${event.schedule.length} days`
-            : `${PS.formatDate(event.date)} · ${PS.formatTime(event.date)}`;
+        // Location display logic
+        const locationText = isOnline
+          ? "Online Event (Virtual)"
+          : `${event.venue}, ${event.city}`;
 
         function renderCheckout() {
           main.innerHTML = `
           <div class="checkout-layout">
             <div>
               <div class="mb-6">
-                <h1 class="page-title">Get your tickets</h1>
+                <h1 class="page-title">${isOnline ? "Get your access" : "Get your tickets"}</h1>
                 <p class="page-subtitle">No account needed — just fill in your details.</p>
               </div>
 
@@ -276,7 +269,7 @@
                   <div class="form-group">
                     <label class="form-label" for="guestEmail">Email address <span class="required">*</span></label>
                     <input class="form-input" type="email" id="guestEmail" placeholder="you@example.com" required>
-                    <span class="form-hint">We'll send your QR codes and receipt here.</span>
+                    <span class="form-hint">${isOnline ? "We will send your join link and receipt here." : "We'll send your QR codes and receipt here."}</span>
                     <span class="form-error"></span>
                   </div>
                 </div>
@@ -289,14 +282,12 @@
                     <div class="flex items-center gap-3">
                       <button type="button" class="btn btn-secondary" id="qtyMinus">−</button>
                       <input class="form-input" type="number" id="qty" value="1" min="1" max="10" style="max-width:100px;text-align:center;" required>
-                      <button type="button" class="btn btn-secondary" id="qtyPlus">+</button>
+                      <button class="btn btn-secondary" id="qtyPlus">+</button>
                     </div>
-                    <span class="form-hint">Max 10 tickets per order.</span>
                   </div>
                 </div>
 
-                <!-- Promo code -->
-                <div class="card mb-4">
+                <div class="card mb-4" id="promoCard">
                   <h3 class="card-title mb-4">Promo code <span class="text-muted text-sm fw-regular">(optional)</span></h3>
                   <div class="flex gap-2">
                     <input class="form-input mono" type="text" id="promoInput" placeholder="Enter code" style="text-transform:uppercase;">
@@ -305,7 +296,8 @@
                   <div id="promoFeedback" class="mt-2"></div>
                 </div>
 
-                <div class="card mb-4">
+                <!-- Payment Method (Hidden if Free) -->
+                <div class="card mb-4" id="paymentMethodCard">
                   <h3 class="card-title mb-4">Payment method</h3>
                   <div class="radio-cards" style="grid-template-columns:1fr;">
                     <label class="radio-card">
@@ -313,13 +305,6 @@
                       <div class="radio-card-content">
                         <div class="radio-card-title">💳 Card</div>
                         <div class="radio-card-desc">Visa, Mastercard, Verve — Demo only</div>
-                      </div>
-                    </label>
-                    <label class="radio-card">
-                      <input type="radio" name="payMethod" value="bank">
-                      <div class="radio-card-content">
-                        <div class="radio-card-title">🏦 Bank Transfer</div>
-                        <div class="radio-card-desc">Transfer from any Nigerian bank — Demo only</div>
                       </div>
                     </label>
                   </div>
@@ -339,9 +324,9 @@
                 <div class="flex gap-3 items-start mb-4">
                   ${eventMediaHTML}
                   <div style="flex:1;min-width:0;">
-                    <div class="event-card-date" style="margin-bottom:4px;">${dateText}</div>
+                    <div class="event-card-date" style="margin-bottom:4px;">${PS.formatDate(event.date)}</div>
                     <h3 class="card-title" style="font-size:var(--fs-md);line-height:1.3;">${event.title}</h3>
-                    <div class="text-xs text-muted mt-1">📍 ${event.venue}, ${event.city}</div>
+                    <div class="text-xs text-muted mt-1">📍 ${locationText}</div>
                   </div>
                 </div>
                 <div class="divider"></div>
@@ -350,17 +335,16 @@
                 <div class="summary-row"><span class="text-muted text-sm">Quantity</span><span class="fw-semibold text-sm" id="sumQty">1</span></div>
                 <div class="summary-row"><span class="text-muted text-sm">Subtotal</span><span class="fw-semibold text-sm" id="sumSubtotal">—</span></div>
                 <div class="summary-row" id="discountRow" style="display:none;">
-                  <span class="text-muted text-sm">Discount <span id="promoAppliedLabel" class="mono"></span></span>
+                  <span class="text-muted text-sm">Discount</span>
                   <span class="fw-semibold text-sm text-success" id="sumDiscount">—</span>
                 </div>
-                <div class="summary-row"><span class="text-muted text-sm">Service fee (2%)</span><span class="fw-semibold text-sm" id="sumFee">—</span></div>
-                <div class="summary-row total"><span>Total</span><span id="sumTotal">—</span></div>
-                <div class="divider"></div>
-                <label class="form-label mb-2">Display currency</label>
-                <div class="currency-switch" style="width:100%;">
-                  <button type="button" data-checkout-cur="NGN" class="is-active" style="flex:1;">₦ NGN</button>
-                  <button type="button" data-checkout-cur="USD" style="flex:1;">$ USD</button>
+                
+                <div class="summary-row" id="feeRow" style="display:none;">
+                  <span class="text-muted text-sm">Service fee</span>
+                  <span class="fw-semibold text-sm" id="sumFee">—</span>
                 </div>
+                
+                <div class="summary-row total"><span>Total</span><span id="sumTotal">—</span></div>
               </div>
             </aside>
           </div>
@@ -383,7 +367,7 @@
                 <div class="fw-semibold text-sm">${t.name}</div>
                 <div class="text-xs text-muted">${t.desc}</div>
               </div>
-              <div class="fw-bold text-sm">${PS.formatMoney(t.price, state.currency)}</div>
+              <div class="fw-bold text-sm">${t.price === 0 ? '<span class="text-success">Free</span>' : PS.formatMoney(t.price, state.currency)}</div>
             </div>
           `,
               )
@@ -399,46 +383,69 @@
 
           function updateSummary() {
             const tier = tiers.find((t) => t.id === state.ticketType);
+            const isFree = tier.price === 0;
+
             const subtotal = tier.price * state.qty;
             let discount = 0;
             if (state.appliedPromo) {
-              if (state.appliedPromo.discountType === "percent") {
+              if (state.appliedPromo.discountType === "percent")
                 discount = subtotal * (state.appliedPromo.discountValue / 100);
-              } else {
-                discount = state.appliedPromo.discountValue;
-                if (discount > subtotal) discount = subtotal;
-              }
+              else
+                discount = Math.min(state.appliedPromo.discountValue, subtotal);
             }
             const afterDiscount = subtotal - discount;
-            const fee = afterDiscount * 0.02;
+
+            // If ticket is free, no fees apply
+            const fee =
+              feeHandling === "pass" && !isFree
+                ? afterDiscount * PLATFORM_FEE_PERCENT
+                : 0;
             const total = afterDiscount + fee;
 
             document.getElementById("sumTicketName").textContent = tier.name;
-            document.getElementById("sumPriceEach").textContent =
-              PS.formatMoney(tier.price, state.currency);
+            document.getElementById("sumPriceEach").textContent = isFree
+              ? "Free"
+              : PS.formatMoney(tier.price, state.currency);
             document.getElementById("sumQty").textContent = state.qty;
-            document.getElementById("sumSubtotal").textContent = PS.formatMoney(
-              subtotal,
-              state.currency,
-            );
-            document.getElementById("sumFee").textContent = PS.formatMoney(
-              fee,
-              state.currency,
-            );
-            document.getElementById("sumTotal").textContent = PS.formatMoney(
-              total,
-              state.currency,
-            );
+            document.getElementById("sumSubtotal").textContent = isFree
+              ? "Free"
+              : PS.formatMoney(subtotal, state.currency);
 
-            const discountRow = document.getElementById("discountRow");
+            if (feeHandling === "pass" && !isFree) {
+              document.getElementById("feeRow").style.display = "flex";
+              document.getElementById("sumFee").textContent = PS.formatMoney(
+                fee,
+                state.currency,
+              );
+            } else {
+              document.getElementById("feeRow").style.display = "none";
+            }
+
+            document.getElementById("sumTotal").textContent = isFree
+              ? "Free"
+              : PS.formatMoney(total, state.currency);
+
+            // Handle UI changes for Free tickets
+            const payBtn = document.getElementById("payBtn");
+            const paymentCard = document.getElementById("paymentMethodCard");
+            const promoCard = document.getElementById("promoCard");
+
+            if (isFree) {
+              payBtn.textContent = "Claim Free Tickets";
+              paymentCard.style.display = "none";
+              promoCard.style.display = "none"; // No need for promo codes on free tickets
+            } else {
+              payBtn.textContent = "Pay and get tickets";
+              paymentCard.style.display = "block";
+              promoCard.style.display = "block";
+            }
+
             if (discount > 0) {
-              discountRow.style.display = "flex";
-              document.getElementById("promoAppliedLabel").textContent =
-                `(${state.appliedPromo.code})`;
+              document.getElementById("discountRow").style.display = "flex";
               document.getElementById("sumDiscount").textContent =
                 "-" + PS.formatMoney(discount, state.currency);
             } else {
-              discountRow.style.display = "none";
+              document.getElementById("discountRow").style.display = "none";
             }
           }
 
@@ -464,21 +471,6 @@
             updateSummary();
           });
 
-          document.querySelectorAll("[data-checkout-cur]").forEach((btn) => {
-            btn.addEventListener("click", () => {
-              state.currency = btn.dataset.checkoutCur;
-              document.querySelectorAll("[data-checkout-cur]").forEach((b) => {
-                b.classList.toggle(
-                  "is-active",
-                  b.dataset.checkoutCur === state.currency,
-                );
-              });
-              renderTicketOptions();
-              updateSummary();
-            });
-          });
-
-          // Apply promo
           document
             .getElementById("applyPromoBtn")
             .addEventListener("click", () => {
@@ -502,9 +494,8 @@
                 return;
               }
               state.appliedPromo = found;
-              feedback.innerHTML = `<div class="text-xs text-success fw-medium">✓ Promo applied — ${found.discountType === "percent" ? found.discountValue + "% off" : PS.formatMoney(found.discountValue, state.currency) + " off"}</div>`;
+              feedback.innerHTML = `<div class="text-xs text-success fw-medium">✓ Promo applied</div>`;
               updateSummary();
-              PS.toast("Promo code applied", "success");
             });
 
           document
@@ -538,28 +529,34 @@
 
               setTimeout(() => {
                 const tier = tiers.find((t) => t.id === state.ticketType);
+                const isFree = tier.price === 0;
                 const subtotal = tier.price * state.qty;
                 let discount = 0;
                 if (state.appliedPromo) {
-                  if (state.appliedPromo.discountType === "percent") {
+                  if (state.appliedPromo.discountType === "percent")
                     discount =
                       subtotal * (state.appliedPromo.discountValue / 100);
-                  } else {
+                  else
                     discount = Math.min(
                       state.appliedPromo.discountValue,
                       subtotal,
                     );
-                  }
                 }
                 const afterDiscount = subtotal - discount;
-                const fee = afterDiscount * 0.02;
+                const fee =
+                  feeHandling === "pass" && !isFree
+                    ? afterDiscount * PLATFORM_FEE_PERCENT
+                    : 0;
                 const total = afterDiscount + fee;
 
                 const order = PS.guest.createOrder({
                   eventId: event.id,
                   eventTitle: event.title,
                   eventDate: event.date,
-                  eventVenue: `${event.venue}, ${event.city}, ${event.state}`,
+                  eventVenue: isOnline
+                    ? "Online Event"
+                    : `${event.venue}, ${event.city}, ${event.state}`,
+                  onlineLink: isOnline ? event.onlineLink : null, // <--- Save the link
                   ticketType: tier.name,
                   qty: state.qty,
                   priceEach: tier.price,
@@ -575,7 +572,12 @@
                     : null,
                 });
 
-                PS.toast(`Tickets sent to ${state.guestEmail}`, "success");
+                PS.toast(
+                  isFree
+                    ? "Tickets claimed successfully!"
+                    : `Tickets sent to ${state.guestEmail}`,
+                  "success",
+                );
                 renderWallet(order);
               }, 1400);
             });
@@ -586,266 +588,64 @@
 
         function renderWallet(order) {
           const shareUrl = `${window.location.origin}${window.location.pathname.replace("checkout.html", "event-details.html")}?id=${order.eventId}`;
+
           main.innerHTML = `
           <div class="wallet-wrap">
             <div class="wallet-header">
               <div class="success-icon-badge">
                 <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
               </div>
-              <h1 class="page-title" style="margin-bottom:var(--space-2);">You're in! 🎉</h1>
+              <h1 class="page-title" style="margin-bottom:var(--space-2);">${order.total === 0 ? "You're in! (Free)" : "You're in! 🎉"}</h1>
               <p class="page-subtitle">
                 ${order.qty === 1 ? "Your ticket has" : `Your ${order.qty} tickets have`} been sent to <strong>${order.guestEmail}</strong>
               </p>
             </div>
             <div class="wallet-summary">
               <div class="flex justify-between items-center mb-2" style="flex-wrap:wrap;gap:var(--space-2);">
-                <div>
-                  <div class="text-xs text-muted">Order ID</div>
-                  <div class="mono fw-bold">${order.orderId}</div>
-                </div>
-                <span class="badge badge-success">Paid</span>
+                <div><div class="text-xs text-muted">Order ID</div><div class="mono fw-bold">${order.orderId}</div></div>
+                <span class="badge ${order.total === 0 ? "badge-success" : "badge-success"}">${order.total === 0 ? "Claimed" : "Paid"}</span>
               </div>
-              <div class="summary-row">
-                <span class="text-muted text-sm">${order.eventTitle}</span>
-                <span class="fw-semibold text-sm">${PS.formatDate(order.eventDate)}</span>
-              </div>
-              <div class="summary-row">
-                <span class="text-muted text-sm">${order.ticketType} × ${order.qty}</span>
-                <span class="fw-semibold text-sm">${PS.formatMoney(order.total, order.currency)}</span>
-              </div>
+              <div class="summary-row"><span class="text-muted text-sm">${order.eventTitle}</span><span class="fw-semibold text-sm">${PS.formatDate(order.eventDate)}</span></div>
+              <div class="summary-row"><span class="text-muted text-sm">${order.ticketType} × ${order.qty}</span><span class="fw-semibold text-sm">${order.total === 0 ? "Free" : PS.formatMoney(order.total, order.currency)}</span></div>
             </div>
+            
             <div class="flex justify-between items-center mt-8 mb-4" style="flex-wrap:wrap;gap:var(--space-3);">
-              <div>
-                <h3 class="section-title" style="font-size:var(--fs-xl);">Your tickets</h3>
-                <p class="section-subtitle">Each ticket has its own QR code.</p>
-              </div>
-              <button class="btn btn-secondary btn-sm" id="downloadAllBtn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-                Download all (PNG)
-              </button>
+              <div><h3 class="section-title" style="font-size:var(--fs-xl);">Your tickets</h3><p class="section-subtitle">${isOnline ? "Access your online event below." : "Each ticket has its own QR code."}</p></div>
             </div>
+
             <div class="ticket-wallet-grid" id="ticketGrid">
-              ${order.tickets.map((t) => renderTicketCard(order, t)).join("")}
-            </div>
-            <div class="card mt-8">
-              <h3 class="card-title mb-3">Share this event</h3>
-              <div class="flex gap-3" style="flex-wrap:wrap;">
-                <button class="btn btn-primary" id="shareEventBtn">Share event</button>
-                <button class="btn btn-secondary" id="copyEventBtn">Copy link</button>
-              </div>
+              ${order.tickets
+                .map(
+                  (t) => `
+                <div class="ticket-wallet-card">
+                  <span class="badge badge-primary" style="align-self:flex-start;">Ticket ${t.index} of ${t.total}</span>
+                  
+                  ${
+                    isOnline
+                      ? `
+                    <!-- ONLINE EVENT TICKET (No QR Code) -->
+                    <div style="text-align:center; padding: var(--space-6) 0;">
+                      <div style="width:64px;height:64px;border-radius:50%;background:var(--primary-50);color:var(--primary-color);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-4);">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l4.55-2.27a1 1 0 011.45.89v6.76a1 1 0 01-1.45.89L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                      </div>
+                      <a href="${order.onlineLink}" target="_blank" class="btn btn-primary btn-block">Join Meeting</a>
+                    </div>
+                  `
+                      : `
+                    <!-- PHYSICAL EVENT TICKET (QR Code) -->
+                    <div class="qr-box"><svg width="180" height="180" viewBox="0 0 200 200"><rect x="15" y="15" width="170" height="170" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+                    <div class="ticket-wallet-label">${t.token}</div>
+                  `
+                  }
+                  
+                  <div class="text-sm text-center"><div class="fw-semibold">${t.attendeeName || order.guestName}</div></div>
+                </div>
+              `,
+                )
+                .join("")}
             </div>
           </div>
         `;
-          bindWallet(order, shareUrl);
-        }
-
-        function renderTicketCard(order, ticket) {
-          return `
-          <div class="ticket-wallet-card" data-token="${ticket.token}">
-            <div class="flex justify-between items-center" style="flex-wrap:wrap;gap:var(--space-2);">
-              <span class="badge badge-primary">Ticket ${ticket.index} of ${ticket.total}</span>
-            </div>
-            <div class="qr-box">${renderQR(ticket.token)}</div>
-            <div class="ticket-wallet-label">${ticket.token}</div>
-            <div class="text-sm" style="text-align:center;">
-              <div class="fw-semibold">${ticket.attendeeName || "Unassigned"}</div>
-              <div class="text-xs text-muted">${order.ticketType}</div>
-            </div>
-            <div class="ticket-wallet-actions">
-              <button class="btn btn-secondary btn-sm" data-share-token="${ticket.token}">Share</button>
-              <button class="btn btn-secondary btn-sm" data-download-token="${ticket.token}">PNG</button>
-            </div>
-          </div>
-        `;
-        }
-
-        function renderQR(token) {
-          let hash = 0;
-          for (let i = 0; i < token.length; i++)
-            hash = ((hash << 5) - hash + token.charCodeAt(i)) | 0;
-          const cells = [];
-          for (let y = 0; y < 16; y++) {
-            for (let x = 0; x < 16; x++) {
-              const bit = (hash >> ((x + y * 16) % 31)) & 1;
-              if (
-                bit ||
-                (x < 4 && y < 4) ||
-                (x > 11 && y < 4) ||
-                (x < 4 && y > 11)
-              ) {
-                cells.push(
-                  `<rect x="${x * 10 + 15}" y="${y * 10 + 15}" width="10" height="10" fill="#0D0D0D"/>`,
-                );
-              }
-            }
-          }
-          return `<svg width="180" height="180" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">${cells.join("")}</svg>`;
-        }
-
-        function bindWallet(order, shareUrl) {
-          document.querySelectorAll("[data-download-token]").forEach((btn) => {
-            btn.addEventListener("click", () => {
-              const ticket = order.tickets.find(
-                (t) => t.token === btn.dataset.downloadToken,
-              );
-              downloadTicketPNG(order, ticket);
-            });
-          });
-          document
-            .getElementById("downloadAllBtn")
-            .addEventListener("click", async () => {
-              for (let i = 0; i < order.tickets.length; i++) {
-                await new Promise((r) => setTimeout(r, 300));
-                downloadTicketPNG(order, order.tickets[i]);
-              }
-            });
-          document
-            .getElementById("shareEventBtn")
-            .addEventListener("click", async () => {
-              const text = `Join me at ${order.eventTitle} → ${shareUrl}`;
-              if (navigator.share) {
-                try {
-                  await navigator.share({
-                    title: order.eventTitle,
-                    url: shareUrl,
-                  });
-                } catch {}
-              } else {
-                try {
-                  await navigator.clipboard.writeText(text);
-                  PS.toast("Link copied", "success");
-                } catch {}
-              }
-            });
-          document
-            .getElementById("copyEventBtn")
-            .addEventListener("click", async () => {
-              try {
-                await navigator.clipboard.writeText(shareUrl);
-                PS.toast("Link copied", "success");
-              } catch {}
-            });
-        }
-
-        function downloadTicketPNG(order, ticket) {
-          const canvas = document.createElement("canvas");
-          canvas.width = 800;
-          canvas.height = 1100;
-          const ctx = canvas.getContext("2d");
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillRect(0, 0, 800, 1100);
-          ctx.fillStyle = "#6C2BD9";
-          ctx.fillRect(0, 0, 800, 140);
-          ctx.fillStyle = "#FFFFFF";
-          ctx.font = "700 42px Inter, sans-serif";
-          ctx.textBaseline = "middle";
-          ctx.fillText("Pass Spot", 40, 70);
-          ctx.font = "700 20px Inter, sans-serif";
-          ctx.textAlign = "right";
-          ctx.fillText(`Ticket ${ticket.index} of ${ticket.total}`, 760, 90);
-          ctx.textAlign = "left";
-          ctx.fillStyle = "#0D0D0D";
-          ctx.font = "700 34px Inter, sans-serif";
-          wrapText(ctx, order.eventTitle, 40, 220, 720, 44);
-          ctx.fillStyle = "#52525B";
-          ctx.font = "500 20px Inter, sans-serif";
-          ctx.fillText(
-            `${PS.formatDate(order.eventDate)} · ${PS.formatTime(order.eventDate)}`,
-            40,
-            320,
-          );
-          ctx.fillText(order.eventVenue, 40, 355);
-          ctx.fillStyle = "#0D0D0D";
-          ctx.font = "600 22px Inter, sans-serif";
-          ctx.fillText(ticket.attendeeName || "Unassigned", 40, 420);
-          ctx.fillStyle = "#71717D";
-          ctx.font = "500 18px Inter, sans-serif";
-          ctx.fillText(order.ticketType, 40, 450);
-          ctx.strokeStyle = "#E8E8EC";
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.moveTo(40, 500);
-          ctx.lineTo(760, 500);
-          ctx.stroke();
-          drawQRToCanvas(ctx, ticket.token, 220, 560, 360);
-          ctx.fillStyle = "#0D0D0D";
-          ctx.font = "700 22px JetBrains Mono, monospace";
-          ctx.textAlign = "center";
-          ctx.fillText(ticket.token, 400, 970);
-          ctx.fillStyle = "#71717D";
-          ctx.font = "500 16px Inter, sans-serif";
-          ctx.fillText("Scan at the entrance · One admission only", 400, 1010);
-          ctx.fillStyle = "#A1A1AC";
-          ctx.font = "500 14px Inter, sans-serif";
-          ctx.fillText(`Order ${order.orderId}`, 400, 1045);
-          canvas.toBlob((blob) => {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `passspot-${ticket.token}.png`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-            PS.toast(`Downloaded ${ticket.token}.png`, "success");
-          }, "image/png");
-        }
-
-        function drawQRToCanvas(ctx, token, x, y, size) {
-          ctx.fillStyle = "#FFFFFF";
-          ctx.fillRect(x, y, size, size);
-          ctx.strokeStyle = "#0D0D0D";
-          ctx.lineWidth = 4;
-          ctx.strokeRect(x, y, size, size);
-          let hash = 0;
-          for (let i = 0; i < token.length; i++)
-            hash = ((hash << 5) - hash + token.charCodeAt(i)) | 0;
-          const padding = 20,
-            innerSize = size - padding * 2,
-            gridSize = 21,
-            cell = innerSize / gridSize;
-          ctx.fillStyle = "#0D0D0D";
-          for (let row = 0; row < gridSize; row++) {
-            for (let col = 0; col < gridSize; col++) {
-              const bit = (hash >> ((row * gridSize + col) % 31)) & 1;
-              const isTopLeft = row < 7 && col < 7;
-              const isTopRight = row < 7 && col >= gridSize - 7;
-              const isBottomLeft = row >= gridSize - 7 && col < 7;
-              let filled = bit === 1;
-              if (isTopLeft || isTopRight || isBottomLeft) {
-                const lr = row < 7 ? row : row - (gridSize - 7);
-                const lc = col < 7 ? col : col - (gridSize - 7);
-                const outer = lr === 0 || lr === 6 || lc === 0 || lc === 6;
-                const inner = lr >= 2 && lr <= 4 && lc >= 2 && lc <= 4;
-                filled = outer || inner;
-              }
-              if (filled) {
-                ctx.fillRect(
-                  x + padding + col * cell,
-                  y + padding + row * cell,
-                  cell + 0.5,
-                  cell + 0.5,
-                );
-              }
-            }
-          }
-        }
-
-        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-          const words = text.split(" ");
-          let line = "",
-            currentY = y;
-          for (const word of words) {
-            const test = line + word + " ";
-            if (ctx.measureText(test).width > maxWidth && line !== "") {
-              ctx.fillText(line.trim(), x, currentY);
-              line = word + " ";
-              currentY += lineHeight;
-            } else {
-              line = test;
-            }
-          }
-          ctx.fillText(line.trim(), x, currentY);
         }
 
         renderCheckout();

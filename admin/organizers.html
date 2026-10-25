@@ -32,39 +32,37 @@
             </div>
           </div>
 
-          <!-- Stats -->
           <section class="stats-grid">
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Total organizers</span>
-                <span class="stat-icon">📣</span>
+                <span class="stat-label">Total organizers</span
+                ><span class="stat-icon">📣</span>
               </div>
               <div class="stat-value" id="orgTotal">0</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Active</span>
-                <span class="stat-icon success">✅</span>
+                <span class="stat-label">Active</span
+                ><span class="stat-icon success">✅</span>
               </div>
               <div class="stat-value" id="orgActive">0</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Suspended</span>
-                <span class="stat-icon warning">⏸</span>
+                <span class="stat-label">Suspended</span
+                ><span class="stat-icon warning">⏸</span>
               </div>
               <div class="stat-value" id="orgSuspended">0</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Total gross revenue</span>
-                <span class="stat-icon info">💰</span>
+                <span class="stat-label">Total gross revenue</span
+                ><span class="stat-icon info">💰</span>
               </div>
               <div class="stat-value" id="orgRevenue">₦0</div>
             </div>
           </section>
 
-          <!-- Filters -->
           <div class="filter-bar">
             <div class="filter-search">
               <svg
@@ -96,7 +94,6 @@
             </select>
           </div>
 
-          <!-- Table -->
           <div class="table-wrap">
             <div class="table-scroll">
               <table class="table">
@@ -119,7 +116,7 @@
       </div>
     </div>
 
-    <!-- Action modal -->
+    <!-- Reusable Action Modal -->
     <div class="modal-overlay" id="actionModal">
       <div class="modal modal-sm">
         <div class="modal-header">
@@ -143,29 +140,70 @@
       </div>
     </div>
 
+    <!-- View Organizer Details Modal (Replaces Browser Alert) -->
+    <div class="modal-overlay" id="viewModal">
+      <div class="modal">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title" id="viewOrgName">Organizer Details</h3>
+            <p class="modal-subtitle" id="viewOrgEmail">—</p>
+          </div>
+          <button class="modal-close" onclick="PS.closeModal('viewModal')">
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="summary-row">
+            <span class="text-muted text-sm">Phone</span>
+            <span class="fw-semibold text-sm" id="viewOrgPhone">—</span>
+          </div>
+          <div class="summary-row">
+            <span class="text-muted text-sm">Joined</span>
+            <span class="fw-semibold text-sm" id="viewOrgJoined">—</span>
+          </div>
+          <div class="summary-row">
+            <span class="text-muted text-sm">Events</span>
+            <span class="fw-semibold text-sm" id="viewOrgEvents">—</span>
+          </div>
+          <div class="divider"></div>
+          <div class="summary-row">
+            <span class="text-muted text-sm">Gross Revenue</span>
+            <span class="fw-bold text-success" id="viewOrgRevenue">—</span>
+          </div>
+          <div class="summary-row">
+            <span class="text-muted text-sm">Total Withdrawn</span>
+            <span class="fw-bold" id="viewOrgWithdrawn">—</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" onclick="PS.closeModal('viewModal')">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="../js/data.js"></script>
     <script src="../js/script.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        // Guard: redirect to login if not admin
         if (!PS.session.requireAdmin()) return;
 
         window.PS_ADMIN.renderSidebar("organizers");
         window.PS_ADMIN.renderTopbar("Organizers");
 
         // =========================================
-        // LOAD ORGANIZERS
-        // Seeded demo organizers + any real users
-        // whose role is "organizer" (from session).
+        // LOAD ORGANIZERS (Safe Array Check)
         // =========================================
         function loadOrganizers() {
+          const savedAmbassadors = PS.store.get("ambassadors") || [];
+
           const seeded = window.PS_DATA.SEEDED_ORGANIZERS.map((o) => ({
             ...o,
             source: "seed",
+            isAmbassador: savedAmbassadors.includes(o.email),
           }));
-          // Any real organizers currently logged in
-          // (in a real app this would be a user list
-          // from the backend)
+
           const currentUser = PS.session.getUser();
           const realOrganizers = [];
           if (currentUser.role === "organizer") {
@@ -182,6 +220,7 @@
               grossRevenue: 0,
               totalWithdrawn: 0,
               source: "real",
+              isAmbassador: savedAmbassadors.includes(currentUser.email),
             });
           }
           return [...realOrganizers, ...seeded];
@@ -191,9 +230,6 @@
         let activeStatus = "";
         let activeSearch = "";
 
-        // =========================================
-        // RENDER STATS
-        // =========================================
         function renderStats() {
           const cur = PS.getCurrency();
           const total = organizers.length;
@@ -215,9 +251,6 @@
           );
         }
 
-        // =========================================
-        // RENDER TABLE
-        // =========================================
         function renderTable() {
           let list = [...organizers];
           if (activeSearch) {
@@ -260,31 +293,27 @@
                   .join("")
                   .slice(0, 2)}</span>
                 <div>
-                  <div class="fw-semibold text-sm">${o.name}</div>
+                  <div class="fw-semibold text-sm flex items-center gap-2">
+                    ${o.name}
+                    ${o.isAmbassador ? '<span class="badge badge-warning" title="Ambassador">⭐</span>' : ""}
+                  </div>
                   <div class="text-xs text-muted">${o.email}</div>
                 </div>
               </div>
             </td>
-            <td data-label="Location">
-              <span class="text-sm text-muted">${o.city}, ${o.state.replace(" (FCT)", "")}</span>
-            </td>
-            <td data-label="Events">
-              <span class="fw-semibold text-sm">${o.eventCount}</span>
-            </td>
-            <td data-label="Gross revenue">
-              <span class="fw-bold" data-money="${o.grossRevenue}">${PS.formatMoney(o.grossRevenue, cur)}</span>
-            </td>
-            <td data-label="Withdrawn">
-              <span class="text-sm" data-money="${o.totalWithdrawn}">${PS.formatMoney(o.totalWithdrawn, cur)}</span>
-            </td>
-            <td data-label="Status">
-              <span class="badge ${o.status === "active" ? "badge-success" : "badge-error"}">${o.status}</span>
-            </td>
+            <td data-label="Location"><span class="text-sm text-muted">${o.city}, ${o.state.replace(" (FCT)", "")}</span></td>
+            <td data-label="Events"><span class="fw-semibold text-sm">${o.eventCount}</span></td>
+            <td data-label="Gross revenue"><span class="fw-bold" data-money="${o.grossRevenue}">${PS.formatMoney(o.grossRevenue, cur)}</span></td>
+            <td data-label="Withdrawn"><span class="text-sm" data-money="${o.totalWithdrawn}">${PS.formatMoney(o.totalWithdrawn, cur)}</span></td>
+            <td data-label="Status"><span class="badge ${o.status === "active" ? "badge-success" : "badge-error"}">${o.status}</span></td>
             <td data-label="Actions">
               <div class="table-actions">
                 <button class="btn btn-sm btn-secondary" data-view="${o.id}">View</button>
                 <button class="btn btn-sm ${o.status === "active" ? "btn-ghost" : "btn-primary"}" data-toggle="${o.id}">
                   ${o.status === "active" ? "Suspend" : "Activate"}
+                </button>
+                <button class="btn btn-sm ${o.isAmbassador ? "btn-primary" : "btn-ghost"}" data-ambassador="${o.id}" style="color:${o.isAmbassador ? "#fff" : "var(--warning-color)"};">
+                  ${o.isAmbassador ? "Remove Ambassador" : "Make Ambassador"}
                 </button>
               </div>
             </td>
@@ -293,6 +322,9 @@
             )
             .join("");
 
+          // --- BIND ACTIONS ---
+
+          // 1. Toggle Status
           tbody.querySelectorAll("[data-toggle]").forEach((btn) => {
             btn.addEventListener("click", () => {
               const o = organizers.find((x) => x.id === btn.dataset.toggle);
@@ -300,14 +332,11 @@
               document.getElementById("actionTitle").textContent =
                 `${nextStatus === "suspended" ? "Suspend" : "Activate"} organizer?`;
               document.getElementById("actionSub").textContent =
-                `${o.name} will be ${nextStatus === "suspended" ? "suspended — they can't create events or withdraw funds" : "reactivated"}.`;
+                `${o.name} will be ${nextStatus === "suspended" ? "suspended" : "reactivated"}.`;
               document.getElementById("confirmAction").onclick = () => {
                 o.status = nextStatus;
                 PS.closeModal("actionModal");
-                PS.toast(
-                  `Organizer ${nextStatus === "suspended" ? "suspended" : "activated"}`,
-                  "success",
-                );
+                PS.toast(`Organizer ${nextStatus}`, "success");
                 renderTable();
                 renderStats();
               };
@@ -315,17 +344,48 @@
             });
           });
 
+          // 2. View Details (uses custom modal now)
           tbody.querySelectorAll("[data-view]").forEach((btn) => {
             btn.addEventListener("click", () => {
               const o = organizers.find((x) => x.id === btn.dataset.view);
-              alert(
-                `${o.name}\n\n${o.email}\n${o.phone}\n\nJoined: ${o.joined}\nEvents: ${o.eventCount}\nGross revenue: ${PS.formatMoney(o.grossRevenue, cur)}\nWithdrawn: ${PS.formatMoney(o.totalWithdrawn, cur)}\n\n(Full organizer detail page coming soon)`,
+              document.getElementById("viewOrgName").textContent = o.name;
+              document.getElementById("viewOrgEmail").textContent = o.email;
+              document.getElementById("viewOrgPhone").textContent = o.phone;
+              document.getElementById("viewOrgJoined").textContent = o.joined;
+              document.getElementById("viewOrgEvents").textContent =
+                o.eventCount;
+              document.getElementById("viewOrgRevenue").textContent =
+                PS.formatMoney(o.grossRevenue, cur);
+              document.getElementById("viewOrgWithdrawn").textContent =
+                PS.formatMoney(o.totalWithdrawn, cur);
+              PS.openModal("viewModal");
+            });
+          });
+
+          // 3. Toggle Ambassador
+          tbody.querySelectorAll("[data-ambassador]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const o = organizers.find((x) => x.id === btn.dataset.ambassador);
+              o.isAmbassador = !o.isAmbassador;
+
+              const ambassadors = PS.store.get("ambassadors") || [];
+              if (o.isAmbassador) {
+                if (!ambassadors.includes(o.email)) ambassadors.push(o.email);
+              } else {
+                const idx = ambassadors.indexOf(o.email);
+                if (idx > -1) ambassadors.splice(idx, 1);
+              }
+              PS.store.set("ambassadors", ambassadors);
+
+              PS.toast(
+                `${o.name} is ${o.isAmbassador ? "now" : "no longer"} an ambassador`,
+                "success",
               );
+              renderTable();
             });
           });
         }
 
-        // Filter bindings
         document.getElementById("orgSearch").addEventListener("input", (e) => {
           activeSearch = e.target.value.toLowerCase();
           renderTable();

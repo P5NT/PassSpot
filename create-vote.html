@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Voting Event — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      .field-row {
+        display: flex;
+        gap: var(--space-2);
+        margin-bottom: var(--space-2);
+      }
+      .field-row input {
+        flex: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Create Voting Event</h2>
+              <p class="page-subtitle">
+                Set up a paid poll for your contestants or nominees.
+              </p>
+            </div>
+          </div>
+
+          <form id="voteForm" novalidate>
+            <div
+              style="
+                display: grid;
+                grid-template-columns: 1.6fr 1fr;
+                gap: var(--space-8);
+              "
+              id="formGrid"
+            >
+              <div>
+                <!-- Voting Cover Image -->
+                <div class="card mb-6">
+                  <h3 class="card-title mb-4">Voting Cover Image</h3>
+                  <div id="imageUploadArea"></div>
+                  <p class="form-hint mt-3">
+                    JPG or PNG. Recommended 16:9 ratio. Images are auto-resized
+                    for display.
+                  </p>
+                </div>
+
+                <!-- Basic Info -->
+                <div class="card mb-6">
+                  <h3 class="card-title mb-4">Vote Details</h3>
+                  <div class="form-group">
+                    <label class="form-label" for="voteTitle"
+                      >Title <span class="required">*</span></label
+                    >
+                    <input
+                      class="form-input"
+                      type="text"
+                      id="voteTitle"
+                      placeholder="e.g. Face of Lagos 2025"
+                      required
+                    />
+                    <span class="form-error"></span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="voteDescription"
+                      >Description <span class="required">*</span></label
+                    >
+                    <textarea
+                      class="form-textarea"
+                      id="voteDescription"
+                      placeholder="Explain how the voting works or what the prize is…"
+                      required
+                    ></textarea>
+                    <span class="form-error"></span>
+                  </div>
+                </div>
+
+                <!-- Schedule & Pricing -->
+                <div class="card mb-6">
+                  <h3 class="card-title mb-4">Schedule & Pricing</h3>
+                  <div class="auth-form-row">
+                    <div class="form-group">
+                      <label class="form-label" for="voteStart"
+                        >Start Date <span class="required">*</span></label
+                      >
+                      <input
+                        class="form-input"
+                        type="date"
+                        id="voteStart"
+                        required
+                      />
+                      <span class="form-error"></span>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="voteEnd"
+                        >End Date <span class="required">*</span></label
+                      >
+                      <input
+                        class="form-input"
+                        type="date"
+                        id="voteEnd"
+                        required
+                      />
+                      <span class="form-error"></span>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="votePrice"
+                      >Price per Vote (₦) <span class="required">*</span></label
+                    >
+                    <div class="input-group">
+                      <span class="input-prefix">₦</span>
+                      <input
+                        class="form-input"
+                        type="number"
+                        id="votePrice"
+                        min="50"
+                        placeholder="100"
+                        required
+                      />
+                    </div>
+                    <span class="form-hint"
+                      >How much does a single vote cost? (Min ₦50).</span
+                    >
+                    <span class="form-error"></span>
+                  </div>
+                </div>
+
+                <!-- Categories -->
+                <div class="card mb-6">
+                  <div class="flex justify-between items-center mb-4">
+                    <h3 class="card-title">Voting Categories</h3>
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm"
+                      id="addCategoryBtn"
+                    >
+                      + Add Category
+                    </button>
+                  </div>
+                  <p class="text-xs text-muted mb-4">
+                    e.g. Most Beautiful, Most Handsome, Best Dressed.
+                  </p>
+                  <div id="categoryList"></div>
+                </div>
+
+                <!-- Custom Fields -->
+                <div class="card mb-6">
+                  <div class="flex justify-between items-center mb-4">
+                    <h3 class="card-title">Contestant Data Fields</h3>
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm"
+                      id="addFieldBtn"
+                    >
+                      + Add Field
+                    </button>
+                  </div>
+                  <p class="text-xs text-muted mb-4">
+                    What info do you want for each contestant? (e.g. Age,
+                    Instagram Handle). These fields will appear for every
+                    contestant added.
+                  </p>
+                  <div id="fieldList"></div>
+                </div>
+              </div>
+
+              <!-- Preview & Publish -->
+              <div>
+                <div
+                  class="card"
+                  style="
+                    position: sticky;
+                    top: calc(var(--header-height) + var(--space-4));
+                  "
+                >
+                  <h3 class="card-title mb-3">Summary</h3>
+
+                  <!-- Live Image Preview -->
+                  <div
+                    id="summaryImagePreview"
+                    style="
+                      width: 100%;
+                      aspect-ratio: 16/9;
+                      border-radius: var(--radius-md);
+                      background: var(--surface-muted);
+                      margin-bottom: var(--space-4);
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      overflow: hidden;
+                      border: 1px solid var(--border-color);
+                    "
+                  >
+                    <span class="text-muted text-sm">No image</span>
+                  </div>
+
+                  <div class="summary-row">
+                    <span class="text-muted text-sm">Title</span>
+                    <span
+                      class="fw-semibold text-sm text-right"
+                      id="prevTitle"
+                      style="max-width: 60%"
+                      >—</span
+                    >
+                  </div>
+                  <div class="summary-row">
+                    <span class="text-muted text-sm">Price per Vote</span>
+                    <span class="fw-semibold text-sm" id="prevPrice"
+                      >₦0.00</span
+                    >
+                  </div>
+                  <div class="summary-row">
+                    <span class="text-muted text-sm">Categories</span>
+                    <span
+                      class="fw-semibold text-sm text-right"
+                      id="prevCats"
+                      style="max-width: 60%"
+                      >None</span
+                    >
+                  </div>
+                  <div class="divider"></div>
+                  <div class="flex flex-col gap-3">
+                    <label class="checkbox">
+                      <input type="checkbox" id="agreeTerms" required />
+                      <span>I confirm the details are accurate</span>
+                    </label>
+                  </div>
+                  <button
+                    type="submit"
+                    class="btn btn-primary btn-lg btn-block mt-6"
+                    id="publishBtn"
+                  >
+                    Publish Vote
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </main>
+      </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_SHELL.renderSidebar("myEvents");
+        window.PS_SHELL.renderTopbar("Create Voting Event");
+
+        let categories = [];
+        let customFields = [];
+        let currentImageData = null;
+
+        /* =========================================
+         EVENT IMAGE UPLOAD
+      ========================================= */
+        const IMAGE_MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5MB
+        const imageArea = document.getElementById("imageUploadArea");
+        const summaryPreview = document.getElementById("summaryImagePreview");
+
+        function renderImageArea() {
+          if (currentImageData) {
+            imageArea.innerHTML = `
+            <div class="image-preview" style="position:relative;border-radius:var(--radius-lg);overflow:hidden;aspect-ratio:16/9;border:1px solid var(--border-color);">
+              <img src="${currentImageData}" alt="Vote image preview" style="width:100%;height:100%;object-fit:cover;">
+              <div style="position:absolute;top:var(--space-3);right:var(--space-3);display:flex;gap:var(--space-2);">
+                <label class="btn btn-sm btn-secondary" style="cursor:pointer;">
+                  Change
+                  <input type="file" accept="image/*" id="imageReplaceInput" style="display:none;">
+                </label>
+                <button type="button" class="btn btn-sm btn-danger" id="imageRemoveBtn">Remove</button>
+              </div>
+            </div>
+          `;
+            bindReplaceInput();
+            document
+              .getElementById("imageRemoveBtn")
+              .addEventListener("click", () => {
+                currentImageData = null;
+                renderImageArea();
+                updateSummary();
+                PS.toast("Image removed", "info");
+              });
+          } else {
+            imageArea.innerHTML = `
+            <div class="image-dropzone" id="imageDropzone" style="position:relative;border:2px dashed var(--border-color);border-radius:var(--radius-lg);background-color:var(--surface-muted);aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all var(--transition-fast);overflow:hidden;">
+              <input type="file" accept="image/*" id="imageFileInput" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
+              <div style="text-align:center;padding:var(--space-6);pointer-events:none;">
+                <div style="width:56px;height:56px;border-radius:var(--radius-md);background-color:var(--surface-elevated);color:var(--primary-color);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-3);border:1px solid var(--border-color);">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                </div>
+                <div class="fw-semibold text-sm mb-1">Click or drag to upload</div>
+                <div class="text-xs text-muted">JPG or PNG · Max 5MB</div>
+              </div>
+            </div>
+          `;
+            bindFileInput();
+          }
+        }
+
+        function bindFileInput() {
+          const input = document.getElementById("imageFileInput");
+          const dropzone = document.getElementById("imageDropzone");
+          if (!input || !dropzone) return;
+          input.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files[0])
+              handleImageFile(e.target.files[0]);
+          });
+          ["dragenter", "dragover"].forEach((evt) =>
+            dropzone.addEventListener(evt, (e) => {
+              e.preventDefault();
+              dropzone.style.borderColor = "var(--primary-color)";
+            }),
+          );
+          ["dragleave", "drop"].forEach((evt) =>
+            dropzone.addEventListener(evt, (e) => {
+              e.preventDefault();
+              dropzone.style.borderColor = "var(--border-color)";
+            }),
+          );
+          dropzone.addEventListener("drop", (e) => {
+            if (e.dataTransfer.files && e.dataTransfer.files[0])
+              handleImageFile(e.dataTransfer.files[0]);
+          });
+        }
+
+        function bindReplaceInput() {
+          const input = document.getElementById("imageReplaceInput");
+          if (!input) return;
+          input.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files[0])
+              handleImageFile(e.target.files[0]);
+          });
+        }
+
+        function handleImageFile(file) {
+          if (!file.type.startsWith("image/")) {
+            PS.toast("Please choose an image file", "error");
+            return;
+          }
+          if (file.size > IMAGE_MAX_UPLOAD_BYTES) {
+            PS.toast("Image is too large. Max 5MB.", "error");
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement("canvas");
+              const targetRatio = 1200 / 675;
+              let sx = 0,
+                sy = 0,
+                sw = img.width,
+                sh = img.height;
+              if (img.width / img.height > targetRatio) {
+                sw = img.height * targetRatio;
+                sx = (img.width - sw) / 2;
+              } else {
+                sh = img.width / targetRatio;
+                sy = (img.height - sh) / 2;
+              }
+              canvas.width = 1200;
+              canvas.height = 675;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 1200, 675);
+              currentImageData = canvas.toDataURL("image/jpeg", 0.82);
+              renderImageArea();
+              updateSummary();
+              PS.toast("Image added", "success");
+            };
+            img.src = evt.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+
+        renderImageArea();
+
+        /* =========================================
+         CATEGORIES BUILDER
+      ========================================= */
+        const categoryList = document.getElementById("categoryList");
+        function renderCategories() {
+          if (categories.length === 0) {
+            categoryList.innerHTML = `<p class="text-xs text-muted" style="text-align:center;padding:var(--space-4);">No categories added yet.</p>`;
+            return;
+          }
+          categoryList.innerHTML = categories
+            .map(
+              (cat, idx) => `
+          <div class="field-row">
+            <input class="form-input" type="text" value="${cat.name}" placeholder="Category Name (e.g. Most Beautiful)" data-cat-idx="${idx}">
+            <button type="button" class="btn btn-ghost" data-remove-cat="${idx}" style="color:var(--error-color);">✕</button>
+          </div>
+        `,
+            )
+            .join("");
+
+          categoryList.querySelectorAll("[data-cat-idx]").forEach((inp) => {
+            inp.addEventListener("input", (e) => {
+              categories[parseInt(e.target.dataset.catIdx)].name =
+                e.target.value;
+              updateSummary();
+            });
+          });
+          categoryList.querySelectorAll("[data-remove-cat]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              categories.splice(parseInt(btn.dataset.removeCat), 1);
+              renderCategories();
+              updateSummary();
+            });
+          });
+        }
+
+        document
+          .getElementById("addCategoryBtn")
+          .addEventListener("click", () => {
+            categories.push({ name: "" });
+            renderCategories();
+          });
+
+        /* =========================================
+         CUSTOM FIELDS BUILDER
+      ========================================= */
+        const fieldList = document.getElementById("fieldList");
+        function renderFields() {
+          if (customFields.length === 0) {
+            fieldList.innerHTML = `<p class="text-xs text-muted" style="text-align:center;padding:var(--space-4);">No custom fields added yet.</p>`;
+            return;
+          }
+          fieldList.innerHTML = customFields
+            .map(
+              (field, idx) => `
+          <div class="field-row">
+            <input class="form-input" type="text" value="${field.name}" placeholder="Field Name (e.g. Instagram Handle)" data-field-idx="${idx}">
+            <button type="button" class="btn btn-ghost" data-remove-field="${idx}" style="color:var(--error-color);">✕</button>
+          </div>
+        `,
+            )
+            .join("");
+
+          fieldList.querySelectorAll("[data-field-idx]").forEach((inp) => {
+            inp.addEventListener("input", (e) => {
+              customFields[parseInt(e.target.dataset.fieldIdx)].name =
+                e.target.value;
+            });
+          });
+          fieldList.querySelectorAll("[data-remove-field]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              customFields.splice(parseInt(btn.dataset.removeField), 1);
+              renderFields();
+            });
+          });
+        }
+
+        document.getElementById("addFieldBtn").addEventListener("click", () => {
+          customFields.push({ name: "" });
+          renderFields();
+        });
+
+        /* =========================================
+         LIVE SUMMARY UPDATE
+      ========================================= */
+        const titleInput = document.getElementById("voteTitle");
+        const priceInput = document.getElementById("votePrice");
+        const prevTitle = document.getElementById("prevTitle");
+        const prevPrice = document.getElementById("prevPrice");
+        const prevCats = document.getElementById("prevCats");
+
+        function updateSummary() {
+          prevTitle.textContent = titleInput.value.trim() || "—";
+
+          const price = parseFloat(priceInput.value) || 0;
+          prevPrice.textContent = PS.formatMoney(price, "NGN");
+
+          const validCats = categories
+            .filter((c) => c.name.trim())
+            .map((c) => c.name);
+          prevCats.textContent =
+            validCats.length > 0 ? validCats.join(", ") : "None";
+
+          if (currentImageData) {
+            summaryPreview.innerHTML = `<img src="${currentImageData}" style="width:100%;height:100%;object-fit:cover;">`;
+          } else {
+            summaryPreview.innerHTML = `<span class="text-muted text-sm">No image</span>`;
+          }
+        }
+
+        titleInput.addEventListener("input", updateSummary);
+        priceInput.addEventListener("input", updateSummary);
+
+        /* =========================================
+         FORM SUBMIT
+      ========================================= */
+        document.getElementById("voteForm").addEventListener("submit", (e) => {
+          e.preventDefault();
+          let valid = true;
+
+          const fields = [
+            "voteTitle",
+            "voteDescription",
+            "voteStart",
+            "voteEnd",
+            "votePrice",
+          ];
+          fields.forEach((id) => {
+            const el = document.getElementById(id);
+            PS.clearFieldError(el);
+            if (!el.value.trim()) {
+              PS.setFieldError(el, "This field is required.");
+              valid = false;
+            }
+          });
+
+          const validCats = categories.filter((c) => c.name.trim());
+          if (validCats.length === 0) {
+            PS.toast("Please add at least one voting category.", "error");
+            valid = false;
+          }
+
+          if (!document.getElementById("agreeTerms").checked) {
+            PS.toast("Please confirm the details are accurate.", "error");
+            valid = false;
+          }
+
+          if (!valid) return;
+
+          const btn = document.getElementById("publishBtn");
+          btn.classList.add("is-loading");
+          btn.disabled = true;
+
+          const newVote = {
+            id: "vote_" + Date.now().toString().slice(-8),
+            imageData: currentImageData, // Save the image
+            title: titleInput.value.trim(),
+            description: document
+              .getElementById("voteDescription")
+              .value.trim(),
+            startDate: document.getElementById("voteStart").value,
+            endDate: document.getElementById("voteEnd").value,
+            pricePerVote: parseFloat(priceInput.value),
+            categories: validCats.map((c) => c.name.trim()),
+            customFields: customFields
+              .filter((f) => f.name.trim())
+              .map((f) => f.name.trim()),
+            organizer: PS.session.getUser().name,
+            status: "active",
+            createdAt: new Date().toISOString(),
+            contestants: [],
+          };
+
+          const existingVotes = PS.store.get("voting_events", []);
+          existingVotes.unshift(newVote);
+          PS.store.set("voting_events", existingVotes);
+
+          setTimeout(() => {
+            PS.toast("Voting event created successfully!", "success");
+            setTimeout(() => {
+              window.location.href = "my-voting-events.html";
+            }, 700);
+          }, 1000);
+        });
+
+        // Initial renders
+        categories.push({ name: "Most Beautiful" });
+        categories.push({ name: "Most Handsome" });
+        renderCategories();
+        renderFields();
+        updateSummary();
+      });
+    </script>
+  </body>
+</html>

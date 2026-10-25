@@ -1,4 +1,23 @@
 /* =========================================
+   DYNAMIC API LOADER
+   Automatically injects js/api.js into every 
+   page that loads script.js.
+========================================= */
+(function loadAPI() {
+  // Determine if we are in the root folder or the /admin/ folder
+  const isAdmin = window.location.pathname.includes("/admin/");
+  const apiPath = isAdmin ? "../js/api.js" : "js/api.js";
+
+  // Only load it if it hasn't been loaded yet
+  if (!document.querySelector(`script[src="${apiPath}"]`)) {
+    const script = document.createElement("script");
+    script.src = apiPath;
+    // We insert it before script.js so it's available immediately
+    document.head.appendChild(script);
+  }
+})();
+
+/* =========================================
    PASS SPOT — CORE SCRIPT
 ========================================= */
 
@@ -619,6 +638,12 @@ window.PS_SHELL = {
         icon: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
         organizerOnly: true,
       },
+      voting: {
+        href: "my-voting-events.html",
+        label: "Voting Events",
+        icon: '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>',
+        organizerOnly: true,
+      },
       wallet: {
         href: "wallet.html",
         label: "Wallet",
@@ -675,7 +700,7 @@ window.PS_SHELL = {
       </div>
       <nav class="sidebar-section">
         <div class="sidebar-section-label">Main</div>
-        <div class="sidebar-nav">${link("dashboard")}${link("events")}${link("tickets")}${link("myEvents")}</div>
+        <div class="sidebar-nav">${link("dashboard")}${link("events")}${link("tickets")}${link("myEvents")}${link("voting")}</div>
       </nav>
       <nav class="sidebar-section">
         <div class="sidebar-section-label">Finance</div>

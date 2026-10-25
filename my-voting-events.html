@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Voting Events — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Voting Events</h2>
+              <p class="page-subtitle">
+                Manage your paid polls and contestants.
+              </p>
+            </div>
+            <div class="page-actions">
+              <a href="create-vote.html" class="btn btn-primary">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+                Create Voting Event
+              </a>
+            </div>
+          </div>
+
+          <div class="event-grid" id="voteGrid"></div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Edit Vote Modal (Expanded with Image) -->
+    <div class="modal-overlay" id="editVoteModal">
+      <div class="modal modal-lg">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title">Edit Voting Event</h3>
+            <p class="modal-subtitle">
+              Update details, schedule, categories, or custom fields.
+            </p>
+          </div>
+          <button class="modal-close" onclick="PS.closeModal('editVoteModal')">
+            ✕
+          </button>
+        </div>
+        <div class="modal-body" style="max-height: 65vh; overflow-y: auto">
+          <input type="hidden" id="editVoteId" />
+
+          <!-- Image Upload -->
+          <div
+            class="card mb-4"
+            style="
+              padding: var(--space-3);
+              border: 1px solid var(--border-color);
+              background: var(--surface-muted);
+            "
+          >
+            <div class="flex items-center gap-3">
+              <div
+                id="editImagePreview"
+                style="
+                  width: 120px;
+                  height: 68px;
+                  border-radius: var(--radius-sm);
+                  background: #ccc;
+                  background-size: cover;
+                  background-position: center;
+                  border: 1px solid var(--border-color);
+                "
+              ></div>
+              <div style="flex: 1">
+                <label class="btn btn-sm btn-secondary" style="cursor: pointer">
+                  Change Image
+                  <input
+                    type="file"
+                    id="editImageInput"
+                    accept="image/*"
+                    style="display: none"
+                  />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Basic Info -->
+          <div class="form-group">
+            <label class="form-label">Title</label>
+            <input class="form-input" type="text" id="editVoteTitle" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-textarea" id="editVoteDesc"></textarea>
+          </div>
+
+          <!-- Schedule & Pricing -->
+          <div class="auth-form-row">
+            <div class="form-group">
+              <label class="form-label">Price per Vote (₦)</label>
+              <input class="form-input" type="number" id="editVotePrice" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status</label>
+              <select class="form-select" id="editVoteStatus">
+                <option value="active">Active (Accepting Votes)</option>
+                <option value="closed">Closed (Ended)</option>
+              </select>
+            </div>
+          </div>
+          <div class="auth-form-row">
+            <div class="form-group">
+              <label class="form-label">Start Date</label>
+              <input class="form-input" type="date" id="editVoteStart" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">End Date</label>
+              <input class="form-input" type="date" id="editVoteEnd" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Categories -->
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="fw-bold text-sm">Voting Categories</h4>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              id="editAddCategoryBtn"
+            >
+              + Add Category
+            </button>
+          </div>
+          <div id="editCategoryList" class="mb-6"></div>
+
+          <div class="divider"></div>
+
+          <!-- Custom Fields -->
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="fw-bold text-sm">Contestant Data Fields</h4>
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              id="editAddFieldBtn"
+            >
+              + Add Field
+            </button>
+          </div>
+          <div id="editFieldList"></div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="PS.closeModal('editVoteModal')"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="saveVoteEditBtn">
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_SHELL.renderSidebar("voting");
+        window.PS_SHELL.renderTopbar("Voting Events");
+
+        let votingEvents = PS.store.get("voting_events", []);
+        const grid = document.getElementById("voteGrid");
+
+        // Temp state for the modal
+        let editingCategories = [];
+        let editingFields = [];
+        let editImageData = null;
+
+        function renderVotes() {
+          if (votingEvents.length === 0) {
+            grid.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1;">
+              <div class="empty-state-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+              </div>
+              <h3 class="empty-state-title">No voting events yet</h3>
+              <p class="empty-state-text">Create your first paid poll to start earning.</p>
+              <a href="create-vote.html" class="btn btn-primary">Create Voting Event</a>
+            </div>`;
+            return;
+          }
+
+          const cur = PS.getCurrency();
+          grid.innerHTML = votingEvents
+            .map((vote) => {
+              const totalContestants = vote.contestants
+                ? vote.contestants.length
+                : 0;
+              const revenue = (vote.totalVotes || 0) * vote.pricePerVote;
+
+              // Determine media style
+              const mediaStyle = vote.imageData
+                ? `background-image:url(${vote.imageData}); background-size:cover; background-position:center;`
+                : `background: linear-gradient(135deg, var(--primary-500), var(--primary-700));`;
+
+              const placeholderIcon = vote.imageData
+                ? ""
+                : `
+            <div class="event-card-media-placeholder" style="color: rgba(255,255,255,0.2);">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            </div>
+          `;
+
+              return `
+            <article class="event-card">
+              <div class="event-card-media" style="${mediaStyle}">
+                ${placeholderIcon}
+                <div class="event-card-badges">
+                  <span class="badge ${vote.status === "active" ? "badge-success" : "badge-neutral"}">${vote.status}</span>
+                </div>
+              </div>
+              <div class="event-card-body">
+                <div class="event-card-date">Ends ${PS.formatDate(vote.endDate)}</div>
+                <div class="event-card-title">${vote.title}</div>
+                <div class="flex justify-between text-xs text-muted mt-2">
+                  <span>${totalContestants} Contestants</span>
+                  <span>₦${vote.pricePerVote} / vote</span>
+                </div>
+                <div class="event-card-footer" style="padding-top:var(--space-3);border-top:1px solid var(--border-color);margin-top:var(--space-3);">
+                  <div class="event-card-price">${PS.formatMoney(revenue, cur)}<span class="event-card-price-label">revenue</span></div>
+                  <div class="flex gap-1">
+                    <button class="btn btn-sm btn-secondary" data-edit="${vote.id}">Edit</button>
+                    <button class="btn btn-sm btn-primary" onclick="window.location.href='manage-contestants.html?id=${vote.id}'">Manage</button>
+                  </div>
+                </div>
+              </div>
+            </article>
+          `;
+            })
+            .join("");
+
+          // Attach Edit listeners
+          grid.querySelectorAll("[data-edit]").forEach((btn) => {
+            btn.addEventListener("click", () =>
+              openEditModal(btn.dataset.edit),
+            );
+          });
+        }
+
+        // --- MODAL LOGIC ---
+
+        function openEditModal(voteId) {
+          const vote = votingEvents.find((v) => v.id === voteId);
+
+          document.getElementById("editVoteId").value = vote.id;
+          document.getElementById("editVoteTitle").value = vote.title;
+          document.getElementById("editVoteDesc").value =
+            vote.description || "";
+          document.getElementById("editVotePrice").value = vote.pricePerVote;
+          document.getElementById("editVoteStatus").value = vote.status;
+          document.getElementById("editVoteStart").value = vote.startDate;
+          document.getElementById("editVoteEnd").value = vote.endDate;
+
+          // Set Image
+          editImageData = vote.imageData || null;
+          const preview = document.getElementById("editImagePreview");
+          if (editImageData) {
+            preview.style.backgroundImage = `url(${editImageData})`;
+          } else {
+            preview.style.backgroundImage = "none";
+          }
+
+          editingCategories = [...vote.categories];
+          editingFields = [...vote.customFields];
+
+          renderEditCategories();
+          renderEditFields();
+
+          PS.openModal("editVoteModal");
+        }
+
+        // Image change handler inside modal
+        document
+          .getElementById("editImageInput")
+          .addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+              editImageData = evt.target.result;
+              document.getElementById(
+                "editImagePreview",
+              ).style.backgroundImage = `url(${editImageData})`;
+            };
+            reader.readAsDataURL(file);
+          });
+
+        function renderEditCategories() {
+          const list = document.getElementById("editCategoryList");
+          list.innerHTML = editingCategories
+            .map(
+              (cat, idx) => `
+          <div class="flex gap-2 mb-2">
+            <input class="form-input" type="text" value="${cat}" data-cat-idx="${idx}">
+            <button type="button" class="btn btn-ghost" data-remove-cat="${idx}" style="color:var(--error-color);">✕</button>
+          </div>
+        `,
+            )
+            .join("");
+
+          list.querySelectorAll("[data-cat-idx]").forEach((inp) => {
+            inp.addEventListener("input", (e) => {
+              editingCategories[parseInt(e.target.dataset.catIdx)] =
+                e.target.value;
+            });
+          });
+          list.querySelectorAll("[data-remove-cat]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              editingCategories.splice(parseInt(btn.dataset.removeCat), 1);
+              renderEditCategories();
+            });
+          });
+        }
+
+        function renderEditFields() {
+          const list = document.getElementById("editFieldList");
+          list.innerHTML = editingFields
+            .map(
+              (field, idx) => `
+          <div class="flex gap-2 mb-2">
+            <input class="form-input" type="text" value="${field}" data-field-idx="${idx}">
+            <button type="button" class="btn btn-ghost" data-remove-field="${idx}" style="color:var(--error-color);">✕</button>
+          </div>
+        `,
+            )
+            .join("");
+
+          list.querySelectorAll("[data-field-idx]").forEach((inp) => {
+            inp.addEventListener("input", (e) => {
+              editingFields[parseInt(e.target.dataset.fieldIdx)] =
+                e.target.value;
+            });
+          });
+          list.querySelectorAll("[data-remove-field]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              editingFields.splice(parseInt(btn.dataset.removeField), 1);
+              renderEditFields();
+            });
+          });
+        }
+
+        document
+          .getElementById("editAddCategoryBtn")
+          .addEventListener("click", () => {
+            editingCategories.push("");
+            renderEditCategories();
+          });
+
+        document
+          .getElementById("editAddFieldBtn")
+          .addEventListener("click", () => {
+            editingFields.push("");
+            renderEditFields();
+          });
+
+        // --- SAVE CHANGES ---
+        document
+          .getElementById("saveVoteEditBtn")
+          .addEventListener("click", () => {
+            const id = document.getElementById("editVoteId").value;
+            const vote = votingEvents.find((v) => v.id === id);
+
+            // Update basic info
+            vote.title = document.getElementById("editVoteTitle").value.trim();
+            vote.description = document
+              .getElementById("editVoteDesc")
+              .value.trim();
+            vote.pricePerVote = parseFloat(
+              document.getElementById("editVotePrice").value,
+            );
+            vote.status = document.getElementById("editVoteStatus").value;
+            vote.startDate = document.getElementById("editVoteStart").value;
+            vote.endDate = document.getElementById("editVoteEnd").value;
+            vote.imageData = editImageData;
+
+            // Update categories & fields (filter out empties)
+            vote.categories = editingCategories.filter((c) => c.trim() !== "");
+            vote.customFields = editingFields.filter((f) => f.trim() !== "");
+
+            PS.store.set("voting_events", votingEvents);
+            PS.closeModal("editVoteModal");
+            PS.toast("Voting event updated", "success");
+            renderVotes();
+          });
+
+        renderVotes();
+      });
+    </script>
+  </body>
+</html>

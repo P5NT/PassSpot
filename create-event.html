@@ -16,79 +16,7 @@
     />
     <link rel="stylesheet" href="css/style.css" />
     <style>
-      /* =========================================
-       CREATE-EVENT PAGE STYLES
-       Additions specific to this page only.
-    ========================================= */
-
-      /* Image upload dropzone */
-      .image-dropzone {
-        position: relative;
-        border: 2px dashed var(--border-color);
-        border-radius: var(--radius-lg);
-        background-color: var(--surface-muted);
-        aspect-ratio: 16 / 9;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        overflow: hidden;
-      }
-      .image-dropzone:hover {
-        border-color: var(--primary-300);
-        background-color: var(--primary-50);
-      }
-      .image-dropzone.is-dragover {
-        border-color: var(--primary-color);
-        background-color: var(--primary-50);
-      }
-      .image-dropzone input[type="file"] {
-        position: absolute;
-        inset: 0;
-        opacity: 0;
-        cursor: pointer;
-      }
-      .image-dropzone-inner {
-        text-align: center;
-        padding: var(--space-6);
-        pointer-events: none;
-      }
-      .image-dropzone-icon {
-        width: 56px;
-        height: 56px;
-        border-radius: var(--radius-md);
-        background-color: var(--surface-elevated);
-        color: var(--primary-color);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto var(--space-3);
-        border: 1px solid var(--border-color);
-      }
-      .image-preview {
-        position: relative;
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        aspect-ratio: 16 / 9;
-        border: 1px solid var(--border-color);
-      }
-      .image-preview img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-      }
-      .image-preview-actions {
-        position: absolute;
-        top: var(--space-3);
-        right: var(--space-3);
-        display: flex;
-        gap: var(--space-2);
-      }
-
-      /* Multi-day schedule rows */
+      /* Schedule specific styles */
       .schedule-row {
         display: grid;
         grid-template-columns: 1fr auto;
@@ -107,16 +35,6 @@
         height: 40px;
         width: 130px;
       }
-      @media (max-width: 540px) {
-        .schedule-row {
-          grid-template-columns: 1fr;
-        }
-        .schedule-row .form-input {
-          width: 100%;
-        }
-      }
-
-      /* Schedule locked state */
       .schedule-summary {
         display: flex;
         align-items: center;
@@ -133,29 +51,12 @@
         color: var(--primary-700);
         font-weight: var(--fw-semibold);
       }
-
-      /* Promo code card */
-      .promo-card {
-        padding: var(--space-4);
-        background-color: var(--surface-muted);
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-md);
-        margin-bottom: var(--space-3);
-      }
-      .promo-card-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--space-3);
-      }
-      .promo-grid {
-        display: grid;
-        grid-template-columns: 1.4fr 1fr 1fr;
-        gap: var(--space-3);
-      }
-      @media (max-width: 640px) {
-        .promo-grid {
+      @media (max-width: 540px) {
+        .schedule-row {
           grid-template-columns: 1fr;
+        }
+        .schedule-row .form-input {
+          width: 100%;
         }
       }
     </style>
@@ -185,13 +86,8 @@
               "
               id="formGrid"
             >
-              <!-- =====================================
-                 LEFT COLUMN
-            ===================================== -->
               <div>
-                <!-- =================================
-                   EVENT IMAGE
-              ================================= -->
+                <!-- Event Image -->
                 <div class="card mb-6">
                   <h3 class="card-title mb-4">Event image</h3>
                   <div id="imageUploadArea"></div>
@@ -201,9 +97,40 @@
                   </p>
                 </div>
 
-                <!-- =================================
-                   BASIC INFORMATION
-              ================================= -->
+                <!-- Event Type -->
+                <div class="card mb-6">
+                  <h3 class="card-title mb-4">Event Type</h3>
+                  <div
+                    class="radio-cards"
+                    style="grid-template-columns: 1fr 1fr"
+                  >
+                    <label class="radio-card">
+                      <input
+                        type="radio"
+                        name="eventType"
+                        value="physical"
+                        checked
+                      />
+                      <div class="radio-card-content">
+                        <div class="radio-card-title">📍 Physical Event</div>
+                        <div class="radio-card-desc">
+                          Attendees gather at a specific venue.
+                        </div>
+                      </div>
+                    </label>
+                    <label class="radio-card">
+                      <input type="radio" name="eventType" value="online" />
+                      <div class="radio-card-content">
+                        <div class="radio-card-title">💻 Online Event</div>
+                        <div class="radio-card-desc">
+                          Hosted on Zoom, Google Meet, or YouTube.
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Basic Info -->
                 <div class="card mb-6">
                   <h3 class="card-title mb-4">Basic information</h3>
                   <div class="form-group">
@@ -220,12 +147,18 @@
                     <span class="form-error"></span>
                   </div>
                   <div class="form-group">
-                    <label class="form-label" for="eventCategory"
-                      >Category <span class="required">*</span></label
+                    <label class="form-label"
+                      >Categories <span class="required">*</span></label
                     >
-                    <select class="form-select" id="eventCategory" required>
-                      <option value="">Select a category</option>
-                    </select>
+                    <input type="hidden" id="selectedCategories" value="" />
+                    <div
+                      id="categoryChips"
+                      class="flex gap-2"
+                      style="flex-wrap: wrap; padding: var(--space-2) 0"
+                    >
+                      <!-- Chips will be injected here by JS -->
+                    </div>
+                    <span class="form-hint">Select all that apply.</span>
                     <span class="form-error"></span>
                   </div>
                   <div class="form-group">
@@ -242,17 +175,15 @@
                   </div>
                 </div>
 
-                <!-- =================================
-                   LOCATION
-              ================================= -->
-                <div class="card mb-6">
+                <!-- Location (Physical Only) -->
+                <div class="card mb-6" id="physicalLocationCard">
                   <h3 class="card-title mb-4">Location</h3>
                   <div class="auth-form-row">
                     <div class="form-group">
                       <label class="form-label" for="eventState"
                         >State <span class="required">*</span></label
                       >
-                      <select class="form-select" id="eventState" required>
+                      <select class="form-select" id="eventState">
                         <option value="">Select state</option>
                       </select>
                       <span class="form-error"></span>
@@ -261,14 +192,13 @@
                       <label class="form-label" for="eventCity"
                         >City <span class="required">*</span></label
                       >
-                      <select
-                        class="form-select"
+                      <input
+                        class="form-input"
+                        type="text"
                         id="eventCity"
-                        required
+                        placeholder="e.g. Ikeja, Lekki"
                         disabled
-                      >
-                        <option value="">Select state first</option>
-                      </select>
+                      />
                       <span class="form-error"></span>
                     </div>
                   </div>
@@ -281,29 +211,38 @@
                       type="text"
                       id="eventVenue"
                       placeholder="e.g. Eko Convention Centre"
-                      required
                     />
                     <span class="form-error"></span>
                   </div>
+                </div>
+
+                <!-- Online Link (Online Only) -->
+                <div
+                  class="card mb-6"
+                  id="onlineLocationCard"
+                  style="display: none"
+                >
+                  <h3 class="card-title mb-4">Online Details</h3>
                   <div class="form-group">
-                    <label class="form-label" for="eventAddress"
-                      >Street address</label
+                    <label class="form-label" for="onlineLink"
+                      >Meeting Link <span class="required">*</span></label
                     >
                     <input
                       class="form-input"
-                      type="text"
-                      id="eventAddress"
-                      placeholder="Optional — helps attendees find you"
+                      type="url"
+                      id="onlineLink"
+                      placeholder="https://zoom.us/j/123456789"
                     />
+                    <span class="form-hint"
+                      >Buyers will receive this link on their ticket.</span
+                    >
+                    <span class="form-error"></span>
                   </div>
                 </div>
 
-                <!-- =================================
-                   DATE & TIME (multi-day support)
-              ================================= -->
+                <!-- Date & Time (Multi-day) -->
                 <div class="card mb-6">
                   <h3 class="card-title mb-4">Date & time</h3>
-
                   <div class="auth-form-row">
                     <div class="form-group">
                       <label class="form-label" for="eventStartDate"
@@ -333,13 +272,10 @@
                       <span class="form-error"></span>
                     </div>
                   </div>
-
                   <div id="scheduleArea"></div>
                 </div>
 
-                <!-- =================================
-                   TICKET TYPES
-              ================================= -->
+                <!-- Ticket Types -->
                 <div class="card mb-6">
                   <div class="flex justify-between items-center mb-4">
                     <h3 class="card-title">Ticket types</h3>
@@ -354,9 +290,7 @@
                   <div id="ticketTypesList"></div>
                 </div>
 
-                <!-- =================================
-                   PROMO CODES (optional)
-              ================================= -->
+                <!-- Promo Codes -->
                 <div class="card mb-6">
                   <div class="flex justify-between items-center mb-2">
                     <h3 class="card-title">
@@ -380,9 +314,7 @@
                 </div>
               </div>
 
-              <!-- =====================================
-                 RIGHT COLUMN — Preview & Publish
-            ===================================== -->
+              <!-- Preview & Publish -->
               <div>
                 <div
                   class="card"
@@ -414,34 +346,18 @@
                       </div>
                       <div class="event-card-meta">
                         <div class="event-card-meta-row">
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                          >
-                            <path
-                              d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"
-                            />
-                            <circle cx="12" cy="10" r="3" />
-                          </svg>
-                          <span id="previewLocation">Location</span>
+                          📍 <span id="previewLocation">Location</span>
                         </div>
                       </div>
                     </div>
                   </div>
-
                   <div class="divider"></div>
-
                   <div class="flex flex-col gap-3">
                     <label class="checkbox">
                       <input type="checkbox" id="agreeTerms" required />
                       <span>I confirm the event details are accurate</span>
                     </label>
                   </div>
-
                   <button
                     type="submit"
                     class="btn btn-primary btn-lg btn-block mt-6"
@@ -449,9 +365,6 @@
                   >
                     Publish event
                   </button>
-                  <p class="text-xs text-muted mt-3" style="text-align: center">
-                    Your event will be visible to attendees immediately.
-                  </p>
                 </div>
               </div>
             </div>
@@ -460,122 +373,41 @@
       </div>
     </div>
 
+    <script src="js/api.js"></script>
     <script src="js/data.js"></script>
     <script src="js/script.js"></script>
     <script>
-      /* =========================================
-       CREATE EVENT — PAGE LOGIC
-
-       Covers:
-       - Event image upload (with client-side
-         compression to 1200x675 JPEG)
-       - Multi-day date schedule with per-day
-         start times
-       - Optional promo codes (percentage or
-         flat discount)
-       - Live preview
-       - Publish to localStorage
-    ========================================= */
       document.addEventListener("DOMContentLoaded", () => {
         window.PS_SHELL.renderSidebar("myEvents");
         window.PS_SHELL.renderTopbar("Create event");
 
         /* =========================================
-         CONSTANTS
+         GLOBAL STATE
       ========================================= */
-        // Max size accepted at upload — will become 5MB
-        // for real backend uploads. Client compresses
-        // below this before storing in localStorage.
+        let currentImageData = null;
+        let currentFeeHandling = "absorb"; // Default for backward compatibility
+        let currentPlatformFee = 5;
+
+        let startDate = "";
+        let endDate = "";
+        let schedule = [];
+        let scheduleLocked = false;
+
+        const ticketTypes = [];
+        let ticketTypeCounter = 0;
+
+        /* =========================================
+         IMAGE UPLOAD
+      ========================================= */
         const IMAGE_MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
-        const IMAGE_TARGET_WIDTH = 1200;
-        const IMAGE_TARGET_HEIGHT = 675;
-        const IMAGE_JPEG_QUALITY = 0.82;
-
-        /* =========================================
-         STATE
-      ========================================= */
-        const state = {
-          imageData: null, // base64 data URL or null
-          startDate: "",
-          endDate: "",
-          schedule: [], // [{ date: "YYYY-MM-DD", startTime: "HH:MM" }]
-          scheduleLocked: false, // true after clicking Save schedule
-          promos: [], // [{ code, discountType, discountValue, maxUses, usedCount }]
-          ticketTypes: [], // [{ id, name, price, qty }]
-        };
-
-        /* =========================================
-         INITIAL POPULATE: categories, states
-      ========================================= */
-        const catSel = document.getElementById("eventCategory");
-        window.PS_DATA.EVENT_CATEGORIES.forEach((c) => {
-          const o = document.createElement("option");
-          o.value = c;
-          o.textContent = c;
-          catSel.appendChild(o);
-        });
-
-        const stateSel = document.getElementById("eventState");
-        window.PS_DATA.NIGERIAN_STATES.forEach((s) => {
-          const o = document.createElement("option");
-          o.value = s;
-          o.textContent = s;
-          stateSel.appendChild(o);
-        });
-
-        const citySel = document.getElementById("eventCity");
-        stateSel.addEventListener("change", () => {
-          const cities = window.PS_DATA.NIGERIAN_CITIES[stateSel.value] || [];
-          citySel.innerHTML = '<option value="">Select city</option>';
-          citySel.disabled = !stateSel.value;
-          cities.forEach((c) => {
-            const o = document.createElement("option");
-            o.value = c;
-            o.textContent = c;
-            citySel.appendChild(o);
-          });
-          updatePreview();
-        });
-        citySel.addEventListener("change", updatePreview);
-
-        /* =========================================
-         EMOJI MAP (for placeholder)
-      ========================================= */
-        const emojiMap = {
-          Music: "🎵",
-          Concert: "🎤",
-          Sports: "🏆",
-          Football: "⚽",
-          Comedy: "😂",
-          Business: "💼",
-          Technology: "💻",
-          Education: "📚",
-          Conference: "🎤",
-          Networking: "🤝",
-          Fashion: "👗",
-          Food: "🍲",
-          Religion: "🙏",
-          Art: "🎨",
-          Culture: "🎭",
-          Entertainment: "🎬",
-          Festival: "🎉",
-          Lifestyle: "✨",
-          Family: "👨‍👩‍👧",
-          Community: "🏘️",
-        };
-
-        /* =========================================
-         1. EVENT IMAGE UPLOAD
-      ========================================= */
         const imageArea = document.getElementById("imageUploadArea");
 
         function renderImageArea() {
-          if (state.imageData) {
-            // Show preview
+          if (currentImageData) {
             imageArea.innerHTML = `
-            <div class="image-preview">
-              <img src="${state.imageData}" alt="Event image preview">
-              <div class="image-preview-actions">
+            <div class="image-preview" style="position:relative;border-radius:var(--radius-lg);overflow:hidden;aspect-ratio:16/9;border:1px solid var(--border-color);">
+              <img src="${currentImageData}" alt="Event image preview" style="width:100%;height:100%;object-fit:cover;">
+              <div style="position:absolute;top:var(--space-3);right:var(--space-3);display:flex;gap:var(--space-2);">
                 <label class="btn btn-sm btn-secondary" style="cursor:pointer;">
                   Change
                   <input type="file" accept="image/*" id="imageReplaceInput" style="display:none;">
@@ -584,68 +416,59 @@
               </div>
             </div>
           `;
-            bindImageReplace();
+            bindReplaceInput();
             document
               .getElementById("imageRemoveBtn")
               .addEventListener("click", () => {
-                state.imageData = null;
+                currentImageData = null;
                 renderImageArea();
                 updatePreview();
                 PS.toast("Image removed", "info");
               });
           } else {
-            // Show dropzone
             imageArea.innerHTML = `
-            <div class="image-dropzone" id="imageDropzone">
-              <input type="file" accept="image/*" id="imageFileInput">
-              <div class="image-dropzone-inner">
-                <div class="image-dropzone-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2"/>
-                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                    <path d="M21 15l-5-5L5 21"/>
-                  </svg>
+            <div class="image-dropzone" id="imageDropzone" style="position:relative;border:2px dashed var(--border-color);border-radius:var(--radius-lg);background-color:var(--surface-muted);aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all var(--transition-fast);overflow:hidden;">
+              <input type="file" accept="image/*" id="imageFileInput" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
+              <div style="text-align:center;padding:var(--space-6);pointer-events:none;">
+                <div style="width:56px;height:56px;border-radius:var(--radius-md);background-color:var(--surface-elevated);color:var(--primary-color);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-3);border:1px solid var(--border-color);">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                 </div>
                 <div class="fw-semibold text-sm mb-1">Click or drag to upload</div>
                 <div class="text-xs text-muted">JPG or PNG · Max 5MB</div>
               </div>
             </div>
           `;
-            bindImageInput();
+            bindFileInput();
           }
         }
 
-        function bindImageInput() {
+        function bindFileInput() {
           const input = document.getElementById("imageFileInput");
           const dropzone = document.getElementById("imageDropzone");
           if (!input || !dropzone) return;
-
           input.addEventListener("change", (e) => {
             if (e.target.files && e.target.files[0])
               handleImageFile(e.target.files[0]);
           });
-
-          // Drag & drop
-          ["dragenter", "dragover"].forEach((evt) => {
+          ["dragenter", "dragover"].forEach((evt) =>
             dropzone.addEventListener(evt, (e) => {
               e.preventDefault();
-              dropzone.classList.add("is-dragover");
-            });
-          });
-          ["dragleave", "drop"].forEach((evt) => {
+              dropzone.style.borderColor = "var(--primary-color)";
+            }),
+          );
+          ["dragleave", "drop"].forEach((evt) =>
             dropzone.addEventListener(evt, (e) => {
               e.preventDefault();
-              dropzone.classList.remove("is-dragover");
-            });
-          });
+              dropzone.style.borderColor = "var(--border-color)";
+            }),
+          );
           dropzone.addEventListener("drop", (e) => {
-            if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            if (e.dataTransfer.files && e.dataTransfer.files[0])
               handleImageFile(e.dataTransfer.files[0]);
-            }
           });
         }
 
-        function bindImageReplace() {
+        function bindReplaceInput() {
           const input = document.getElementById("imageReplaceInput");
           if (!input) return;
           input.addEventListener("change", (e) => {
@@ -654,134 +477,182 @@
           });
         }
 
-        // =========================================
-        // HANDLE IMAGE FILE — validate + compress
-        // =========================================
         function handleImageFile(file) {
-          // Type validation
           if (!file.type.startsWith("image/")) {
             PS.toast("Please choose an image file", "error");
             return;
           }
-          // Size validation (5MB hard limit at upload)
           if (file.size > IMAGE_MAX_UPLOAD_BYTES) {
             PS.toast("Image is too large. Max 5MB.", "error");
             return;
           }
-
           const reader = new FileReader();
           reader.onload = (evt) => {
             const img = new Image();
             img.onload = () => {
-              const compressed = compressImage(img);
-              state.imageData = compressed;
+              const canvas = document.createElement("canvas");
+              const targetRatio = 1200 / 675;
+              let sx = 0,
+                sy = 0,
+                sw = img.width,
+                sh = img.height;
+              if (img.width / img.height > targetRatio) {
+                sw = img.height * targetRatio;
+                sx = (img.width - sw) / 2;
+              } else {
+                sh = img.width / targetRatio;
+                sy = (img.height - sh) / 2;
+              }
+              canvas.width = 1200;
+              canvas.height = 675;
+              const ctx = canvas.getContext("2d");
+              ctx.drawImage(img, sx, sy, sw, sh, 0, 0, 1200, 675);
+              currentImageData = canvas.toDataURL("image/jpeg", 0.82);
               renderImageArea();
               updatePreview();
               PS.toast("Image added", "success");
             };
-            img.onerror = () => PS.toast("Could not read image", "error");
             img.src = evt.target.result;
           };
-          reader.onerror = () => PS.toast("Could not read file", "error");
           reader.readAsDataURL(file);
-        }
-
-        // =========================================
-        // COMPRESS — center-crop to 16:9 and resize
-        // =========================================
-        function compressImage(img) {
-          const targetW = IMAGE_TARGET_WIDTH;
-          const targetH = IMAGE_TARGET_HEIGHT;
-          const targetRatio = targetW / targetH;
-
-          const srcW = img.width;
-          const srcH = img.height;
-          const srcRatio = srcW / srcH;
-
-          // Calculate source crop region (center-crop to 16:9)
-          let sx = 0,
-            sy = 0,
-            sw = srcW,
-            sh = srcH;
-          if (srcRatio > targetRatio) {
-            // Source is wider — crop sides
-            sw = srcH * targetRatio;
-            sx = (srcW - sw) / 2;
-          } else if (srcRatio < targetRatio) {
-            // Source is taller — crop top/bottom
-            sh = srcW / targetRatio;
-            sy = (srcH - sh) / 2;
-          }
-
-          const canvas = document.createElement("canvas");
-          canvas.width = targetW;
-          canvas.height = targetH;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetW, targetH);
-
-          return canvas.toDataURL("image/jpeg", IMAGE_JPEG_QUALITY);
         }
 
         renderImageArea();
 
+        // =========================================
+        // POPULATE STATE DROPDOWN
+        // =========================================
+        const stateSel = document.getElementById("eventState");
+        window.PS_DATA.NIGERIAN_STATES.forEach((s) => {
+          const o = document.createElement("option");
+          o.value = s;
+          o.textContent = s;
+          stateSel.appendChild(o);
+        });
+
+        // =========================================
+        // MULTI-SELECT CATEGORIES
+        // =========================================
+        let selectedCategories = [];
+        const categoryChips = document.getElementById("categoryChips");
+        const selectedCatsInput = document.getElementById("selectedCategories");
+
+        window.PS_DATA.EVENT_CATEGORIES.forEach((c) => {
+          const chip = document.createElement("button");
+          chip.type = "button"; // Prevent form submission
+          chip.className = "filter-chip";
+          chip.textContent = c;
+          chip.dataset.value = c;
+
+          chip.addEventListener("click", () => {
+            // Toggle selection
+            if (selectedCategories.includes(c)) {
+              selectedCategories = selectedCategories.filter(
+                (item) => item !== c,
+              );
+              chip.classList.remove("is-active");
+            } else {
+              selectedCategories.push(c);
+              chip.classList.add("is-active");
+            }
+            // Update hidden input for validation
+            selectedCatsInput.value = selectedCategories.join(",");
+
+            // Clear error if at least one is selected
+            if (selectedCategories.length > 0) {
+              document
+                .querySelector("#categoryChips")
+                .parentElement.querySelector(".form-error").style.display =
+                "none";
+            }
+
+            // Update the preview emoji based on the first selected category
+            updatePreview();
+          });
+
+          categoryChips.appendChild(chip);
+        });
+
         /* =========================================
-         2. DATE & TIME — MULTI-DAY SCHEDULE
+         EVENT TYPE (Physical vs Online)
+      ========================================= */
+        const physicalCard = document.getElementById("physicalLocationCard");
+        const onlineCard = document.getElementById("onlineLocationCard");
+        const onlineLinkInput = document.getElementById("onlineLink");
+
+        document
+          .querySelectorAll('input[name="eventType"]')
+          .forEach((radio) => {
+            radio.addEventListener("change", (e) => {
+              if (e.target.value === "online") {
+                physicalCard.style.display = "none";
+                onlineCard.style.display = "block";
+                document
+                  .getElementById("eventState")
+                  .removeAttribute("required");
+                document
+                  .getElementById("eventCity")
+                  .removeAttribute("required");
+                document
+                  .getElementById("eventVenue")
+                  .removeAttribute("required");
+                onlineLinkInput.setAttribute("required", "true");
+              } else {
+                physicalCard.style.display = "block";
+                onlineCard.style.display = "none";
+                document
+                  .getElementById("eventState")
+                  .setAttribute("required", "true");
+                document
+                  .getElementById("eventCity")
+                  .setAttribute("required", "true");
+                document
+                  .getElementById("eventVenue")
+                  .setAttribute("required", "true");
+                onlineLinkInput.removeAttribute("required");
+              }
+              updatePreview();
+            });
+          });
+
+        /* =========================================
+         MANUAL CITY INPUT
+      ========================================= */
+        const citySel = document.getElementById("eventCity");
+        stateSel.addEventListener("change", () => {
+          citySel.disabled = !stateSel.value;
+          if (!stateSel.value) citySel.value = "";
+          updatePreview();
+        });
+        citySel.addEventListener("input", updatePreview);
+
+        /* =========================================
+         MULTI-DAY SCHEDULE
       ========================================= */
         const startDateEl = document.getElementById("eventStartDate");
         const endDateEl = document.getElementById("eventEndDate");
         const scheduleArea = document.getElementById("scheduleArea");
 
         startDateEl.addEventListener("change", () => {
-          state.startDate = startDateEl.value;
-          // Auto-fill end date with start date if empty or earlier
-          if (
-            state.startDate &&
-            (!state.endDate || state.endDate < state.startDate)
-          ) {
-            state.endDate = state.startDate;
-            endDateEl.value = state.endDate;
+          startDate = startDateEl.value;
+          if (startDate && (!endDate || endDate < startDate)) {
+            endDate = startDate;
+            endDateEl.value = endDate;
           }
           regenerateSchedule();
           updatePreview();
         });
 
         endDateEl.addEventListener("change", () => {
-          state.endDate = endDateEl.value;
-          if (state.endDate < state.startDate) {
+          endDate = endDateEl.value;
+          if (endDate < startDate) {
             PS.toast("End date cannot be before start date", "error");
-            state.endDate = state.startDate;
-            endDateEl.value = state.startDate;
+            endDate = startDate;
+            endDateEl.value = startDate;
           }
           regenerateSchedule();
           updatePreview();
         });
-
-        // =========================================
-        // REGENERATE — build one row per day between
-        // start and end (inclusive)
-        // =========================================
-        function regenerateSchedule() {
-          if (!state.startDate || !state.endDate) {
-            state.schedule = [];
-            state.scheduleLocked = false;
-            renderSchedule();
-            return;
-          }
-
-          const days = daysBetween(state.startDate, state.endDate);
-          const defaultTime = state.schedule[0]?.startTime || "19:00";
-
-          state.schedule = days.map((date, idx) => ({
-            date,
-            // Preserve existing time for existing days; default for new ones
-            startTime:
-              state.schedule[idx]?.date === date
-                ? state.schedule[idx].startTime
-                : defaultTime,
-          }));
-          state.scheduleLocked = false;
-          renderSchedule();
-        }
 
         function daysBetween(startISO, endISO) {
           const out = [];
@@ -804,19 +675,34 @@
           });
         }
 
-        // =========================================
-        // RENDER SCHEDULE
-        // =========================================
+        function regenerateSchedule() {
+          if (!startDate || !endDate) {
+            schedule = [];
+            scheduleLocked = false;
+            renderSchedule();
+            return;
+          }
+          const days = daysBetween(startDate, endDate);
+          const defaultTime = schedule[0]?.startTime || "19:00";
+          schedule = days.map((date, idx) => ({
+            date,
+            startTime:
+              schedule[idx]?.date === date
+                ? schedule[idx].startTime
+                : defaultTime,
+          }));
+          scheduleLocked = false;
+          renderSchedule();
+        }
+
         function renderSchedule() {
-          // Single-day event: simple layout
-          if (state.schedule.length === 0) {
+          if (schedule.length === 0) {
             scheduleArea.innerHTML = "";
             return;
           }
 
-          if (state.schedule.length === 1) {
-            // Single day — show one time input inline
-            const row = state.schedule[0];
+          if (schedule.length === 1) {
+            const row = schedule[0];
             scheduleArea.innerHTML = `
             <div class="form-group mt-4">
               <label class="form-label" for="singleDayTime">Start time <span class="required">*</span></label>
@@ -826,27 +712,21 @@
             document
               .getElementById("singleDayTime")
               .addEventListener("input", (e) => {
-                state.schedule[0].startTime = e.target.value;
-                state.scheduleLocked = true; // single day: no save button needed
+                schedule[0].startTime = e.target.value;
+                scheduleLocked = true;
               });
-            state.scheduleLocked = true;
+            scheduleLocked = true;
             return;
           }
 
-          // Multi-day
-          if (state.scheduleLocked) {
-            // Locked state — show summary + Edit
-            const first = state.schedule[0];
-            const last = state.schedule[state.schedule.length - 1];
+          if (scheduleLocked) {
+            const first = schedule[0];
+            const last = schedule[schedule.length - 1];
             scheduleArea.innerHTML = `
             <div class="schedule-summary mt-4">
               <div>
-                <div class="schedule-summary-text">
-                  ✓ Schedule set — ${state.schedule.length} days
-                </div>
-                <div class="text-xs text-muted mt-1">
-                  ${formatDay(first.date)} → ${formatDay(last.date)}
-                </div>
+                <div class="schedule-summary-text">✓ Schedule set — ${schedule.length} days</div>
+                <div class="text-xs text-muted mt-1">${formatDay(first.date)} → ${formatDay(last.date)}</div>
               </div>
               <button type="button" class="btn btn-sm btn-secondary" id="editScheduleBtn">Edit</button>
             </div>
@@ -854,17 +734,14 @@
             document
               .getElementById("editScheduleBtn")
               .addEventListener("click", () => {
-                state.scheduleLocked = false;
+                scheduleLocked = false;
                 renderSchedule();
               });
           } else {
-            // Editable state
             scheduleArea.innerHTML = `
             <div class="mt-4">
-              <div class="text-xs fw-semibold text-muted mb-2" style="text-transform:uppercase;letter-spacing:0.06em;">
-                Daily start times
-              </div>
-              ${state.schedule
+              <div class="text-xs fw-semibold text-muted mb-2" style="text-transform:uppercase;letter-spacing:0.06em;">Daily start times</div>
+              ${schedule
                 .map(
                   (row, idx) => `
                 <div class="schedule-row" data-idx="${idx}">
@@ -874,36 +751,28 @@
               `,
                 )
                 .join("")}
-
               <div class="flex gap-2 mt-4" style="flex-wrap:wrap;">
-                <button type="button" class="btn btn-secondary btn-sm" id="applyAllBtn">
-                  Apply first day's time to all
-                </button>
-                <button type="button" class="btn btn-secondary btn-sm" id="cancelScheduleBtn">
-                  Cancel
-                </button>
-                <button type="button" class="btn btn-primary btn-sm" id="saveScheduleBtn">
-                  Save schedule
-                </button>
+                <button type="button" class="btn btn-secondary btn-sm" id="applyAllBtn">Apply first day's time to all</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="cancelScheduleBtn">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" id="saveScheduleBtn">Save schedule</button>
               </div>
             </div>
           `;
 
-            // Bind time inputs
             scheduleArea
               .querySelectorAll("input[type='time']")
               .forEach((inp) => {
                 inp.addEventListener("input", (e) => {
-                  const idx = parseInt(e.target.dataset.idx);
-                  state.schedule[idx].startTime = e.target.value;
+                  schedule[parseInt(e.target.dataset.idx)].startTime =
+                    e.target.value;
                 });
               });
 
             document
               .getElementById("applyAllBtn")
               .addEventListener("click", () => {
-                const firstTime = state.schedule[0]?.startTime || "19:00";
-                state.schedule.forEach((row, idx) => {
+                const firstTime = schedule[0]?.startTime || "19:00";
+                schedule.forEach((row, idx) => {
                   if (idx > 0) row.startTime = firstTime;
                 });
                 renderSchedule();
@@ -913,8 +782,7 @@
             document
               .getElementById("cancelScheduleBtn")
               .addEventListener("click", () => {
-                // Reset to default time
-                state.schedule.forEach((row) => (row.startTime = "19:00"));
+                schedule.forEach((row) => (row.startTime = "19:00"));
                 renderSchedule();
                 PS.toast("Changes discarded", "info");
               });
@@ -922,13 +790,11 @@
             document
               .getElementById("saveScheduleBtn")
               .addEventListener("click", () => {
-                // Validate all times are set
-                const missing = state.schedule.some((r) => !r.startTime);
-                if (missing) {
+                if (schedule.some((r) => !r.startTime)) {
                   PS.toast("Please fill in all start times", "error");
                   return;
                 }
-                state.scheduleLocked = true;
+                scheduleLocked = true;
                 renderSchedule();
                 PS.toast("Schedule saved", "success");
               });
@@ -936,102 +802,109 @@
         }
 
         /* =========================================
-         3. TICKET TYPES
+         TICKET TYPES (Free & Unlimited)
       ========================================= */
-        let ticketTypeCounter = 0;
-
         function addTicketType(defaults = {}) {
           const id = `tt_${++ticketTypeCounter}`;
-          state.ticketTypes.push({ id, ...defaults });
+          ticketTypes.push({ id, isUnlimited: false, ...defaults });
           renderTicketTypes();
         }
 
         function renderTicketTypes() {
           const wrap = document.getElementById("ticketTypesList");
-          wrap.innerHTML = state.ticketTypes
+          wrap.innerHTML = ticketTypes
             .map(
               (tt, idx) => `
-          <div class="card" style="padding:var(--space-4);margin-bottom:var(--space-3);background:var(--surface-muted);">
+          <div class="card" style="padding:var(--space-4);margin-bottom:var(--space-3);background:var(--surface-muted);" data-tt="${tt.id}">
             <div class="flex justify-between items-center mb-3">
               <span class="fw-semibold text-sm">Ticket type ${idx + 1}</span>
-              ${state.ticketTypes.length > 1 ? `<button type="button" class="btn btn-ghost btn-sm" data-remove="${tt.id}" style="color:var(--error-color);">Remove</button>` : ""}
+              ${ticketTypes.length > 1 ? `<button type="button" class="btn btn-ghost btn-sm" data-remove="${tt.id}" style="color:var(--error-color);">Remove</button>` : ""}
             </div>
             <div class="form-group">
               <label class="form-label">Name</label>
-              <input class="form-input" type="text" data-field="name" data-tt-id="${tt.id}" value="${tt.name || ""}" placeholder="e.g. Regular, VIP">
+              <input class="form-input" type="text" data-field="name" data-tt-id="${tt.id}" value="${tt.name || ""}" placeholder="e.g. Regular, VIP, Free Entry">
             </div>
             <div class="auth-form-row">
               <div class="form-group">
                 <label class="form-label">Price (₦)</label>
-                <input class="form-input" type="number" min="0" data-field="price" data-tt-id="${tt.id}" value="${tt.price || ""}" placeholder="0">
+                <input class="form-input" type="number" min="0" data-field="price" data-tt-id="${tt.id}" value="${tt.price || ""}" placeholder="0 (Enter 0 for free)">
               </div>
               <div class="form-group">
                 <label class="form-label">Quantity available</label>
-                <input class="form-input" type="number" min="1" data-field="qty" data-tt-id="${tt.id}" value="${tt.qty || ""}" placeholder="100">
+                <input class="form-input" type="number" min="1" data-field="qty" data-tt-id="${tt.id}" value="${tt.qty || ""}" placeholder="100" ${tt.isUnlimited ? "disabled" : ""}>
               </div>
             </div>
+            <label class="checkbox mt-2">
+              <input type="checkbox" data-field="isUnlimited" data-tt-id="${tt.id}" ${tt.isUnlimited ? "checked" : ""}>
+              <span class="text-xs">Unlimited capacity (Free events usually use this)</span>
+            </label>
           </div>
         `,
             )
             .join("");
 
           wrap.querySelectorAll("input[data-tt-id]").forEach((inp) => {
-            inp.addEventListener("input", () => {
-              const tt = state.ticketTypes.find(
-                (t) => t.id === inp.dataset.ttId,
-              );
-              if (tt) tt[inp.dataset.field] = inp.value;
+            inp.addEventListener("input", (e) => {
+              const tt = ticketTypes.find((t) => t.id === inp.dataset.ttId);
+              if (!tt) return;
+              if (inp.dataset.field === "isUnlimited") {
+                tt.isUnlimited = inp.checked;
+                renderTicketTypes();
+              } else {
+                tt[inp.dataset.field] = inp.value;
+              }
+            });
+            inp.addEventListener("change", (e) => {
+              if (inp.dataset.field === "isUnlimited") {
+                const tt = ticketTypes.find((t) => t.id === inp.dataset.ttId);
+                tt.isUnlimited = inp.checked;
+                renderTicketTypes();
+              }
             });
           });
+
           wrap.querySelectorAll("[data-remove]").forEach((btn) => {
             btn.addEventListener("click", () => {
-              const idx = state.ticketTypes.findIndex(
+              const idx = ticketTypes.findIndex(
                 (t) => t.id === btn.dataset.remove,
               );
-              if (idx >= 0) state.ticketTypes.splice(idx, 1);
+              if (idx >= 0) ticketTypes.splice(idx, 1);
               renderTicketTypes();
             });
           });
         }
 
-        addTicketType({ name: "Regular", price: 5000, qty: 100 });
-
+        addTicketType({
+          name: "Regular",
+          price: 0,
+          qty: 100,
+          isUnlimited: false,
+        });
         document
           .getElementById("addTicketType")
-          .addEventListener("click", () => {
-            addTicketType({ name: "", price: "", qty: "" });
-          });
+          .addEventListener("click", () =>
+            addTicketType({ name: "", price: 0, qty: 100, isUnlimited: false }),
+          );
 
         /* =========================================
-         4. PROMO CODES
+         PROMO CODES
       ========================================= */
-        function addPromo() {
-          state.promos.push({
-            code: "",
-            discountType: "percent",
-            discountValue: "",
-            maxUses: "",
-            usedCount: 0,
-          });
-          renderPromos();
-        }
-
+        let promos = [];
         function renderPromos() {
           const wrap = document.getElementById("promoList");
-          if (state.promos.length === 0) {
-            wrap.innerHTML = `<p class="text-xs text-muted" style="text-align:center;padding:var(--space-4);">No promo codes added. Click "Add promo code" to create one.</p>`;
+          if (promos.length === 0) {
+            wrap.innerHTML = `<p class="text-xs text-muted" style="text-align:center;padding:var(--space-4);">No promo codes added.</p>`;
             return;
           }
-
-          wrap.innerHTML = state.promos
+          wrap.innerHTML = promos
             .map(
               (p, idx) => `
-          <div class="promo-card" data-promo-idx="${idx}">
-            <div class="promo-card-head">
+          <div class="card" style="padding:var(--space-4);margin-bottom:var(--space-3);background:var(--surface-muted);">
+            <div class="flex justify-between items-center mb-3">
               <span class="fw-semibold text-sm">Promo ${idx + 1}</span>
               <button type="button" class="btn btn-ghost btn-sm" data-remove-promo="${idx}" style="color:var(--error-color);">Remove</button>
             </div>
-            <div class="promo-grid">
+            <div class="promo-grid" style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:var(--space-3);">
               <div class="form-group" style="margin:0;">
                 <label class="form-label">Code</label>
                 <input class="form-input mono" type="text" data-promo-field="code" data-promo-idx="${idx}" value="${p.code}" placeholder="EARLYBIRD" style="text-transform:uppercase;">
@@ -1062,44 +935,48 @@
               const field = e.target.dataset.promoField;
               let val = e.target.value;
               if (field === "code") val = val.toUpperCase();
-              state.promos[idx][field] = val;
+              promos[idx][field] = val;
             });
           });
           wrap.querySelectorAll("[data-remove-promo]").forEach((btn) => {
             btn.addEventListener("click", () => {
-              state.promos.splice(parseInt(btn.dataset.removePromo), 1);
+              promos.splice(parseInt(btn.dataset.removePromo), 1);
               renderPromos();
             });
           });
         }
-
-        document
-          .getElementById("addPromoBtn")
-          .addEventListener("click", addPromo);
+        document.getElementById("addPromoBtn").addEventListener("click", () => {
+          promos.push({
+            code: "",
+            discountType: "percent",
+            discountValue: "",
+            maxUses: "",
+          });
+          renderPromos();
+        });
         renderPromos();
 
         /* =========================================
-         5. LIVE PREVIEW
+         LIVE PREVIEW
       ========================================= */
         function updatePreview() {
           const title =
             document.getElementById("eventTitle").value.trim() || "Event title";
-          const cat = document.getElementById("eventCategory").value;
-          const startDate = state.startDate;
-          const city = citySel.value;
-          const stateName = stateSel.value;
+          const cat =
+            selectedCategories.length > 0 ? selectedCategories[0] : "";
+          const isOnline =
+            document.querySelector('input[name="eventType"]:checked').value ===
+            "online";
 
           document.getElementById("previewTitle").textContent = title;
 
-          // Image or emoji
           const previewMedia = document.getElementById("previewMedia");
-          if (state.imageData) {
-            previewMedia.innerHTML = `<img src="${state.imageData}" alt="" style="width:100%;height:100%;object-fit:cover;">`;
+          if (currentImageData) {
+            previewMedia.innerHTML = `<img src="${currentImageData}" alt="" style="width:100%;height:100%;object-fit:cover;">`;
           } else {
-            previewMedia.innerHTML = `<div class="event-card-media-placeholder" id="previewEmoji">${emojiMap[cat] || "🎫"}</div>`;
+            previewMedia.innerHTML = `<div class="event-card-media-placeholder">${emojiMap[cat] || "🎫"}</div>`;
           }
 
-          // Date
           if (startDate) {
             const d = new Date(startDate + "T00:00:00");
             const dayLabel = d.toLocaleDateString("en-NG", {
@@ -1107,11 +984,11 @@
               day: "numeric",
               month: "short",
             });
-            if (state.schedule.length > 1) {
+            if (schedule.length > 1) {
               document.getElementById("previewDate").textContent =
-                `${dayLabel} → ${state.schedule.length} days`;
+                `${dayLabel} → ${schedule.length} days`;
             } else {
-              const time = state.schedule[0]?.startTime || "";
+              const time = schedule[0]?.startTime || "";
               document.getElementById("previewDate").textContent =
                 `${dayLabel}${time ? " · " + time : ""}`;
             }
@@ -1119,39 +996,71 @@
             document.getElementById("previewDate").textContent = "Date";
           }
 
-          // Location
-          if (city && stateName) {
+          if (isOnline) {
             document.getElementById("previewLocation").textContent =
-              `${city}, ${stateName.replace(" (FCT)", "")}`;
+              "Online Event";
           } else {
-            document.getElementById("previewLocation").textContent = "Location";
+            // Grab the venue, city, and state values
+            const venue = document.getElementById("eventVenue").value.trim();
+            const city = citySel.value.trim();
+            const state = stateSel.value;
+
+            if (venue || city || state) {
+              let stateName = state.replace(" (FCT)", "");
+
+              // If the city and state are the same (e.g., Kano, Kano), add "State" to the end
+              if (city.toLowerCase() === stateName.toLowerCase()) {
+                stateName = stateName + " State";
+              }
+
+              // Join them with commas, filtering out any empty fields
+              const parts = [venue, city, stateName].filter(Boolean);
+              document.getElementById("previewLocation").textContent =
+                parts.join(", ");
+            } else {
+              document.getElementById("previewLocation").textContent =
+                "Location";
+            }
           }
         }
 
-        ["eventTitle", "eventCategory"].forEach((id) => {
-          document.getElementById(id).addEventListener("input", updatePreview);
-          document.getElementById(id).addEventListener("change", updatePreview);
+        // Update preview as user types
+        ["eventTitle", "eventVenue"].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) el.addEventListener("input", updatePreview);
         });
 
         /* =========================================
-         6. PUBLISH
+         FORM SUBMIT
       ========================================= */
         document.getElementById("eventForm").addEventListener("submit", (e) => {
           e.preventDefault();
           let valid = true;
+          const isOnline =
+            document.querySelector('input[name="eventType"]:checked').value ===
+            "online";
 
-          // Basic fields
-          [
-            "eventTitle",
-            "eventCategory",
-            "eventDescription",
-            "eventState",
-            "eventCity",
-            "eventVenue",
-            "eventStartDate",
-            "eventEndDate",
-          ].forEach((id) => {
+          // Validate based on event type
+          const fields = ["eventTitle", "eventDescription"];
+
+          // Custom validation for categories
+          const catError = document
+            .querySelector("#categoryChips")
+            .parentElement.querySelector(".form-error");
+
+          if (selectedCategories.length === 0) {
+            catError.textContent = "Please select at least one category.";
+            catError.style.display = "flex";
+            valid = false;
+          } else {
+            catError.style.display = "none";
+          }
+          if (isOnline) fields.push("onlineLink");
+          else fields.push("eventState", "eventCity", "eventVenue");
+
+          fields.forEach((id) => {
             const el = document.getElementById(id);
+            if (!el) return;
             PS.clearFieldError(el);
             if (!el.value.trim()) {
               PS.setFieldError(el, "This field is required.");
@@ -1159,27 +1068,13 @@
             }
           });
 
-          // Schedule validation
-          if (state.schedule.length === 0) {
-            PS.toast("Please select event dates", "error");
-            valid = false;
-          } else if (!state.scheduleLocked) {
-            PS.toast("Please save your date schedule first", "error");
-            valid = false;
-          } else if (state.schedule.some((r) => !r.startTime)) {
-            PS.toast("Please set a start time for every day", "error");
-            valid = false;
-          }
-
-          // Ticket types validation
-          if (state.ticketTypes.length === 0) {
-            PS.toast("Add at least one ticket type", "error");
-            valid = false;
-          }
-
-          // Terms
           if (!document.getElementById("agreeTerms").checked) {
-            PS.toast("Please confirm the event details are accurate", "error");
+            PS.toast("Please confirm the event details are accurate.", "error");
+            valid = false;
+          }
+
+          if (ticketTypes.length === 0) {
+            PS.toast("Add at least one ticket type.", "error");
             valid = false;
           }
 
@@ -1189,67 +1084,45 @@
           btn.classList.add("is-loading");
           btn.disabled = true;
 
-          // Build event object
           const id = "evt_" + Date.now().toString().slice(-8);
-          const firstDay = state.schedule[0];
-          const lastDay = state.schedule[state.schedule.length - 1];
 
-          // Clean promo codes — strip empty ones
-          const promos = state.promos
-            .filter((p) => p.code.trim())
-            .map((p) => ({
-              code: p.code.trim().toUpperCase(),
-              discountType: p.discountType,
-              discountValue: parseInt(p.discountValue) || 0,
-              maxUses: p.maxUses ? parseInt(p.maxUses) : null,
-              usedCount: 0,
-            }));
+          const processedTiers = ticketTypes.map((t) => ({
+            name: t.name,
+            price: parseInt(t.price) || 0,
+            qty: t.isUnlimited ? 999999 : parseInt(t.qty) || 0,
+          }));
 
           const newEvent = {
             id,
             title: document.getElementById("eventTitle").value.trim(),
-            category: document.getElementById("eventCategory").value,
-            state: stateSel.value,
-            city: citySel.value,
-            venue: document.getElementById("eventVenue").value.trim(),
-            address: document.getElementById("eventAddress").value.trim(),
-            description: document
-              .getElementById("eventDescription")
-              .value.trim(),
-            // Date fields
-            date: `${firstDay.date}T${firstDay.startTime}:00`,
-            endDate: `${lastDay.date}T${lastDay.startTime}:00`,
-            schedule: [...state.schedule],
-            // Ticket info
-            price: parseInt(state.ticketTypes[0]?.price) || 0,
+            categories: selectedCategories, // Save as an array
+            category: selectedCategories[0] || "", // Save the primary category
+            eventType: isOnline ? "online" : "physical",
+            state: isOnline ? "" : stateSel.value,
+            city: isOnline ? "" : citySel.value,
+            venue: isOnline
+              ? ""
+              : document.getElementById("eventVenue").value.trim(),
+            onlineLink: isOnline ? onlineLinkInput.value.trim() : "",
+            date: startDate + "T" + (schedule[0]?.startTime || "00:00"),
+            schedule: schedule,
+            price: processedTiers[0]?.price || 0,
             sold: 0,
-            capacity: state.ticketTypes.reduce(
-              (sum, t) => sum + (parseInt(t.qty) || 0),
-              0,
-            ),
-            ticketTiers: state.ticketTypes.map((t) => ({
-              name: t.name,
-              price: parseInt(t.price) || 0,
-              qty: parseInt(t.qty) || 0,
-            })),
-            // Promo codes
-            promoCodes: promos,
-            // Image
-            imageData: state.imageData,
-            // Meta
+            capacity: processedTiers.reduce((sum, t) => sum + t.qty, 0),
             organizer: PS.session.getUser().name,
             emoji:
               emojiMap[document.getElementById("eventCategory").value] || "🎫",
+            description: document
+              .getElementById("eventDescription")
+              .value.trim(),
+            ticketTiers: processedTiers,
+            promoCodes: promos.filter((p) => p.code.trim()),
+            imageData: currentImageData,
+            platformFee: currentPlatformFee,
             createdAt: new Date().toISOString(),
           };
 
-          // Persist (works only if PS_DATA.saveEvent exists;
-          // otherwise pushes in memory for this session).
-          if (window.PS_DATA && typeof PS_DATA.saveEvent === "function") {
-            PS_DATA.saveEvent(newEvent);
-          } else if (window.PS_DATA && window.PS_DATA.DEMO_EVENTS) {
-            window.PS_DATA.DEMO_EVENTS.unshift(newEvent);
-          }
+          PS_DATA.saveEvent(newEvent);
 
           setTimeout(() => {
             PS.toast("Event published successfully!", "success");

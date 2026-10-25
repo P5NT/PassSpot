@@ -205,8 +205,15 @@
 
         function render() {
           let list = [...getEvents()];
-          if (activeCategory)
-            list = list.filter((e) => e.category === activeCategory);
+          if (activeCategory) {
+            list = list.filter((e) => {
+              // Check if the event has the new 'categories' array, or fallback to the old 'category' string
+              if (e.categories && Array.isArray(e.categories)) {
+                return e.categories.includes(activeCategory);
+              }
+              return e.category === activeCategory;
+            });
+          }
           if (activeState) list = list.filter((e) => e.state === activeState);
           if (activeCity) list = list.filter((e) => e.city === activeCity);
           if (activePrice) {
@@ -271,9 +278,14 @@
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFav ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
                 </button>
               </div>
-              <div class="event-card-body">
+                            <div class="event-card-body">
                 <div class="event-card-date">${multiDay ? `${PS.formatDate(ev.schedule[0].date)} → ${ev.schedule.length} days` : `${PS.formatDate(ev.date)} · ${PS.formatTime(ev.date)}`}</div>
                 <div class="event-card-title">${ev.title}</div>
+                
+                <!-- NEW CATEGORY BADGE -->
+                <div class="flex gap-1 flex-wrap mb-2">
+                  ${(ev.categories || [ev.category]).map((c) => `<span class="badge badge-primary" style="font-size:10px; padding: 2px 6px;">${c}</span>`).join("")}
+                </div>
                 <div class="event-card-meta">
                   <div class="event-card-meta-row">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>

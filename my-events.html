@@ -51,8 +51,8 @@
           <section class="stats-grid">
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Total events</span>
-                <span class="stat-icon"
+                <span class="stat-label">Total events</span
+                ><span class="stat-icon"
                   ><svg
                     width="18"
                     height="18"
@@ -69,8 +69,8 @@
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Tickets sold</span>
-                <span class="stat-icon success"
+                <span class="stat-label">Tickets sold</span
+                ><span class="stat-icon success"
                   ><svg
                     width="18"
                     height="18"
@@ -88,8 +88,8 @@
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Gross revenue</span>
-                <span class="stat-icon warning"
+                <span class="stat-label">Gross revenue</span
+                ><span class="stat-icon warning"
                   ><svg
                     width="18"
                     height="18"
@@ -107,8 +107,8 @@
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
-                <span class="stat-label">Net proceeds</span>
-                <span class="stat-icon info"
+                <span class="stat-label">Net proceeds</span
+                ><span class="stat-icon info"
                   ><svg
                     width="18"
                     height="18"
@@ -130,78 +130,7 @@
       </div>
     </div>
 
-    <!-- Manage Scanners modal -->
-    <div class="modal-overlay" id="scannersModal">
-      <div class="modal modal-lg">
-        <div class="modal-header">
-          <div>
-            <h3 class="modal-title">Manage scanners</h3>
-            <p class="modal-subtitle" id="scannersModalSub">—</p>
-          </div>
-          <button
-            class="modal-close"
-            onclick="PS.closeModal('scannersModal')"
-            aria-label="Close"
-          >
-            ✕
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="info-panel mb-4">
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 16v-4M12 8h.01" />
-            </svg>
-            <span
-              >Scanner passes let gate staff check in attendees. No Pass Spot
-              account needed — just share the code. Revoke anytime.</span
-            >
-          </div>
-
-          <!-- Active passes -->
-          <h4 class="fw-bold text-sm mb-3" style="margin-top: var(--space-4)">
-            Active scanner passes
-          </h4>
-          <div id="passesList"></div>
-
-          <!-- Create new -->
-          <div class="divider"></div>
-          <h4 class="fw-bold text-sm mb-3">Create a new scanner pass</h4>
-          <div class="flex gap-2" style="flex-wrap: wrap">
-            <input
-              class="form-input"
-              type="text"
-              id="newPassLabel"
-              placeholder="Label, e.g. Gate A — Main entrance"
-              style="flex: 1; min-width: 220px"
-            />
-            <button class="btn btn-primary" id="createPassBtn">
-              Create pass
-            </button>
-          </div>
-          <p class="form-hint mt-2">
-            Give each scanner a label so you can identify which pass belongs to
-            whom.
-          </p>
-        </div>
-        <div class="modal-footer">
-          <button
-            class="btn btn-secondary"
-            onclick="PS.closeModal('scannersModal')"
-          >
-            Done
-          </button>
-        </div>
-      </div>
-    </div>
-
+    <script src="js/api.js"></script>
     <script src="js/data.js"></script>
     <script src="js/script.js"></script>
     <script>
@@ -210,8 +139,8 @@
         window.PS_SHELL.renderTopbar("My Events");
 
         const user = PS.session.getUser();
-        const myEvents = window.PS_DATA.DEMO_EVENTS.slice(0, 6);
-        let activeEventForScanners = null;
+        // Get user-created events
+        const myEvents = window.PS_DATA.getEvents().slice(0, 6);
 
         function renderStats() {
           const totalEvents = myEvents.length;
@@ -220,7 +149,20 @@
             (s, e) => s + e.price * e.sold,
             0,
           );
-          const netProceeds = grossRevenue * 0.95;
+
+          const adminSettings = PS.store.get("admin_settings", {
+            platformFee: 5,
+          });
+          const feePercent = adminSettings.platformFee;
+
+          const netProceeds = myEvents.reduce((sum, ev) => {
+            const revenue = ev.price * ev.sold;
+            const feeHandling = ev.feeHandling || "absorb";
+            const platformFee =
+              feeHandling === "absorb" ? revenue * (feePercent / 100) : 0;
+            return sum + (revenue - platformFee);
+          }, 0);
+
           document.getElementById("statEvents").textContent = totalEvents;
           document.getElementById("statSold").textContent =
             totalSold.toLocaleString();
@@ -254,19 +196,20 @@
             .map((ev) => {
               const revenue = ev.price * ev.sold;
               const pct = (ev.sold / ev.capacity) * 100;
-              const passCount = PS.scanners.forEvent(ev.id).length;
+              const isOnline = ev.eventType === "online";
 
               return `
             <article class="event-card">
               <div class="event-card-media" onclick="window.location.href='event-details.html?id=${ev.id}'" style="cursor:pointer;">
-                <div class="event-card-media-placeholder">${ev.emoji}</div>
+                <div class="event-card-media-placeholder">${ev.emoji || "🎫"}</div>
                 <div class="event-card-badges">
                   <span class="badge badge-success">Published</span>
+                  ${isOnline ? '<span class="badge badge-info">Online</span>' : ""}
                 </div>
               </div>
               <div class="event-card-body">
                 <div class="event-card-date">${PS.formatDate(ev.date)}</div>
-                <div class="event-card-title" onclick="window.location.href='event-details.html?id=${ev.id}'" style="cursor:pointer;">${ev.title}</div>
+                <div class="event-card-title">${ev.title}</div>
                 <div class="progress" style="margin-top:var(--space-2);">
                   <div class="progress-bar" style="width:${pct}%;"></div>
                 </div>
@@ -274,150 +217,15 @@
                   <span>${ev.sold.toLocaleString()} sold</span>
                   <span>${ev.capacity.toLocaleString()} cap</span>
                 </div>
-
                 <div class="event-card-footer" style="padding-top:var(--space-3);border-top:1px solid var(--border-color);">
                   <div class="event-card-price">${PS.formatMoney(revenue, cur)}<span class="event-card-price-label">revenue</span></div>
-                  <button class="btn btn-sm btn-secondary" data-manage-scanners="${ev.id}">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z"/></svg>
-                    Scanners${passCount > 0 ? ` (${passCount})` : ""}
-                  </button>
+                  <a href="edit-event.html?id=${ev.id}" class="btn btn-sm btn-secondary" onclick="event.stopPropagation();">Edit</a>
                 </div>
               </div>
             </article>`;
             })
             .join("");
-
-          grid.querySelectorAll("[data-manage-scanners]").forEach((btn) => {
-            btn.addEventListener("click", () =>
-              openScannersModal(btn.dataset.manageScanners),
-            );
-          });
         }
-
-        // =========================================
-        // MANAGE SCANNERS MODAL
-        // =========================================
-        function openScannersModal(eventId) {
-          const ev = window.PS_DATA.DEMO_EVENTS.find((e) => e.id === eventId);
-          if (!ev) return;
-          activeEventForScanners = ev;
-
-          document.getElementById("scannersModalSub").textContent = ev.title;
-          document.getElementById("newPassLabel").value = "";
-          renderPasses();
-          PS.openModal("scannersModal");
-        }
-
-        function renderPasses() {
-          if (!activeEventForScanners) return;
-          const passes = PS.scanners.forEvent(activeEventForScanners.id);
-          const list = document.getElementById("passesList");
-
-          if (passes.length === 0) {
-            list.innerHTML = `
-            <div class="empty-state" style="padding:var(--space-8) var(--space-4);">
-              <div class="empty-state-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM19 14h2v2h-2z"/></svg>
-              </div>
-              <h3 class="empty-state-title" style="font-size:var(--fs-md);">No scanner passes yet</h3>
-              <p class="empty-state-text">Create a pass and share the code with your gate staff.</p>
-            </div>`;
-            return;
-          }
-
-          list.innerHTML = `
-          <div class="table-wrap">
-            <div class="table-scroll">
-              <table class="table">
-                <thead>
-                  <tr><th>Label</th><th>Code</th><th>Scans</th><th>Actions</th></tr>
-                </thead>
-                <tbody>
-                  ${passes
-                    .map(
-                      (p) => `
-                    <tr>
-                      <td data-label="Label"><span class="fw-semibold text-sm">${p.label}</span></td>
-                      <td data-label="Code"><span class="mono fw-bold text-sm">${p.code}</span></td>
-                      <td data-label="Scans"><span class="text-sm">${p.scanCount || 0}</span></td>
-                      <td data-label="Actions">
-                        <div class="table-actions">
-                          <button class="btn btn-sm btn-secondary" data-copy="${p.code}">Copy link</button>
-                          <button class="btn btn-sm btn-ghost" style="color:var(--error-color);" data-revoke="${p.code}">Revoke</button>
-                        </div>
-                      </td>
-                    </tr>
-                  `,
-                    )
-                    .join("")}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        `;
-
-          // Copy link
-          list.querySelectorAll("[data-copy]").forEach((btn) => {
-            btn.addEventListener("click", async () => {
-              const code = btn.dataset.copy;
-              const link = buildScanLink(code);
-              try {
-                await navigator.clipboard.writeText(link);
-                PS.toast("Scanner link copied", "success");
-              } catch {
-                PS.toast("Link: " + link, "info");
-              }
-            });
-          });
-
-          // Revoke
-          list.querySelectorAll("[data-revoke]").forEach((btn) => {
-            btn.addEventListener("click", () => {
-              const code = btn.dataset.revoke;
-              if (
-                !confirm(
-                  `Revoke ${code}? The scanner will stop working immediately.`,
-                )
-              )
-                return;
-              PS.scanners.revoke(code);
-              PS.toast("Scanner pass revoked", "success");
-              renderPasses();
-              renderEvents();
-            });
-          });
-        }
-
-        function buildScanLink(code) {
-          const base =
-            window.location.origin +
-            window.location.pathname.replace("my-events.html", "scan.html");
-          return `${base}?pass=${encodeURIComponent(code)}`;
-        }
-
-        // Create pass
-        document
-          .getElementById("createPassBtn")
-          .addEventListener("click", () => {
-            if (!activeEventForScanners) return;
-            const labelInput = document.getElementById("newPassLabel");
-            const label = labelInput.value.trim() || "Main entrance";
-            const pass = PS.scanners.create({
-              eventId: activeEventForScanners.id,
-              eventTitle: activeEventForScanners.title,
-              label,
-              createdBy: user.name,
-            });
-
-            // Auto-copy the link
-            const link = buildScanLink(pass.code);
-            navigator.clipboard?.writeText(link).catch(() => {});
-
-            PS.toast(`Pass ${pass.code} created — link copied`, "success");
-            labelInput.value = "";
-            renderPasses();
-            renderEvents();
-          });
 
         document.addEventListener("ps:currencychange", () => {
           renderStats();

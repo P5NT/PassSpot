@@ -84,6 +84,7 @@
 
         const settings = PS.store.get("admin_settings", {
           platformFee: 5,
+          ambassadorFee: 2,
           serviceFee: 2,
           minWithdrawal: 5000,
           maxWithdrawal: 500000,
@@ -106,6 +107,16 @@
               </div>
               <span class="form-hint">Percentage taken from each ticket sale.</span>
             </div>
+
+            <div class="form-group">
+              <label class="form-label">Ambassador Platform fee (%)</label>
+              <div class="input-group">
+                <input class="form-input" type="number" id="setAmbassadorFee" min="0" max="20" step="0.1" value="${settings.ambassadorFee || 2}">
+                <span class="input-suffix">%</span>
+              </div>
+              <span class="form-hint">Discounted rate applied to trusted organizers.</span>
+            </div>
+
             <div class="form-group">
               <label class="form-label">Service fee (%)</label>
               <div class="input-group">
@@ -183,6 +194,10 @@
                 settings.platformFee =
                   parseFloat(document.getElementById("setPlatformFee").value) ||
                   0;
+                settings.ambassadorFee =
+                  parseFloat(
+                    document.getElementById("setAmbassadorFee").value,
+                  ) || 0;
                 settings.serviceFee =
                   parseFloat(document.getElementById("setServiceFee").value) ||
                   0;
