@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Profile — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Admin Profile</h2>
+              <p class="page-subtitle">
+                Your platform administrator account details.
+              </p>
+            </div>
+          </div>
+
+          <!-- Admin Header Card -->
+          <div
+            class="profile-header"
+            style="border-left: 4px solid var(--primary-color)"
+          >
+            <div class="avatar avatar-xl" id="adminAvatar">PA</div>
+            <div class="profile-header-info">
+              <h3 class="profile-name" id="adminName">Platform Admin</h3>
+              <p class="profile-email" id="adminEmail">admin@passspot.ng</p>
+              <div class="profile-tags">
+                <span class="badge badge-error">Administrator</span>
+                <span class="badge badge-success">Full Access</span>
+                <span class="badge badge-neutral">Member since Jan 2025</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Access Information -->
+          <div class="card mb-6">
+            <h3 class="card-title mb-4">Access & Permissions</h3>
+            <div class="summary-row">
+              <span class="text-muted text-sm">Account Type</span>
+              <span class="fw-semibold text-sm">Platform Administrator</span>
+            </div>
+            <div class="summary-row">
+              <span class="text-muted text-sm">Access Level</span>
+              <span class="badge badge-error">Full System Access</span>
+            </div>
+            <div class="summary-row">
+              <span class="text-muted text-sm">Last Login</span>
+              <span class="fw-semibold text-sm" id="lastLogin">—</span>
+            </div>
+            <div class="summary-row">
+              <span class="text-muted text-sm">Session Active</span>
+              <span class="badge badge-success">Yes</span>
+            </div>
+          </div>
+
+          <!-- Admin Permissions Breakdown -->
+          <div
+            style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: var(--space-5);
+            "
+            id="adminPermGrid"
+          >
+            <div class="card">
+              <h3 class="card-title mb-3">You can</h3>
+              <div class="flex flex-col gap-2 mt-3">
+                <div class="flex items-center gap-2 text-sm text-success">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  >
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                  Manage all users and organizers
+                </div>
+                <div class="flex items-center gap-2 text-sm text-success">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  >
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                  Approve or reject withdrawals
+                </div>
+                <div class="flex items-center gap-2 text-sm text-success">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  >
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                  Force-close voting events
+                </div>
+                <div class="flex items-center gap-2 text-sm text-success">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  >
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                  Configure platform settings
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 class="card-title mb-3">You cannot</h3>
+              <div class="flex flex-col gap-2 mt-3">
+                <div class="flex items-center gap-2 text-sm text-muted">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  >
+                    <path d="M18 6 6 18M6 6l12 12" />
+                  </svg>
+                  Create organizer events
+                </div>
+                <div class="flex items-center gap-2 text-sm text-muted">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  >
+                    <path d="M18 6 6 18M6 6l12 12" />
+                  </svg>
+                  Purchase attendee tickets
+                </div>
+                <div class="flex items-center gap-2 text-sm text-muted">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  >
+                    <path d="M18 6 6 18M6 6l12 12" />
+                  </svg>
+                  Participate in voting polls
+                </div>
+                <div class="flex items-center gap-2 text-sm text-muted">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  >
+                    <path d="M18 6 6 18M6 6l12 12" />
+                  </svg>
+                  Change fee calculations
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="card mt-6">
+            <h3 class="card-title mb-4">Account Actions</h3>
+            <p class="text-sm text-muted mb-4">
+              Contact the platform owner to transfer admin access or manage team
+              members.
+            </p>
+            <div class="flex gap-2" style="flex-wrap: wrap">
+              <a href="settings.html" class="btn btn-primary">Admin Settings</a>
+              <button
+                class="btn btn-danger"
+                onclick="if (confirm('Log out?')) PS.session.logout();"
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/data.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (!PS.session.requireAdmin()) return;
+
+        window.PS_ADMIN.renderSidebar("dashboard");
+        window.PS_ADMIN.renderTopbar("Admin Profile");
+
+        const user = PS.session.getUser();
+        document.getElementById("adminName").textContent =
+          user.name || "Platform Admin";
+        document.getElementById("adminEmail").textContent =
+          user.email || "admin@passspot.ng";
+        document.getElementById("adminAvatar").textContent = (user.name || "PA")
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase();
+
+        // Show current time as last login
+        document.getElementById("lastLogin").textContent = PS.formatDateTime(
+          new Date().toISOString(),
+        );
+      });
+    </script>
+  </body>
+</html>

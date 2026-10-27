@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vote Results — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      /* Specific styles for the leaderboard */
+      .leaderboard-row {
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+        padding: var(--space-4);
+        border-bottom: 1px solid var(--border-color);
+        transition: background-color var(--transition-fast);
+      }
+      .leaderboard-row:last-child {
+        border-bottom: none;
+      }
+      .leaderboard-row:hover {
+        background-color: var(--surface-muted);
+      }
+
+      .rank-badge {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: var(--fs-sm);
+        background: var(--surface-subtle);
+        color: var(--text-secondary);
+        flex-shrink: 0;
+      }
+      .rank-badge.top-1 {
+        background: #fef08a;
+        color: #854d0e;
+      } /* Gold */
+      .rank-badge.top-2 {
+        background: #e2e8f0;
+        color: #475569;
+      } /* Silver */
+      .rank-badge.top-3 {
+        background: #fed7aa;
+        color: #9a3412;
+      } /* Bronze */
+
+      .leaderboard-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-md);
+        object-fit: cover;
+        background: var(--surface-muted);
+        flex-shrink: 0;
+      }
+
+      .leaderboard-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .leaderboard-name {
+        font-weight: var(--fw-bold);
+        font-size: var(--fs-md);
+        margin-bottom: 2px;
+      }
+      .leaderboard-stats {
+        display: flex;
+        justify-content: space-between;
+        font-size: var(--fs-sm);
+        color: var(--text-secondary);
+        margin-bottom: var(--space-1);
+      }
+
+      .share-bar {
+        height: 8px;
+        background-color: var(--primary-color);
+        border-radius: var(--radius-full);
+        transition: width var(--transition-slow);
+      }
+      .share-bar-bg {
+        height: 8px;
+        background-color: var(--surface-subtle);
+        border-radius: var(--radius-full);
+        width: 100%;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+
+        <main class="page-content" id="resultsContent">
+          <!-- Rendered by JavaScript -->
+        </main>
+      </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        window.PS_SHELL.renderSidebar("voting");
+        window.PS_SHELL.renderTopbar("Vote Results");
+
+        const params = new URLSearchParams(window.location.search);
+        const voteId = params.get("id");
+
+        const votingEvents = PS.store.get("voting_events", []);
+        const currentVote = votingEvents.find((v) => v.id === voteId);
+        const main = document.getElementById("resultsContent");
+
+        if (!currentVote) {
+          main.innerHTML = `
+          <div class="empty-state" style="padding:var(--space-16);">
+            <h3 class="empty-state-title">Voting event not found</h3>
+            <a href="my-voting-events.html" class="btn btn-primary mt-4">Go Back</a>
+          </div>`;
+          return;
+        }
+
+        const cur = PS.getCurrency();
+        const contestants = currentVote.contestants || [];
+        const categoriesList = (currentVote.categories || []).sort((a, b) =>
+          a.localeCompare(b),
+        );
+
+        // Set default active category to the first one
+        let activeCategory = categoriesList[0] || "";
+
+        // --- RENDER PAGE SHELL ---
+        function renderPage() {
+          // Calculate Totals
+          const totalVotes = contestants.reduce(
+            (sum, c) => sum + (c.votes || 0),
+            0,
+          );
+          const totalRevenue = totalVotes * currentVote.pricePerVote;
+
+          main.innerHTML = `
+          <div class="flex items-center gap-2 mb-4">
+            <a href="my-voting-events.html" class="btn btn-ghost btn-sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              Back to Votes
+            </a>
+          </div>
+
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">${currentVote.title}</h2>
+              <p class="page-subtitle">Live results and leaderboard.</p>
+            </div>
+          </div>
+
+          <!-- High Level Stats -->
+          <section class="stats-grid mb-8">
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Total Votes Cast</span>
+                <span class="stat-icon success">✅</span>
+              </div>
+              <div class="stat-value">${totalVotes.toLocaleString()}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Total Revenue</span>
+                <span class="stat-icon warning">💰</span>
+              </div>
+              <div class="stat-value">${PS.formatMoney(totalRevenue, cur)}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Contestants</span>
+                <span class="stat-icon">👥</span>
+              </div>
+              <div class="stat-value">${contestants.length}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Price per Vote</span>
+                <span class="stat-icon info">🏷️</span>
+              </div>
+              <div class="stat-value">${PS.formatMoney(currentVote.pricePerVote, cur)}</div>
+            </div>
+          </section>
+
+          <!-- Category Tabs -->
+          <div class="tabs" id="catTabs">
+            ${categoriesList
+              .map(
+                (cat) => `
+              <button class="tab ${cat === activeCategory ? "is-active" : ""}" data-cat="${cat}">${cat}</button>
+            `,
+              )
+              .join("")}
+          </div>
+
+          <!-- Leaderboard Container -->
+          <div class="card p-0" style="overflow:hidden;">
+            <div style="padding:var(--space-5); border-bottom:1px solid var(--border-color);">
+              <h3 class="card-title m-0">Leaderboard</h3>
+            </div>
+            <div id="leaderboardBody"></div>
+          </div>
+        `;
+
+          // Attach tab listeners
+          main.querySelectorAll("[data-cat]").forEach((tab) => {
+            tab.addEventListener("click", () => {
+              activeCategory = tab.dataset.cat;
+              main
+                .querySelectorAll(".tab")
+                .forEach((t) => t.classList.remove("is-active"));
+              tab.classList.add("is-active");
+              renderLeaderboard();
+            });
+          });
+
+          renderLeaderboard();
+        }
+
+        // --- RENDER LEADERBOARD ---
+        function renderLeaderboard() {
+          const body = document.getElementById("leaderboardBody");
+
+          // Filter by category
+          let filtered = contestants.filter(
+            (c) => c.category === activeCategory,
+          );
+
+          // Sort by votes (highest first)
+          filtered.sort((a, b) => (b.votes || 0) - (a.votes || 0));
+
+          if (filtered.length === 0) {
+            body.innerHTML = `<div class="empty-state" style="padding:var(--space-8);"><p class="empty-state-text">No contestants in this category yet.</p></div>`;
+            return;
+          }
+
+          // Calculate total votes IN THIS CATEGORY to get percentages
+          const catTotalVotes = filtered.reduce(
+            (sum, c) => sum + (c.votes || 0),
+            0,
+          );
+
+          body.innerHTML = filtered
+            .map((c, index) => {
+              const rank = index + 1;
+              const votes = c.votes || 0;
+              // Calculate percentage (avoid division by zero)
+              const percentage =
+                catTotalVotes > 0
+                  ? ((votes / catTotalVotes) * 100).toFixed(1)
+                  : 0;
+
+              // Rank styling class
+              let rankClass = "";
+              if (rank === 1) rankClass = "top-1";
+              else if (rank === 2) rankClass = "top-2";
+              else if (rank === 3) rankClass = "top-3";
+
+              return `
+            <div class="leaderboard-row">
+              <div class="rank-badge ${rankClass}">${rank}</div>
+              ${
+                c.image
+                  ? `<img src="${c.image}" class="leaderboard-avatar">`
+                  : `<div class="leaderboard-avatar" style="display:flex;align-items:center;justify-content:center;font-size:20px;">👤</div>`
+              }
+              <div class="leaderboard-info">
+                <div class="leaderboard-name">${c.name}</div>
+                <div class="leaderboard-stats">
+                  <span>${votes.toLocaleString()} votes</span>
+                  <span class="fw-bold text-primary">${percentage}%</span>
+                </div>
+                <div class="share-bar-bg">
+                  <div class="share-bar" style="width: ${percentage}%;"></div>
+                </div>
+              </div>
+              <div style="text-align:right; flex-shrink:0;">
+                <div class="fw-bold text-success" style="font-size:var(--fs-md);">${PS.formatMoney(votes * currentVote.pricePerVote, cur)}</div>
+                <div class="text-xs text-muted">revenue</div>
+              </div>
+            </div>
+          `;
+            })
+            .join("");
+        }
+
+        renderPage();
+      });
+    </script>
+  </body>
+</html>

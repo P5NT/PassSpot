@@ -494,8 +494,15 @@
           const validCats = categories
             .filter((c) => c.name.trim())
             .map((c) => c.name);
-          prevCats.textContent =
-            validCats.length > 0 ? validCats.join(", ") : "None";
+
+          if (validCats.length > 0) {
+            // Render as nice little badges that wrap inside the container
+            prevCats.innerHTML = validCats
+              .map((c) => `<span class="preview-badge">${c}</span>`)
+              .join("");
+          } else {
+            prevCats.textContent = "None";
+          }
 
           if (currentImageData) {
             summaryPreview.innerHTML = `<img src="${currentImageData}" style="width:100%;height:100%;object-fit:cover;">`;

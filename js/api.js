@@ -1,18 +1,17 @@
 /* =========================================
    PASS SPOT — API BRIDGE (FOR BACKEND DEVS)
    
-   🚨 IMPORTANT INSTRUCTIONS FOR BACKEND DEVELOPERS:
+   🚨 INSTRUCTIONS FOR BACKEND DEVELOPERS:
    =========================================
-   This file replaces the old `data.js` demo data.
-   All current frontend actions point to these 
-   async functions. 
+   This file is the single source of truth for 
+   all frontend-to-backend communication. 
    
    TO DO:
-   1. Set the API_BASE_URL to your live server URL.
+   1. Set the API_BASE_URL to your live server.
    2. Uncomment the `fetch()` blocks inside each function.
    3. Delete the "MOCK RETURN" blocks.
-   4. Ensure endpoints return JSON matching the shapes 
-      commented above each function.
+   4. Ensure your database schema matches the 
+      "Expected Request/Response" comments.
 ========================================= */
 
 const API_BASE_URL = "http://localhost:3000/api"; // Change this to production URL
@@ -24,13 +23,14 @@ function getAuthToken() {
 
 window.PS_API = {
   // =========================================
-  // AUTHENTICATION
+  // 1. AUTHENTICATION
   // =========================================
 
   async login(email, password) {
     /* 
       Expected Request: { email, password }
-      Expected Response: { token, user: { id, name, email, role, profilePic } }
+      Expected Response: { token, user: { id, name, email, role, profilePic, isAmbassador } }
+      NOTE: Role is either "attendee", "organizer", or "admin".
     */
     // const res = await fetch(`${API_BASE_URL}/auth/login`, {
     //   method: "POST", headers: { "Content-Type": "application/json" },
@@ -42,7 +42,13 @@ window.PS_API = {
     // MOCK RETURN - REPLACE THIS
     return {
       token: "mock-jwt-token",
-      user: { id: 1, name: "User", email, role: "attendee" },
+      user: {
+        id: 1,
+        name: "User",
+        email,
+        role: "attendee",
+        isAmbassador: false,
+      },
     };
   },
 
@@ -59,16 +65,24 @@ window.PS_API = {
   },
 
   // =========================================
-  // EVENTS
+  // 2. NORMAL EVENTS (Ticketing)
   // =========================================
 
   async getEvents(filters = {}) {
     /* 
       Expected Request: Query params (e.g., ?state=Lagos&category=Music)
       Expected Response: Array of Event Objects
-      Event: { id, title, description, category, state, city, venue, date, 
-               price, capacity, sold, organizerId, organizerName, 
-               imageUrl, feeHandling, platformFee, ticketTiers }
+      
+      Event Object Schema:
+      {
+        id, title, description, categories: ["Music"], 
+        eventType: "physical" | "online", 
+        state, city, venue, onlineLink,
+        date, endDate, schedule: [{ date, startTime }],
+        price, capacity, sold,
+        organizerId, organizerName, imageData (base64 or URL),
+        platformFee: number, promoCode: [{ code, discountType, discountValue, maxUses }]
+      }
     */
     // const query = new URLSearchParams(filters).toString();
     // const res = await fetch(`${API_BASE_URL}/events?${query}`);
@@ -94,8 +108,86 @@ window.PS_API = {
     return { id: Date.now(), ...eventData };
   },
 
+  async updateEvent(eventId, eventData) {
+    /* 
+      Expected Request: Event Object updates
+      Expected Response: The updated Event Object
+    */
+    // const res = await fetch(`${API_BASE_URL}/events/${eventId}`, {
+    //   method: "PUT",
+    //   headers: { "Authorization": `Bearer ${getAuthToken()}`, "Content-Type": "application/json" },
+    //   body: JSON.stringify(eventData)
+    // });
+    // return await res.json();
+  },
+
   // =========================================
-  // TICKETS & CHECKOUT
+  // 3. VOTING EVENTS (Paid Polls)
+  // =========================================
+
+  async createVote(voteData) {
+    /* 
+      Expected Request: Vote Object
+      Expected Response: The created Vote Object with ID
+      
+      Vote Object Schema:
+      {
+        id, title, description, imageData,
+        startDate, endDate, status: "active" | "closed",
+        pricePerVote: number,
+        categories: ["Most Beautiful", "Most Handsome"],
+        customFields: ["Instagram Handle", "Age"], // Fields to ask for each contestant
+        organizerId
+      }
+    */
+    // const res = await fetch(`${API_BASE_URL}/votes`, { ... });
+    // return await res.json();
+  },
+
+  async updateVote(voteId, voteData) {
+    /* 
+      Expected Request: Vote updates (dates, status, categories, customFields)
+      Expected Response: { success: boolean }
+    */
+    // const res = await fetch(`${API_BASE_URL}/votes/${voteId}`, { method: "PUT", ... });
+    // return await res.json();
+  },
+
+  async addContestant(voteId, contestantData) {
+    /* 
+      Expected Request: { name, category, imageData, customData: { "Instagram": "@user" } }
+      Expected Response: The created Contestant Object with ID
+    */
+    // const res = await fetch(`${API_BASE_URL}/votes/${voteId}/contestants`, { ... });
+    // return await res.json();
+  },
+
+  async updateContestant(voteId, contestantId, contestantData) {
+    /* 
+      Expected Request: Contestant updates
+      Expected Response: The updated Contestant Object
+    */
+    // const res = await fetch(`${API_BASE_URL}/votes/${voteId}/contestants/${contestantId}`, { method: "PUT", ... });
+    // return await res.json();
+  },
+
+  async castVote(voteId, contestantId, email, quantity) {
+    /* 
+      Expected Request: { contestantId, email, quantity, totalPaid }
+      Expected Response: { success: boolean, receiptId: string, newVoteCount: number }
+      
+      🚨 NOTE: Backend MUST handle payment processing here.
+      Once payment succeeds, increment the contestant's vote count.
+    */
+    // const res = await fetch(`${API_BASE_URL}/votes/${voteId}/cast`, { ... });
+    // return await res.json();
+
+    // MOCK RETURN - REPLACE THIS
+    return { success: true, receiptId: "VOTE-123", newVoteCount: 150 };
+  },
+
+  // =========================================
+  // 4. TICKETING & CHECKOUT
   // =========================================
 
   async purchaseTicket(checkoutData) {
@@ -103,58 +195,35 @@ window.PS_API = {
       Expected Request: { eventId, ticketType, quantity, guestName, guestEmail, promoCode, currency }
       Expected Response: { orderId, totalPaid, tickets: [{ token, qrCodeUrl, attendeeName }] }
       
-      🚨 NOTE: The backend MUST handle the actual payment gateway integration 
-      (e.g., Paystack/Flutterwave) here. The frontend just sends the request.
+      🚨 NOTE: Backend MUST handle payment gateway integration 
+      (Paystack/Flutterwave) and generate unique QR tokens.
     */
-    // const res = await fetch(`${API_BASE_URL}/checkout`, {
-    //   method: "POST", headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify(checkoutData)
-    // });
+    // const res = await fetch(`${API_BASE_URL}/checkout`, { ... });
     // return await res.json();
-
-    // MOCK RETURN - REPLACE THIS
-    return {
-      orderId: "ORD-123",
-      totalPaid: 10000,
-      tickets: [
-        {
-          token: "TKT-123",
-          qrCodeUrl: "https://api.qrserver.com/v1/create-qr-code/?data=TKT-123",
-          attendeeName: checkoutData.guestName,
-        },
-      ],
-    };
   },
 
-  async validateScan(ticketToken, eventId) {
+  async validateScan(ticketToken, scannerPassCode) {
     /* 
-      Expected Request: { token, eventId }
+      Expected Request: { token, scannerPassCode }
       Expected Response: { valid: boolean, message: string, attendeeName: string }
       
-      🚨 NOTE: Backend must ensure the ticket hasn't been used yet.
+      🚨 NOTE: Backend must verify the ticket hasn't been used AND 
+      that the scanner pass is valid for this specific event.
     */
     // const res = await fetch(`${API_BASE_URL}/scan`, { ... });
     // return await res.json();
-
-    // MOCK RETURN - REPLACE THIS
-    return { valid: true, message: "Valid Ticket", attendeeName: "Ada Okafor" };
   },
 
   // =========================================
-  // WALLET & FINANCE
+  // 5. WALLET & FINANCE
   // =========================================
 
   async getWalletBalance() {
     /* 
       Expected Response: { available: number, pending: number, total: number }
     */
-    // const res = await fetch(`${API_BASE_URL}/wallet`, {
-    //   headers: { "Authorization": `Bearer ${getAuthToken()}` }
-    // });
+    // const res = await fetch(`${API_BASE_URL}/wallet`, { headers: { "Authorization": `Bearer ${getAuthToken()}` } });
     // return await res.json();
-
-    // MOCK RETURN - REPLACE THIS
-    return { available: 0, pending: 0, total: 0 };
   },
 
   async requestWithdrawal(withdrawalData) {
@@ -162,19 +231,12 @@ window.PS_API = {
       Expected Request: { amount, bankName, accountNumber, accountName }
       Expected Response: { success: boolean, message: string }
     */
-    // const res = await fetch(`${API_BASE_URL}/wallet/withdraw`, {
-    //   method: "POST",
-    //   headers: { "Authorization": `Bearer ${getAuthToken()}`, "Content-Type": "application/json" },
-    //   body: JSON.stringify(withdrawalData)
-    // });
+    // const res = await fetch(`${API_BASE_URL}/wallet/withdraw`, { ... });
     // return await res.json();
-
-    // MOCK RETURN - REPLACE THIS
-    return { success: true, message: "Withdrawal requested" };
   },
 
   // =========================================
-  // ADMIN CONTROLS
+  // 6. ADMIN CONTROLS & AMBASSADORS
   // =========================================
 
   async getPlatformSettings() {
@@ -184,8 +246,17 @@ window.PS_API = {
     // const res = await fetch(`${API_BASE_URL}/admin/settings`, { ... });
     // return await res.json();
 
-    // MOCK RETURN - REPLACE THIS
+    // MOCK RETURN
     return { platformFee: 5, ambassadorFee: 2 };
+  },
+
+  async getOrganizers() {
+    /* 
+      Expected Response: Array of organizer objects with isAmbassador flag.
+      { id, name, email, isAmbassador, eventCount, grossRevenue }
+    */
+    // const res = await fetch(`${API_BASE_URL}/admin/organizers`, { ... });
+    // return await res.json();
   },
 
   async toggleAmbassador(userId, isAmbassador) {
@@ -199,16 +270,12 @@ window.PS_API = {
     //   body: JSON.stringify({ userId, isAmbassador })
     // });
     // return await res.json();
-
-    // MOCK RETURN - REPLACE THIS
-    return { success: true };
   },
 };
 
 // =========================================
-// SYSTEM CONSTANTS (Move these from data.js)
+// 7. SYSTEM CONSTANTS
 // =========================================
-
 window.PS_CONSTANTS = {
   NIGERIAN_STATES: [
     "Abia",
@@ -277,6 +344,6 @@ window.PS_CONSTANTS = {
   ],
   CURRENCIES: {
     NGN: { symbol: "₦", code: "NGN", rate: 1 },
-    USD: { symbol: "$", code: "USD", rate: 1 / 1500 }, // Note: Backend should handle live exchange rates
+    USD: { symbol: "$", code: "USD", rate: 1 / 1500 },
   },
 };

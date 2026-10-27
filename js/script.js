@@ -740,6 +740,7 @@ window.PS_SHELL = {
       ? "badge-primary"
       : "badge-neutral";
 
+    // Avatar: photo if set, else initials
     const avatarHTML = user.profilePic
       ? `<span class="avatar" style="padding:0;overflow:hidden;"><img src="${user.profilePic}" alt="" style="width:100%;height:100%;object-fit:cover;"></span>`
       : `<span class="avatar">${initials}</span>`;
@@ -799,11 +800,101 @@ window.PS_SHELL = {
     });
 
     document.addEventListener("ps:currencychange", () => {
-      document.getElementById("headerBalance").textContent = PS.formatMoney(
-        PS.wallet.getBalance(),
-        PS.getCurrency(),
-      );
+      const bal = document.getElementById("headerBalance");
+      if (bal)
+        bal.textContent = PS.formatMoney(
+          PS.wallet.getBalance(),
+          PS.getCurrency(),
+        );
     });
+
+    /* =========================================
+       GLOBAL SEARCH LOGIC
+    ========================================= */
+    const searchInput = document.getElementById("globalSearch");
+    const searchResults = document.getElementById("searchResults");
+
+    if (searchInput && searchResults) {
+      searchInput.addEventListener("input", (e) => {
+        const query = e.target.value.trim().toLowerCase();
+
+        if (query.length < 2) {
+          searchResults.classList.remove("is-open");
+          return;
+        }
+
+        const events =
+          window.PS_DATA && typeof PS_DATA.getEvents === "function"
+            ? PS_DATA.getEvents()
+            : window.PS_DATA.DEMO_EVENTS;
+        const votingEvents = PS.store.get("voting_events", []);
+
+        const matchedEvents = events
+          .filter(
+            (ev) =>
+              ev.title.toLowerCase().includes(query) ||
+              (ev.category && ev.category.toLowerCase().includes(query)) ||
+              (ev.categories &&
+                ev.categories.some((c) => c.toLowerCase().includes(query))),
+          )
+          .slice(0, 4);
+
+        const matchedVotes = votingEvents
+          .filter((vote) => vote.title.toLowerCase().includes(query))
+          .slice(0, 4);
+
+        let html = "";
+
+        if (matchedEvents.length > 0) {
+          html += `<div style="padding: var(--space-2) var(--space-4); font-size: var(--fs-xs); font-weight: var(--fw-bold); color: var(--text-tertiary); text-transform: uppercase;">Events</div>`;
+          html += matchedEvents
+            .map(
+              (ev) => `
+            <div class="search-result-item" onclick="window.location.href='event-details.html?id=${ev.id}'">
+              <div style="font-size:20px;">${ev.emoji || "🎫"}</div>
+              <div style="flex:1; min-width:0;">
+                <div class="search-result-title">${ev.title}</div>
+                <div class="search-result-meta">${ev.eventType === "online" ? "Online" : ev.city + ", " + ev.state}</div>
+              </div>
+              <span class="badge badge-neutral" style="font-size:10px;">Event</span>
+            </div>
+          `,
+            )
+            .join("");
+        }
+
+        if (matchedVotes.length > 0) {
+          html += `<div style="padding: var(--space-2) var(--space-4); font-size: var(--fs-xs); font-weight: var(--fw-bold); color: var(--text-tertiary); text-transform: uppercase; border-top: 1px solid var(--border-color);">Voting Events</div>`;
+          html += matchedVotes
+            .map(
+              (vote) => `
+            <div class="search-result-item" onclick="window.location.href='manage-contestants.html?id=${vote.id}'">
+              <div style="font-size:20px;">🗳️</div>
+              <div style="flex:1; min-width:0;">
+                <div class="search-result-title">${vote.title}</div>
+                <div class="search-result-meta">${vote.status.toUpperCase()}</div>
+              </div>
+              <span class="badge badge-primary" style="font-size:10px;">Vote</span>
+            </div>
+          `,
+            )
+            .join("");
+        }
+
+        if (html === "") {
+          html = `<div style="padding:var(--space-4); text-align:center; color:var(--text-tertiary); font-size:var(--fs-sm);">No results found</div>`;
+        }
+
+        searchResults.innerHTML = html;
+        searchResults.classList.add("is-open");
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".topbar-search")) {
+          searchResults.classList.remove("is-open");
+        }
+      });
+    }
   },
 };
 
@@ -821,6 +912,7 @@ window.PS_ADMIN = {
       users: ["users.html", "Users"],
       organizers: ["organizers.html", "Organizers"],
       events: ["events.html", "Events"],
+      voting: ["voting-events.html", "Voting Events"],
       tickets: ["tickets.html", "Tickets"],
       transactions: ["transactions.html", "Transactions"],
       deposits: ["deposits.html", "Deposits"],
@@ -830,6 +922,7 @@ window.PS_ADMIN = {
       notifications: ["notifications.html", "Notifications"],
       reports: ["reports.html", "Reports"],
       audit: ["audit-logs.html", "Audit Logs"],
+      profile: ["profile.html", "Admin Profile"],
       settings: ["settings.html", "Settings"],
     };
 
@@ -861,7 +954,6 @@ window.PS_ADMIN = {
         </div>
       </nav>
       <div class="sidebar-footer">
-        <a href="../dashboard.html" class="sidebar-link">← Exit admin</a>
         <button class="sidebar-link" id="adminLogoutBtn" style="width:100%;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
           Log out
@@ -901,7 +993,22 @@ window.PS_ADMIN = {
             <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
           </svg>
         </button>
-        <span class="avatar" style="background:var(--error-color);">${initials}</span>
+                <div class="dropdown">
+          <button class="avatar-dropdown" data-dropdown-toggle>
+            <span class="avatar" style="background:var(--error-color);">${initials}</span>
+          </button>
+          <div class="dropdown-menu">
+            <div class="dropdown-header">
+              <div class="fw-semibold text-sm">${user.name}</div>
+              <div class="text-xs text-muted">${user.email}</div>
+              <div style="margin-top:6px;"><span class="badge badge-error">Administrator</span></div>
+            </div>
+            <a href="profile.html" class="dropdown-item">Admin Profile</a>
+            <a href="settings.html" class="dropdown-item">Platform Settings</a>
+            <div class="dropdown-divider"></div>
+            <button class="dropdown-item danger" onclick="if(confirm('Log out of Pass Spot?')) PS.session.logout()">Log out</button>
+          </div>
+        </div>
       </div>
     `;
 

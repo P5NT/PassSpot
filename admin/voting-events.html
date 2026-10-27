@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voting Events — Admin — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/style.css" />
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="sidebar" id="appSidebar"></aside>
+      <div class="sidebar-overlay"></div>
+      <div class="main-area">
+        <header class="topbar" id="appTopbar"></header>
+        <main class="page-content">
+          <div class="page-header">
+            <div>
+              <h2 class="page-title">Voting Events</h2>
+              <p class="page-subtitle">
+                Monitor and moderate paid polls across the platform.
+              </p>
+            </div>
+          </div>
+
+          <section class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Total Voting Events</span
+                ><span class="stat-icon">🗳️</span>
+              </div>
+              <div class="stat-value" id="statTotal">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Active</span
+                ><span class="stat-icon success">✅</span>
+              </div>
+              <div class="stat-value" id="statActive">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Closed</span
+                ><span class="stat-icon warning">🔒</span>
+              </div>
+              <div class="stat-value" id="statClosed">0</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-card-head">
+                <span class="stat-label">Total Revenue Generated</span
+                ><span class="stat-icon info">💰</span>
+              </div>
+              <div class="stat-value" id="statRevenue">₦0</div>
+            </div>
+          </section>
+
+          <div class="filter-bar">
+            <div class="filter-search">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+              <input
+                class="form-input"
+                type="search"
+                id="voteSearch"
+                placeholder="Search by title or organizer…"
+              />
+            </div>
+            <select
+              class="form-select"
+              id="voteStatus"
+              style="width: auto; min-width: 150px"
+            >
+              <option value="">All statuses</option>
+              <option value="active">Active</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+
+          <div class="table-wrap">
+            <div class="table-scroll">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Voting Event</th>
+                    <th>Organizer</th>
+                    <th>Contestants</th>
+                    <th>Price/Vote</th>
+                    <th>Total Votes</th>
+                    <th>Revenue</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="votesBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="actionModal">
+      <div class="modal modal-sm">
+        <div class="modal-header">
+          <div>
+            <h3 class="modal-title" id="actionTitle">Confirm</h3>
+            <p class="modal-subtitle" id="actionSub">Are you sure?</p>
+          </div>
+          <button class="modal-close" onclick="PS.closeModal('actionModal')">
+            ✕
+          </button>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn btn-secondary"
+            onclick="PS.closeModal('actionModal')"
+          >
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="confirmAction">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../js/api.js"></script>
+    <script src="../js/data.js"></script>
+    <script src="../js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (!PS.session.requireAdmin()) return;
+
+        window.PS_ADMIN.renderSidebar("voting");
+        window.PS_ADMIN.renderTopbar("Voting Events");
+
+        let votingEvents = PS.store.get("voting_events", []);
+        let activeStatus = "";
+        let activeSearch = "";
+
+        function renderStats() {
+          const cur = PS.getCurrency();
+          const total = votingEvents.length;
+          const active = votingEvents.filter(
+            (v) => v.status === "active",
+          ).length;
+          const closed = votingEvents.filter(
+            (v) => v.status === "closed",
+          ).length;
+          const revenue = votingEvents.reduce(
+            (sum, v) => sum + (v.totalVotes || 0) * v.pricePerVote,
+            0,
+          );
+
+          document.getElementById("statTotal").textContent = total;
+          document.getElementById("statActive").textContent = active;
+          document.getElementById("statClosed").textContent = closed;
+          document.getElementById("statRevenue").textContent = PS.formatMoney(
+            revenue,
+            cur,
+          );
+        }
+
+        function renderTable() {
+          let list = [...votingEvents];
+
+          if (activeSearch) {
+            list = list.filter(
+              (v) =>
+                v.title.toLowerCase().includes(activeSearch) ||
+                (v.organizer || "").toLowerCase().includes(activeSearch),
+            );
+          }
+          if (activeStatus)
+            list = list.filter((v) => v.status === activeStatus);
+
+          const tbody = document.getElementById("votesBody");
+          if (list.length === 0) {
+            tbody.innerHTML = `
+            <tr>
+              <td colspan="8">
+                <div class="empty-state" style="padding:var(--space-8);">
+                  <div class="empty-state-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                  </div>
+                  <h3 class="empty-state-title">No voting events found</h3>
+                  <p class="empty-state-text">Try adjusting your filters or wait for organizers to create one.</p>
+                </div>
+              </td>
+            </tr>`;
+            return;
+          }
+
+          const cur = PS.getCurrency();
+          tbody.innerHTML = list
+            .map((v) => {
+              const totalVotes = v.totalVotes || 0;
+              const revenue = totalVotes * v.pricePerVote;
+              const contestantCount = (v.contestants || []).length;
+              const isActive = v.status === "active";
+              const statusClass = isActive ? "badge-success" : "badge-neutral";
+
+              return `
+            <tr>
+              <td data-label="Event">
+                <div class="fw-semibold text-sm">${v.title}</div>
+                <div class="text-xs text-muted">${PS.formatDate(v.startDate)} → ${PS.formatDate(v.endDate)}</div>
+              </td>
+              <td data-label="Organizer"><span class="text-sm">${v.organizer || "—"}</span></td>
+              <td data-label="Contestants"><span class="text-sm">${contestantCount}</span></td>
+              <td data-label="Price/Vote"><span class="fw-semibold text-sm">₦${v.pricePerVote}</span></td>
+              <td data-label="Total Votes"><span class="fw-semibold text-sm">${totalVotes.toLocaleString()}</span></td>
+              <td data-label="Revenue"><span class="fw-bold" data-money="${revenue}">${PS.formatMoney(revenue, cur)}</span></td>
+              <td data-label="Status"><span class="badge ${statusClass}">${v.status}</span></td>
+              <td data-label="Actions">
+                <div class="table-actions">
+                  <button class="btn btn-sm btn-secondary" data-view="${v.id}">View</button>
+                  <button class="btn btn-sm ${isActive ? "btn-ghost" : "btn-primary"}" data-toggle="${v.id}" style="color:${isActive ? "var(--error-color)" : ""};">
+                    ${isActive ? "Force Close" : "Reactivate"}
+                  </button>
+                </div>
+              </td>
+            </tr>`;
+            })
+            .join("");
+
+          // View — open public vote page
+          tbody.querySelectorAll("[data-view]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              window.open(`../vote.html?id=${btn.dataset.view}`, "_blank");
+            });
+          });
+
+          // Force Close / Reactivate
+          tbody.querySelectorAll("[data-toggle]").forEach((btn) => {
+            btn.addEventListener("click", () => {
+              const v = votingEvents.find((x) => x.id === btn.dataset.toggle);
+              const newStatus = v.status === "active" ? "closed" : "active";
+              document.getElementById("actionTitle").textContent =
+                newStatus === "closed"
+                  ? "Force close this vote?"
+                  : "Reactivate this vote?";
+              document.getElementById("actionSub").textContent =
+                newStatus === "closed"
+                  ? `"${v.title}" will immediately stop accepting new votes. Existing votes are preserved.`
+                  : `"${v.title}" will reopen and accept votes again.`;
+              document.getElementById("confirmAction").textContent =
+                newStatus === "closed" ? "Force Close" : "Reactivate";
+              document.getElementById("confirmAction").onclick = () => {
+                v.status = newStatus;
+                PS.store.set("voting_events", votingEvents);
+                PS.closeModal("actionModal");
+                PS.toast(
+                  `Voting event ${newStatus === "closed" ? "closed" : "reactivated"}`,
+                  "success",
+                );
+                renderTable();
+                renderStats();
+              };
+              PS.openModal("actionModal");
+            });
+          });
+        }
+
+        document.getElementById("voteSearch").addEventListener("input", (e) => {
+          activeSearch = e.target.value.toLowerCase();
+          renderTable();
+        });
+        document
+          .getElementById("voteStatus")
+          .addEventListener("change", (e) => {
+            activeStatus = e.target.value;
+            renderTable();
+          });
+
+        document.addEventListener("ps:currencychange", () => {
+          renderStats();
+          renderTable();
+        });
+
+        renderStats();
+        renderTable();
+      });
+    </script>
+  </body>
+</html>

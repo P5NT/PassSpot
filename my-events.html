@@ -52,74 +52,28 @@
             <div class="stat-card">
               <div class="stat-card-head">
                 <span class="stat-label">Total events</span
-                ><span class="stat-icon"
-                  ><svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <rect x="3" y="4" width="18" height="18" rx="2" />
-                    <path d="M16 2v4M8 2v4M3 10h18" /></svg
-                ></span>
+                ><span class="stat-icon">📅</span>
               </div>
               <div class="stat-value" id="statEvents">0</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
                 <span class="stat-label">Tickets sold</span
-                ><span class="stat-icon success"
-                  ><svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      d="M2 9a3 3 0 010-6h20a3 3 0 010 6M2 15a3 3 0 000 6h20a3 3 0 000-6M2 9v6M22 9v6"
-                    /></svg
-                ></span>
+                ><span class="stat-icon success">🎫</span>
               </div>
               <div class="stat-value" id="statSold">0</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
                 <span class="stat-label">Gross revenue</span
-                ><span class="stat-icon warning"
-                  ><svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"
-                    /></svg
-                ></span>
+                ><span class="stat-icon warning">💰</span>
               </div>
               <div class="stat-value" id="statRevenue">₦0.00</div>
             </div>
             <div class="stat-card">
               <div class="stat-card-head">
                 <span class="stat-label">Net proceeds</span
-                ><span class="stat-icon info"
-                  ><svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path d="M3 3v18h18" />
-                    <path d="m19 9-5 5-4-4-3 3" /></svg
-                ></span>
+                ><span class="stat-icon info">📈</span>
               </div>
               <div class="stat-value" id="statNet">₦0.00</div>
             </div>
@@ -138,29 +92,36 @@
         window.PS_SHELL.renderSidebar("myEvents");
         window.PS_SHELL.renderTopbar("My Events");
 
-        const user = PS.session.getUser();
-        // Get user-created events
-        const myEvents = window.PS_DATA.getEvents().slice(0, 6);
+        const myEvents = window.PS_DATA.getEvents().slice(0, 10);
 
+        /* =========================================
+         FINANCIAL MATH:
+         - Platform Fee (5%): always deducted from organizer
+         - Service Fee (2%): deducted from organizer ONLY if they chose "absorb"
+         - Net Proceeds = Revenue − Platform Fee − (Service Fee if absorbed)
+      ========================================= */
         function renderStats() {
           const totalEvents = myEvents.length;
-          const totalSold = myEvents.reduce((s, e) => s + e.sold, 0);
+          const totalSold = myEvents.reduce((s, e) => s + (e.sold || 0), 0);
           const grossRevenue = myEvents.reduce(
-            (s, e) => s + e.price * e.sold,
+            (s, e) => s + (e.price || 0) * (e.sold || 0),
             0,
           );
 
-          const adminSettings = PS.store.get("admin_settings", {
-            platformFee: 5,
-          });
-          const feePercent = adminSettings.platformFee;
-
           const netProceeds = myEvents.reduce((sum, ev) => {
-            const revenue = ev.price * ev.sold;
+            const revenue = (ev.price || 0) * (ev.sold || 0);
             const feeHandling = ev.feeHandling || "absorb";
-            const platformFee =
-              feeHandling === "absorb" ? revenue * (feePercent / 100) : 0;
-            return sum + (revenue - platformFee);
+
+            // 1. Platform Fee — 5% (always)
+            const platformFeeRate = 0.05;
+            const platformFee = revenue * platformFeeRate;
+
+            // 2. Service Fee — 2% (only if absorbed)
+            const serviceFeeRate = 0.02;
+            const serviceFee =
+              feeHandling === "absorb" ? revenue * serviceFeeRate : 0;
+
+            return sum + (revenue - platformFee - serviceFee);
           }, 0);
 
           document.getElementById("statEvents").textContent = totalEvents;
@@ -194,14 +155,19 @@
           const cur = PS.getCurrency();
           grid.innerHTML = myEvents
             .map((ev) => {
-              const revenue = ev.price * ev.sold;
-              const pct = (ev.sold / ev.capacity) * 100;
+              const revenue = (ev.price || 0) * (ev.sold || 0);
+              const pct =
+                ev.capacity > 0 ? ((ev.sold || 0) / ev.capacity) * 100 : 0;
               const isOnline = ev.eventType === "online";
 
               return `
             <article class="event-card">
               <div class="event-card-media" onclick="window.location.href='event-details.html?id=${ev.id}'" style="cursor:pointer;">
-                <div class="event-card-media-placeholder">${ev.emoji || "🎫"}</div>
+                ${
+                  ev.imageData
+                    ? `<img src="${ev.imageData}" style="width:100%;height:100%;object-fit:cover;">`
+                    : `<div class="event-card-media-placeholder">${ev.emoji || "🎫"}</div>`
+                }
                 <div class="event-card-badges">
                   <span class="badge badge-success">Published</span>
                   ${isOnline ? '<span class="badge badge-info">Online</span>' : ""}
@@ -214,17 +180,53 @@
                   <div class="progress-bar" style="width:${pct}%;"></div>
                 </div>
                 <div class="flex justify-between text-xs text-muted">
-                  <span>${ev.sold.toLocaleString()} sold</span>
-                  <span>${ev.capacity.toLocaleString()} cap</span>
+                  <span>${(ev.sold || 0).toLocaleString()} sold</span>
+                  <span>${(ev.capacity || 0).toLocaleString()} cap</span>
                 </div>
-                <div class="event-card-footer" style="padding-top:var(--space-3);border-top:1px solid var(--border-color);">
+                <div class="event-card-footer" style="padding-top:var(--space-3);border-top:1px solid var(--border-color);flex-wrap:wrap;gap:var(--space-2);">
                   <div class="event-card-price">${PS.formatMoney(revenue, cur)}<span class="event-card-price-label">revenue</span></div>
-                  <a href="edit-event.html?id=${ev.id}" class="btn btn-sm btn-secondary" onclick="event.stopPropagation();">Edit</a>
+                  <div class="flex gap-1" style="flex-wrap:wrap;">
+                    <a href="edit-event.html?id=${ev.id}" class="btn btn-sm btn-secondary" onclick="event.stopPropagation();">Edit</a>
+                    ${
+                      ev.hasQA
+                        ? `
+                      <a href="qa.html?id=${ev.id}" class="btn btn-sm btn-primary" onclick="event.stopPropagation();" target="_blank">View Q/A</a>
+                      <button class="btn btn-sm btn-secondary" data-share-qa="${ev.id}" onclick="event.stopPropagation();">Share Q/A</button>
+                    `
+                        : ""
+                    }
+                  </div>
                 </div>
               </div>
             </article>`;
             })
             .join("");
+          attachQAHandlers();
+        }
+
+        // Attach share-QA listeners after render
+        function attachQAHandlers() {
+          document.querySelectorAll("[data-share-qa]").forEach((btn) => {
+            btn.addEventListener("click", async () => {
+              const id = btn.dataset.shareQa;
+              const ev = myEvents.find((e) => e.id === id);
+              const qaLink = `${window.location.origin}${window.location.pathname.replace("my-events.html", "qa.html")}?id=${id}`;
+              const text = `Ask a question at ${ev.title} on Pass Spot: ${qaLink}`;
+
+              if (navigator.share) {
+                try {
+                  await navigator.share({ title: ev.title, text, url: qaLink });
+                } catch {}
+              } else {
+                try {
+                  await navigator.clipboard.writeText(text);
+                  PS.toast("Q/A link copied", "success");
+                } catch {
+                  PS.toast("Link: " + qaLink, "info");
+                }
+              }
+            });
+          });
         }
 
         document.addEventListener("ps:currencychange", () => {

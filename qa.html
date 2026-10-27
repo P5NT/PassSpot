@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Live Q&A — Pass Spot</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236C2BD9'/%3E%3Cpath d='M10 22V10h6.5a4 4 0 010 8H13v4h-3zm3-7h3a1.5 1.5 0 000-3h-3v3z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      .qa-header {
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--space-6);
+        border-bottom: 1px solid var(--border-color);
+        background-color: var(--surface-bg);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+      }
+      .qa-hero {
+        padding: var(--space-8) var(--space-6);
+        text-align: center;
+        border-bottom: 1px solid var(--border-color);
+        background: linear-gradient(
+          135deg,
+          var(--primary-50),
+          var(--surface-bg)
+        );
+      }
+      .qa-container {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: var(--space-8) var(--space-6) var(--space-16);
+      }
+      .qa-card {
+        padding: var(--space-4);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        margin-bottom: var(--space-3);
+        background: var(--surface-elevated);
+      }
+      .qa-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-2);
+      }
+      .qa-author {
+        font-size: var(--fs-sm);
+        font-weight: var(--fw-semibold);
+        color: var(--primary-color);
+      }
+      .qa-anon {
+        font-size: var(--fs-sm);
+        color: var(--text-tertiary);
+        font-style: italic;
+      }
+      .qa-time {
+        font-size: var(--fs-xs);
+        color: var(--text-tertiary);
+      }
+      .qa-question {
+        font-size: var(--fs-md);
+        line-height: var(--lh-normal);
+      }
+      .qa-empty {
+        text-align: center;
+        padding: var(--space-12) var(--space-4);
+        color: var(--text-tertiary);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="qa-header">
+      <a href="index.html" class="brand"
+        >Pass<span class="brand-accent">Spot</span></a
+      >
+      <button class="icon-btn" id="themeToggle" aria-label="Toggle theme">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="4" />
+          <path
+            d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+          />
+        </svg>
+      </button>
+    </header>
+
+    <main id="qaMain"></main>
+
+    <script src="js/api.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/script.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+        const eventId = params.get("id");
+        const events =
+          window.PS_DATA && typeof PS_DATA.getEvents === "function"
+            ? PS_DATA.getEvents()
+            : window.PS_DATA.DEMO_EVENTS;
+        const event = events.find((e) => e.id === eventId);
+        const main = document.getElementById("qaMain");
+
+        if (!event || !event.hasQA) {
+          main.innerHTML = `<div class="empty-state" style="padding:var(--space-16);"><h3 class="empty-state-title">Q&A not available</h3><p class="empty-state-text">This event doesn't have a Q&A session set up.</p></div>`;
+          return;
+        }
+
+        /* ============ RENDER PAGE ============ */
+        function renderPage() {
+          main.innerHTML = `
+          <div class="qa-hero">
+            <span class="badge badge-primary mb-3">Live Q&A</span>
+            <h1 style="font-size:clamp(1.5rem, 3.5vw, 2.25rem); margin-bottom:var(--space-2);">${event.title}</h1>
+            <p class="text-sm text-muted">Ask your questions. See what others are asking.</p>
+          </div>
+
+          <div class="qa-container">
+            <div class="card mb-6">
+              <h3 class="card-title mb-4">Ask a question</h3>
+              <div class="form-group">
+                <label class="form-label" for="qaName">Your name <span class="text-muted text-xs fw-regular">(optional)</span></label>
+                <input class="form-input" type="text" id="qaName" placeholder="Leave blank to stay anonymous">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="qaQuestion">Your question <span class="required">*</span></label>
+                <textarea class="form-textarea" id="qaQuestion" placeholder="Type your question…" maxlength="500"></textarea>
+                <div class="flex justify-between mt-1">
+                  <span class="form-error" id="qaError"></span>
+                  <span class="text-xs text-tertiary" id="qaCharCount">0 / 500</span>
+                </div>
+              </div>
+              <button class="btn btn-primary btn-block" id="submitQuestion">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                Submit Question
+              </button>
+            </div>
+
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="card-title">Live Questions</h3>
+              <span class="text-xs text-muted"><span id="qaCount">0</span> questions</span>
+            </div>
+
+            <div id="questionsList"></div>
+          </div>
+        `;
+          bindQALogic();
+        }
+
+        /* ============ QUESTIONS STORAGE ============ */
+        function getQuestions() {
+          const all = PS.store.get("qa_questions", {});
+          return all[event.id] || [];
+        }
+
+        function saveQuestions(list) {
+          const all = PS.store.get("qa_questions", {});
+          all[event.id] = list;
+          PS.store.set("qa_questions", all);
+        }
+
+        function renderQuestions() {
+          const list = getQuestions().slice().reverse(); // newest first
+          const wrap = document.getElementById("questionsList");
+          document.getElementById("qaCount").textContent = list.length;
+
+          if (list.length === 0) {
+            wrap.innerHTML = `<div class="qa-empty"><p>No questions yet. Be the first to ask!</p></div>`;
+            return;
+          }
+
+          wrap.innerHTML = list
+            .map(
+              (q) => `
+          <div class="qa-card">
+            <div class="qa-card-header">
+              <span class="${q.name ? "qa-author" : "qa-anon"}">${q.name || "Anonymous"}</span>
+              <span class="qa-time">${timeAgo(q.createdAt)}</span>
+            </div>
+            <div class="qa-question">${escapeHtml(q.text)}</div>
+          </div>
+        `,
+            )
+            .join("");
+        }
+
+        /* ============ BIND LOGIC ============ */
+        function bindQALogic() {
+          const nameEl = document.getElementById("qaName");
+          const questionEl = document.getElementById("qaQuestion");
+          const errorEl = document.getElementById("qaError");
+          const charCount = document.getElementById("qaCharCount");
+
+          questionEl.addEventListener("input", () => {
+            charCount.textContent = `${questionEl.value.length} / 500`;
+            errorEl.textContent = "";
+            errorEl.style.display = "none";
+          });
+
+          document
+            .getElementById("submitQuestion")
+            .addEventListener("click", () => {
+              const name = nameEl.value.trim();
+              const text = questionEl.value.trim();
+
+              if (!text) {
+                errorEl.textContent = "Please enter a question.";
+                errorEl.style.display = "inline";
+                return;
+              }
+
+              const list = getQuestions();
+              list.push({
+                id: "q_" + Date.now(),
+                name,
+                text,
+                createdAt: new Date().toISOString(),
+              });
+              saveQuestions(list);
+
+              questionEl.value = "";
+              charCount.textContent = "0 / 500";
+              PS.toast("Question submitted!", "success");
+              renderQuestions();
+            });
+        }
+
+        /* ============ HELPERS ============ */
+        function escapeHtml(str) {
+          return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+        }
+
+        function timeAgo(iso) {
+          const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+          if (diff < 60) return "Just now";
+          if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+          if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+          return Math.floor(diff / 86400) + "d ago";
+        }
+
+        /* ============ INIT ============ */
+        renderPage();
+        renderQuestions();
+
+        // Auto-refresh every 5 seconds to show new questions
+        setInterval(() => {
+          if (document.getElementById("questionsList")) renderQuestions();
+        }, 5000);
+      });
+    </script>
+  </body>
+</html>

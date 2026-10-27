@@ -252,10 +252,11 @@
                   <span>${totalContestants} Contestants</span>
                   <span>₦${vote.pricePerVote} / vote</span>
                 </div>
-                <div class="event-card-footer" style="padding-top:var(--space-3);border-top:1px solid var(--border-color);margin-top:var(--space-3);">
+                <div class="event-card-footer" style="padding-top:var(--space-3);border-top:1px solid var(--border-color);margin-top:var(--space-3); flex-wrap:wrap; gap:var(--space-2);">
                   <div class="event-card-price">${PS.formatMoney(revenue, cur)}<span class="event-card-price-label">revenue</span></div>
                   <div class="flex gap-1">
                     <button class="btn btn-sm btn-secondary" data-edit="${vote.id}">Edit</button>
+                    <button class="btn btn-sm btn-secondary" onclick="window.location.href='vote-results.html?id=${vote.id}'">Results</button>
                     <button class="btn btn-sm btn-primary" onclick="window.location.href='manage-contestants.html?id=${vote.id}'">Manage</button>
                   </div>
                 </div>

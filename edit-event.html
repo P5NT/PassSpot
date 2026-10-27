@@ -15,42 +15,6 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="css/style.css" />
-    <style>
-      .schedule-row {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: var(--space-4);
-        align-items: center;
-        padding: var(--space-3) var(--space-4);
-        background-color: var(--surface-muted);
-        border-radius: var(--radius-md);
-        margin-bottom: var(--space-2);
-      }
-      .schedule-row-label {
-        font-size: var(--fs-sm);
-        font-weight: var(--fw-semibold);
-      }
-      .schedule-row .form-input {
-        height: 40px;
-        width: 130px;
-      }
-      .schedule-summary {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: var(--space-4);
-        background-color: var(--primary-50);
-        border: 1px solid var(--primary-200);
-        border-radius: var(--radius-md);
-        gap: var(--space-3);
-        flex-wrap: wrap;
-      }
-      .schedule-summary-text {
-        font-size: var(--fs-sm);
-        color: var(--primary-700);
-        font-weight: var(--fw-semibold);
-      }
-    </style>
   </head>
   <body>
     <div class="app-layout">
@@ -63,7 +27,8 @@
             <div>
               <h2 class="page-title">Edit Event</h2>
               <p class="page-subtitle">
-                Update your event details, schedule, or ticket pricing.
+                Update your event details, schedule, ticket pricing, or fee
+                handling.
               </p>
             </div>
           </div>
@@ -82,6 +47,9 @@
                 <div class="card mb-6">
                   <h3 class="card-title mb-4">Event image</h3>
                   <div id="imageUploadArea"></div>
+                  <p class="form-hint mt-3">
+                    JPG or PNG. Recommended 16:9 ratio.
+                  </p>
                 </div>
 
                 <!-- Event Type -->
@@ -134,7 +102,7 @@
                   </div>
                 </div>
 
-                <!-- Location (Physical Only) -->
+                <!-- Location (Physical) -->
                 <div class="card mb-6" id="physicalLocationCard">
                   <h3 class="card-title mb-4">Location</h3>
                   <div class="auth-form-row">
@@ -162,7 +130,7 @@
                   </div>
                 </div>
 
-                <!-- Online Link (Online Only) -->
+                <!-- Online Link -->
                 <div
                   class="card mb-6"
                   id="onlineLocationCard"
@@ -173,7 +141,12 @@
                     <label class="form-label" for="onlineLink"
                       >Meeting Link</label
                     >
-                    <input class="form-input" type="url" id="onlineLink" />
+                    <input
+                      class="form-input"
+                      type="url"
+                      id="onlineLink"
+                      placeholder="https://zoom.us/j/..."
+                    />
                   </div>
                 </div>
 
@@ -204,7 +177,6 @@
                       />
                     </div>
                   </div>
-                  <div id="scheduleArea"></div>
                 </div>
 
                 <!-- Ticket Types -->
@@ -221,9 +193,47 @@
                   </div>
                   <div id="ticketTypesList"></div>
                 </div>
+
+                <!-- Fee Handling -->
+                <div class="card mb-6">
+                  <h3 class="card-title mb-2">Who pays the Service Fee?</h3>
+                  <p class="text-xs text-muted mb-4">
+                    A 2% Service Fee applies to all transactions to cover
+                    payment processing. A 5% Platform Fee is also deducted from
+                    your payout. Choose who covers the 2% Service Fee.
+                  </p>
+                  <div class="radio-cards" style="grid-template-columns: 1fr">
+                    <label class="radio-card">
+                      <input type="radio" name="feeHandling" value="absorb" />
+                      <div class="radio-card-content">
+                        <div class="radio-card-title">
+                          I'll pay the Service Fee (Deducted from Payout)
+                        </div>
+                        <div class="radio-card-desc">
+                          Attendees see the standard ticket price. You pay both
+                          the 2% Service Fee and the 5% Platform Fee from your
+                          revenue.
+                        </div>
+                      </div>
+                    </label>
+                    <label class="radio-card">
+                      <input type="radio" name="feeHandling" value="pass" />
+                      <div class="radio-card-content">
+                        <div class="radio-card-title">
+                          Pass Service Fee to Attendee
+                        </div>
+                        <div class="radio-card-desc">
+                          A 2% Service Fee is added to the buyer's total at
+                          checkout. You still pay the 5% Platform Fee from your
+                          revenue.
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
               </div>
 
-              <!-- Preview & Publish -->
+              <!-- Preview & Save -->
               <div>
                 <div
                   class="card"
@@ -283,7 +293,6 @@
         window.PS_SHELL.renderSidebar("myEvents");
         window.PS_SHELL.renderTopbar("Edit Event");
 
-        // Get event ID from URL
         const params = new URLSearchParams(window.location.search);
         const eventId = params.get("id");
         const allEvents = PS_DATA.getEvents();
@@ -294,12 +303,11 @@
           return;
         }
 
-        // --- Populate Form with Existing Data ---
+        /* ============ POPULATE FORM ============ */
         document.getElementById("eventTitle").value = currentEvent.title || "";
         document.getElementById("eventDescription").value =
           currentEvent.description || "";
 
-        // Event Type
         const isOnline = currentEvent.eventType === "online";
         document.querySelector(
           `input[name="eventType"][value="${isOnline ? "online" : "physical"}"]`,
@@ -311,24 +319,16 @@
           ? "block"
           : "none";
 
-        // Location
-        document.getElementById("eventState").value = currentEvent.state || "";
         document.getElementById("eventCity").value = currentEvent.city || "";
         document.getElementById("eventVenue").value = currentEvent.venue || "";
         document.getElementById("onlineLink").value =
           currentEvent.onlineLink || "";
 
-        // Dates
-        // Format dates to YYYY-MM-DD
-        const formatForInput = (isoStr) => {
-          if (!isoStr) return "";
-          return isoStr.split("T")[0];
-        };
-
-        document.getElementById("eventStartDate").value = formatForInput(
+        const fmtDate = (iso) => (iso ? iso.split("T")[0] : "");
+        document.getElementById("eventStartDate").value = fmtDate(
           currentEvent.date,
         );
-        document.getElementById("eventEndDate").value = formatForInput(
+        document.getElementById("eventEndDate").value = fmtDate(
           currentEvent.endDate || currentEvent.date,
         );
 
@@ -342,9 +342,99 @@
         });
         stateSel.value = currentEvent.state || "";
 
-        // --- Load Existing Tickets ---
+        // Preserve existing fee handling
+        const existingFeeHandling = currentEvent.feeHandling || "absorb";
+        document.querySelector(
+          `input[name="feeHandling"][value="${existingFeeHandling}"]`,
+        ).checked = true;
+
+        /* ============ IMAGE ============ */
+        let currentImageData = currentEvent.imageData || null;
+        const imageArea = document.getElementById("imageUploadArea");
+
+        function renderImageArea() {
+          if (currentImageData) {
+            imageArea.innerHTML = `
+            <div style="position:relative;border-radius:var(--radius-lg);overflow:hidden;aspect-ratio:16/9;border:1px solid var(--border-color);">
+              <img src="${currentImageData}" style="width:100%;height:100%;object-fit:cover;">
+              <div style="position:absolute;top:var(--space-3);right:var(--space-3);display:flex;gap:var(--space-2);">
+                <label class="btn btn-sm btn-secondary" style="cursor:pointer;">Change<input type="file" accept="image/*" id="imgReplace" style="display:none;"></label>
+                <button type="button" class="btn btn-sm btn-danger" id="imgRemove">Remove</button>
+              </div>
+            </div>`;
+            document
+              .getElementById("imgReplace")
+              .addEventListener("change", (e) => {
+                if (e.target.files[0]) handleImage(e.target.files[0]);
+              });
+            document
+              .getElementById("imgRemove")
+              .addEventListener("click", () => {
+                currentImageData = null;
+                renderImageArea();
+                updatePreview();
+              });
+          } else {
+            imageArea.innerHTML = `
+            <div style="position:relative;border:2px dashed var(--border-color);border-radius:var(--radius-lg);background:var(--surface-muted);aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;">
+              <input type="file" accept="image/*" id="imgFile" style="position:absolute;inset:0;opacity:0;cursor:pointer;">
+              <div style="text-align:center;pointer-events:none;">
+                <div class="fw-semibold text-sm">Click or drag to upload</div>
+                <div class="text-xs text-muted">JPG or PNG · Max 5MB</div>
+              </div>
+            </div>`;
+            document
+              .getElementById("imgFile")
+              .addEventListener("change", (e) => {
+                if (e.target.files[0]) handleImage(e.target.files[0]);
+              });
+          }
+        }
+
+        function handleImage(file) {
+          if (!file.type.startsWith("image/")) return;
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            const img = new Image();
+            img.onload = () => {
+              const canvas = document.createElement("canvas");
+              const ratio = 1200 / 675;
+              let sx = 0,
+                sy = 0,
+                sw = img.width,
+                sh = img.height;
+              if (img.width / img.height > ratio) {
+                sw = img.height * ratio;
+                sx = (img.width - sw) / 2;
+              } else {
+                sh = img.width / ratio;
+                sy = (img.height - sh) / 2;
+              }
+              canvas.width = 1200;
+              canvas.height = 675;
+              canvas
+                .getContext("2d")
+                .drawImage(img, sx, sy, sw, sh, 0, 0, 1200, 675);
+              currentImageData = canvas.toDataURL("image/jpeg", 0.82);
+              renderImageArea();
+              updatePreview();
+              PS.toast("Image updated", "success");
+            };
+            img.src = evt.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+        renderImageArea();
+
+        /* ============ TICKETS ============ */
         let ticketTypes = [];
-        let ticketTypeCounter = 0;
+        if (currentEvent.ticketTiers && currentEvent.ticketTiers.length > 0) {
+          ticketTypes = currentEvent.ticketTiers.map((t) => ({ ...t }));
+        } else {
+          ticketTypes = [
+            { name: "Regular", price: currentEvent.price, qty: 100 },
+          ];
+        }
 
         function renderTicketTypes() {
           const wrap = document.getElementById("ticketTypesList");
@@ -375,11 +465,10 @@
             )
             .join("");
 
-          wrap.querySelectorAll("input").forEach((inp) => {
+          wrap.querySelectorAll("input[data-idx]").forEach((inp) => {
             inp.addEventListener("input", (e) => {
-              const idx = parseInt(e.target.dataset.idx);
-              const field = e.target.dataset.field;
-              ticketTypes[idx][field] = e.target.value;
+              const i = parseInt(e.target.dataset.idx);
+              ticketTypes[i][e.target.dataset.field] = e.target.value;
             });
           });
           wrap.querySelectorAll("[data-remove]").forEach((btn) => {
@@ -388,15 +477,6 @@
               renderTicketTypes();
             });
           });
-        }
-
-        // Populate tickets from existing event
-        if (currentEvent.ticketTiers && currentEvent.ticketTiers.length > 0) {
-          ticketTypes = currentEvent.ticketTiers.map((t) => ({ ...t }));
-        } else {
-          ticketTypes = [
-            { name: "Regular", price: currentEvent.price, qty: 100 },
-          ];
         }
         renderTicketTypes();
 
@@ -407,30 +487,62 @@
             renderTicketTypes();
           });
 
-        // --- Event Type Toggle ---
+        /* ============ EVENT TYPE TOGGLE ============ */
         document
           .querySelectorAll('input[name="eventType"]')
           .forEach((radio) => {
             radio.addEventListener("change", (e) => {
-              if (e.target.value === "online") {
-                document.getElementById("physicalLocationCard").style.display =
-                  "none";
-                document.getElementById("onlineLocationCard").style.display =
-                  "block";
-              } else {
-                document.getElementById("physicalLocationCard").style.display =
-                  "block";
-                document.getElementById("onlineLocationCard").style.display =
-                  "none";
-              }
+              const isOnline = e.target.value === "online";
+              document.getElementById("physicalLocationCard").style.display =
+                isOnline ? "none" : "block";
+              document.getElementById("onlineLocationCard").style.display =
+                isOnline ? "block" : "none";
+              updatePreview();
             });
           });
 
-        // --- Submit Update ---
+        /* ============ PREVIEW ============ */
+        function updatePreview() {
+          document.getElementById("previewTitle").textContent =
+            document.getElementById("eventTitle").value || "Event title";
+          const media = document.getElementById("previewMedia");
+          if (currentImageData) {
+            media.innerHTML = `<img src="${currentImageData}" style="width:100%;height:100%;object-fit:cover;">`;
+          } else {
+            media.innerHTML = `<div class="event-card-media-placeholder">${currentEvent.emoji || "🎫"}</div>`;
+          }
+          const isOnline =
+            document.querySelector('input[name="eventType"]:checked').value ===
+            "online";
+          if (isOnline) {
+            document.getElementById("previewLocation").textContent =
+              "Online Event";
+          } else {
+            const v = document.getElementById("eventVenue").value.trim();
+            const c = document.getElementById("eventCity").value.trim();
+            const s = stateSel.value;
+            document.getElementById("previewLocation").textContent =
+              [v, c, s].filter(Boolean).join(", ") || "Location";
+          }
+        }
+
+        document
+          .getElementById("eventTitle")
+          .addEventListener("input", updatePreview);
+        document
+          .getElementById("eventVenue")
+          .addEventListener("input", updatePreview);
+        document
+          .getElementById("eventCity")
+          .addEventListener("input", updatePreview);
+        stateSel.addEventListener("change", updatePreview);
+        updatePreview();
+
+        /* ============ SUBMIT ============ */
         document.getElementById("eventForm").addEventListener("submit", (e) => {
           e.preventDefault();
 
-          // Update data
+          // Update fields
           currentEvent.title = document
             .getElementById("eventTitle")
             .value.trim();
@@ -446,7 +558,7 @@
               .getElementById("onlineLink")
               .value.trim();
           } else {
-            currentEvent.state = document.getElementById("eventState").value;
+            currentEvent.state = stateSel.value;
             currentEvent.city = document
               .getElementById("eventCity")
               .value.trim();
@@ -455,7 +567,6 @@
               .value.trim();
           }
 
-          // Update date (keep the start time logic simple for edit)
           currentEvent.date =
             document.getElementById("eventStartDate").value +
             "T" +
@@ -463,45 +574,34 @@
           currentEvent.endDate =
             document.getElementById("eventEndDate").value +
             "T" +
-            (currentEvent.endDate?.split("T")[1] || "23:59");
+            ((currentEvent.endDate || "").split("T")[1] || "23:59");
 
-          // Update tickets
-          currentEvent.ticketTiers = ticketTypes;
-          currentEvent.price = ticketTypes[0].price;
+          // Update ticket tiers (with numeric conversion)
+          currentEvent.ticketTiers = ticketTypes.map((t) => ({
+            name: t.name,
+            price: parseInt(t.price) || 0,
+            qty: parseInt(t.qty) || 0,
+          }));
+          currentEvent.price = currentEvent.ticketTiers[0]?.price || 0;
+          currentEvent.capacity = currentEvent.ticketTiers.reduce(
+            (s, t) => s + t.qty,
+            0,
+          );
 
-          // Save using the same saveEvent function we built earlier
+          // Update fee handling
+          currentEvent.feeHandling = document.querySelector(
+            'input[name="feeHandling"]:checked',
+          ).value;
+
+          // Update image
+          currentEvent.imageData = currentImageData;
+
           PS_DATA.saveEvent(currentEvent);
-
           PS.toast("Event updated successfully!", "success");
           setTimeout(() => {
             window.location.href = "my-events.html";
-          }, 1000);
+          }, 800);
         });
-
-        // Simple preview updates
-        const updatePreview = () => {
-          document.getElementById("previewTitle").textContent =
-            document.getElementById("eventTitle").value || "Event title";
-          if (isOnline) {
-            document.getElementById("previewLocation").textContent =
-              "Online Event";
-          } else {
-            document.getElementById("previewLocation").textContent =
-              `${document.getElementById("eventVenue").value}, ${document.getElementById("eventCity").value}`;
-          }
-        };
-
-        document
-          .getElementById("eventTitle")
-          .addEventListener("input", updatePreview);
-        document
-          .getElementById("eventVenue")
-          .addEventListener("input", updatePreview);
-        document
-          .getElementById("eventCity")
-          .addEventListener("input", updatePreview);
-
-        updatePreview();
       });
     </script>
   </body>

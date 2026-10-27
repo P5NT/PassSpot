@@ -4132,3 +4132,260 @@ h5 {
     display: none !important;
   }
 }
+
+/* =========================================
+   TARGETED MOBILE FIXES
+   ========================================= */
+
+@media (max-width: 860px) {
+  /* 1. Topbar: allow wrapping but keep it clean */
+  .topbar {
+    padding: 0 var(--space-3) !important;
+    gap: var(--space-2) !important;
+    flex-wrap: nowrap;
+    overflow-x: auto; /* Allow horizontal scroll if it overflows */
+    scrollbar-width: none; /* Hide scrollbar */
+  }
+  .topbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .topbar-title {
+    font-size: var(--fs-base) !important;
+    flex-shrink: 0; /* Prevent the title from getting squished */
+  }
+
+  /* Hide bulky items to save space */
+  .wallet-chip-info,
+  .topbar-actions .currency-switch,
+  .topbar-actions > span.text-xs {
+    display: none !important;
+  }
+
+  /* Shrink icons */
+  .wallet-chip {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+  .topbar-actions .icon-btn {
+    width: 36px;
+    height: 36px;
+  }
+  .topbar-actions .avatar {
+    width: 32px;
+    height: 32px;
+    font-size: var(--fs-xs);
+  }
+  #mobileMenuBtn {
+    display: flex !important;
+  }
+
+  /* 2. Page Header: stack title and actions vertically */
+  .page-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: var(--space-4) !important;
+  }
+
+  /* 3. Page Actions: keep buttons natural size but wrap them */
+  .page-actions {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: row !important; /* Row so they sit side by side */
+    flex-wrap: wrap !important; /* Wrap if they don't fit */
+    gap: var(--space-2) !important;
+  }
+
+  .page-actions .btn,
+  .page-actions .form-select {
+    width: auto !important; /* Let buttons be their natural size */
+  }
+}
+
+@media (max-width: 768px) {
+  /* 4. Force side-by-side grids to stack */
+  .page-content div[style*="grid-template-columns:1.6fr 1fr"],
+  .page-content div[style*="grid-template-columns:1.5fr 1fr"],
+  .page-content div[style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-5) !important;
+  }
+
+  /* 5. Force the Help page 3-column grid to 1-column */
+  .page-content div[style*="grid-template-columns:repeat(3,1fr)"] {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-4) !important;
+  }
+
+  /* 6. Profile Header stack */
+  .profile-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: var(--space-4) !important;
+  }
+
+  .profile-header .btn {
+    width: 100% !important;
+  }
+}
+
+/* =========================================
+   UNIVERSAL MOBILE GRID STACKER
+========================================= */
+
+@media (max-width: 860px) {
+  /* Force the page to never scroll horizontally */
+  .app-layout,
+  .main-area,
+  .page-content {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Kill the inline grid layouts completely */
+  .page-content div[style*="display: grid"],
+  .page-content div[style*="display:grid"] {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: var(--space-5) !important;
+  }
+
+  /* Ensure nothing else overflows */
+  .page-content * {
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+  }
+
+  /* Fix the inline grids inside the create-ad wizard */
+  #adGrid {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+}
+
+/* =========================================
+   CATEGORY PREVIEW OVERFLOW FIX
+========================================= */
+
+/* Target the container holding the category text in the summary */
+#prevCats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-height: 80px; /* Limit height */
+  overflow-y: auto; /* Scroll if too many */
+  justify-content: flex-end; /* Keep them pushed to the right */
+  padding-right: 4px;
+}
+
+/* Style the little badges inside the preview */
+#prevCats .preview-badge {
+  background-color: var(--primary-50);
+  color: var(--primary-color);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--primary-100);
+  white-space: nowrap;
+}
+
+/* =========================================
+   MOBILE LEADERBOARD FIX
+========================================= */
+
+@media (max-width: 768px) {
+  /* 1. Change row to stack vertically */
+  .leaderboard-row {
+    flex-direction: column;
+    align-items: stretch; /* Stretch to full width */
+    gap: var(--space-3);
+    position: relative; /* For absolute positioning of rank/avatar */
+    padding-left: 60px; /* Make room for rank and avatar on the left */
+  }
+
+  /* 2. Move rank and avatar to the left edge */
+  .rank-badge {
+    position: absolute;
+    top: var(--space-4);
+    left: var(--space-4);
+  }
+
+  .leaderboard-avatar {
+    position: absolute;
+    top: calc(var(--space-4) + 40px); /* Below the badge */
+    left: var(--space-4);
+    width: 40px;
+    height: 40px;
+  }
+
+  /* 3. Fix the info block */
+  .leaderboard-info {
+    width: 100%;
+  }
+
+  .leaderboard-name {
+    font-size: var(--fs-lg);
+    margin-bottom: var(--space-2);
+  }
+
+  /* 4. Fix the stats row (Votes and Percentage) */
+  .leaderboard-stats {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: var(--space-2);
+  }
+
+  /* 5. Fix the revenue block at the bottom */
+  .leaderboard-row > div:last-child {
+    text-align: left !important; /* Align left instead of right */
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: 1px dashed var(--border-color);
+  }
+}
+
+/* =========================================
+   MOBILE LEADERBOARD OVERLAP FIX
+========================================= */
+
+@media (max-width: 768px) {
+  /* Increase left padding to make room for rank and avatar */
+  .leaderboard-row {
+    padding-left: 80px !important; /* Pushes text to the right */
+    padding-top: var(--space-5) !important;
+    padding-bottom: var(--space-5) !important;
+    position: relative;
+  }
+
+  /* Position the Rank Badge (Top Left) */
+  .rank-badge {
+    position: absolute;
+    top: var(--space-5);
+    left: var(--space-4);
+  }
+
+  /* Position the Avatar (Bottom Left, under the badge) */
+  .leaderboard-avatar {
+    position: absolute;
+    top: 60px; /* Space between badge and avatar */
+    left: var(--space-4);
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Make sure the name doesn't wrap awkwardly */
+  .leaderboard-name {
+    font-size: var(--fs-lg);
+    line-height: 1.2;
+    margin-bottom: var(--space-2);
+  }
+
+  /* Ensure the bar sits neatly below the stats */
+  .leaderboard-stats {
+    margin-bottom: var(--space-2);
+  }
+}

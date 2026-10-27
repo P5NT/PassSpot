@@ -95,11 +95,6 @@
         display: flex;
         flex-direction: column;
         gap: var(--space-3);
-        transition: all var(--transition-base);
-      }
-      .ticket-wallet-card:hover {
-        border-color: var(--border-strong);
-        box-shadow: var(--shadow-md);
       }
       .qr-box {
         background: #ffffff;
@@ -119,7 +114,6 @@
         font-family: "JetBrains Mono", monospace;
         font-size: var(--fs-xs);
         color: var(--text-tertiary);
-        letter-spacing: 0.02em;
       }
       .wallet-summary {
         background-color: var(--surface-muted);
@@ -187,26 +181,17 @@
         const main = document.getElementById("checkoutMain");
 
         if (!event) {
-          main.innerHTML = `
-          <div class="checkout-layout" style="grid-template-columns:1fr;max-width:560px;">
-            <div class="empty-state">
-              <div class="empty-state-icon">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
-              </div>
-              <h3 class="empty-state-title">Event not found</h3>
-              <p class="empty-state-text">The event link is invalid or the event has been removed.</p>
-              <a href="index.html" class="btn btn-primary">Go to Pass Spot</a>
-            </div>
-          </div>`;
+          main.innerHTML = `<div class="checkout-layout" style="grid-template-columns:1fr;max-width:560px;"><div class="empty-state"><h3 class="empty-state-title">Event not found</h3><a href="index.html" class="btn btn-primary">Go Home</a></div></div>`;
           return;
         }
 
+        /* =========================================
+         FEE CONFIGURATION
+         - Platform Fee: 5% (always deducted from organizer)
+         - Service Fee: 2% (buyer pays ONLY if organizer chose to pass)
+      ========================================= */
+        const SERVICE_FEE_RATE = 0.02; // 2% — only if organizer passes
         const feeHandling = event.feeHandling || "absorb";
-        const adminSettings = PS.store.get("admin_settings", {
-          platformFee: 5,
-        });
-        const PLATFORM_FEE_PERCENT =
-          (event.platformFee || adminSettings.platformFee) / 100;
         const isOnline = event.eventType === "online";
 
         const state = {
@@ -244,7 +229,6 @@
           ? `<img src="${event.imageData}" alt="${event.title}" style="width:60px;height:60px;border-radius:var(--radius-md);object-fit:cover;flex-shrink:0;">`
           : `<div style="width:60px;height:60px;border-radius:var(--radius-md);background:var(--primary-50);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">${event.emoji || "🎫"}</div>`;
 
-        // Location display logic
         const locationText = isOnline
           ? "Online Event (Virtual)"
           : `${event.venue}, ${event.city}`;
@@ -277,12 +261,12 @@
                 <div class="card mb-4">
                   <h3 class="card-title mb-4">Choose your ticket</h3>
                   <div id="ticketOptions"></div>
-                  <div class="form-group mt-4">
+                  <div class="form-group mt-4" id="qtyContainer">
                     <label class="form-label" for="qty">Quantity <span class="required">*</span></label>
                     <div class="flex items-center gap-3">
                       <button type="button" class="btn btn-secondary" id="qtyMinus">−</button>
                       <input class="form-input" type="number" id="qty" value="1" min="1" max="10" style="max-width:100px;text-align:center;" required>
-                      <button class="btn btn-secondary" id="qtyPlus">+</button>
+                      <button type="button" class="btn btn-secondary" id="qtyPlus">+</button>
                     </div>
                   </div>
                 </div>
@@ -296,7 +280,6 @@
                   <div id="promoFeedback" class="mt-2"></div>
                 </div>
 
-                <!-- Payment Method (Hidden if Free) -->
                 <div class="card mb-4" id="paymentMethodCard">
                   <h3 class="card-title mb-4">Payment method</h3>
                   <div class="radio-cards" style="grid-template-columns:1fr;">
@@ -338,12 +321,10 @@
                   <span class="text-muted text-sm">Discount</span>
                   <span class="fw-semibold text-sm text-success" id="sumDiscount">—</span>
                 </div>
-                
                 <div class="summary-row" id="feeRow" style="display:none;">
-                  <span class="text-muted text-sm">Service fee</span>
+                  <span class="text-muted text-sm" id="feeLabel">Service Fee (2%)</span>
                   <span class="fw-semibold text-sm" id="sumFee">—</span>
                 </div>
-                
                 <div class="summary-row total"><span>Total</span><span id="sumTotal">—</span></div>
               </div>
             </aside>
@@ -385,6 +366,16 @@
             const tier = tiers.find((t) => t.id === state.ticketType);
             const isFree = tier.price === 0;
 
+            // Lock quantity to 1 for free tickets
+            const qtyContainer = document.getElementById("qtyContainer");
+            if (isFree) {
+              state.qty = 1;
+              if (qtyEl) qtyEl.value = 1;
+              if (qtyContainer) qtyContainer.style.display = "none";
+            } else {
+              if (qtyContainer) qtyContainer.style.display = "block";
+            }
+
             const subtotal = tier.price * state.qty;
             let discount = 0;
             if (state.appliedPromo) {
@@ -395,10 +386,10 @@
             }
             const afterDiscount = subtotal - discount;
 
-            // If ticket is free, no fees apply
+            // SERVICE FEE: 2% added ONLY if organizer chose to pass AND ticket isn't free
             const fee =
               feeHandling === "pass" && !isFree
-                ? afterDiscount * PLATFORM_FEE_PERCENT
+                ? afterDiscount * SERVICE_FEE_RATE
                 : 0;
             const total = afterDiscount + fee;
 
@@ -411,8 +402,11 @@
               ? "Free"
               : PS.formatMoney(subtotal, state.currency);
 
+            // Show service fee row only if passed and not free
             if (feeHandling === "pass" && !isFree) {
               document.getElementById("feeRow").style.display = "flex";
+              document.getElementById("feeLabel").textContent =
+                "Service Fee (2%)";
               document.getElementById("sumFee").textContent = PS.formatMoney(
                 fee,
                 state.currency,
@@ -425,7 +419,7 @@
               ? "Free"
               : PS.formatMoney(total, state.currency);
 
-            // Handle UI changes for Free tickets
+            // UI changes for free tickets
             const payBtn = document.getElementById("payBtn");
             const paymentCard = document.getElementById("paymentMethodCard");
             const promoCard = document.getElementById("promoCard");
@@ -433,7 +427,7 @@
             if (isFree) {
               payBtn.textContent = "Claim Free Tickets";
               paymentCard.style.display = "none";
-              promoCard.style.display = "none"; // No need for promo codes on free tickets
+              promoCard.style.display = "none";
             } else {
               payBtn.textContent = "Pay and get tickets";
               paymentCard.style.display = "block";
@@ -506,7 +500,7 @@
               PS.clearFieldError(guestNameEl);
               PS.clearFieldError(guestEmailEl);
               if (!guestNameEl.value.trim()) {
-                PS.setFieldError(guestNameEl, "Please enter your full name.");
+                PS.setFieldError(guestNameEl, "Please enter your name.");
                 valid = false;
               }
               if (!guestEmailEl.value.trim()) {
@@ -545,7 +539,7 @@
                 const afterDiscount = subtotal - discount;
                 const fee =
                   feeHandling === "pass" && !isFree
-                    ? afterDiscount * PLATFORM_FEE_PERCENT
+                    ? afterDiscount * SERVICE_FEE_RATE
                     : 0;
                 const total = afterDiscount + fee;
 
@@ -556,7 +550,7 @@
                   eventVenue: isOnline
                     ? "Online Event"
                     : `${event.venue}, ${event.city}, ${event.state}`,
-                  onlineLink: isOnline ? event.onlineLink : null, // <--- Save the link
+                  onlineLink: isOnline ? event.onlineLink : null,
                   ticketType: tier.name,
                   qty: state.qty,
                   priceEach: tier.price,
@@ -587,8 +581,6 @@
         }
 
         function renderWallet(order) {
-          const shareUrl = `${window.location.origin}${window.location.pathname.replace("checkout.html", "event-details.html")}?id=${order.eventId}`;
-
           main.innerHTML = `
           <div class="wallet-wrap">
             <div class="wallet-header">
@@ -603,27 +595,28 @@
             <div class="wallet-summary">
               <div class="flex justify-between items-center mb-2" style="flex-wrap:wrap;gap:var(--space-2);">
                 <div><div class="text-xs text-muted">Order ID</div><div class="mono fw-bold">${order.orderId}</div></div>
-                <span class="badge ${order.total === 0 ? "badge-success" : "badge-success"}">${order.total === 0 ? "Claimed" : "Paid"}</span>
+                <span class="badge badge-success">${order.total === 0 ? "Claimed" : "Paid"}</span>
               </div>
               <div class="summary-row"><span class="text-muted text-sm">${order.eventTitle}</span><span class="fw-semibold text-sm">${PS.formatDate(order.eventDate)}</span></div>
               <div class="summary-row"><span class="text-muted text-sm">${order.ticketType} × ${order.qty}</span><span class="fw-semibold text-sm">${order.total === 0 ? "Free" : PS.formatMoney(order.total, order.currency)}</span></div>
             </div>
-            
+
             <div class="flex justify-between items-center mt-8 mb-4" style="flex-wrap:wrap;gap:var(--space-3);">
-              <div><h3 class="section-title" style="font-size:var(--fs-xl);">Your tickets</h3><p class="section-subtitle">${isOnline ? "Access your online event below." : "Each ticket has its own QR code."}</p></div>
+              <div>
+                <h3 class="section-title" style="font-size:var(--fs-xl);">Your tickets</h3>
+                <p class="section-subtitle">${isOnline ? "Access your online event below." : "Each ticket has its own QR code."}</p>
+              </div>
             </div>
 
-            <div class="ticket-wallet-grid" id="ticketGrid">
+            <div class="ticket-wallet-grid">
               ${order.tickets
                 .map(
                   (t) => `
                 <div class="ticket-wallet-card">
                   <span class="badge badge-primary" style="align-self:flex-start;">Ticket ${t.index} of ${t.total}</span>
-                  
                   ${
                     isOnline
                       ? `
-                    <!-- ONLINE EVENT TICKET (No QR Code) -->
                     <div style="text-align:center; padding: var(--space-6) 0;">
                       <div style="width:64px;height:64px;border-radius:50%;background:var(--primary-50);color:var(--primary-color);display:flex;align-items:center;justify-content:center;margin:0 auto var(--space-4);">
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10l4.55-2.27a1 1 0 011.45.89v6.76a1 1 0 01-1.45.89L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
@@ -632,12 +625,12 @@
                     </div>
                   `
                       : `
-                    <!-- PHYSICAL EVENT TICKET (QR Code) -->
-                    <div class="qr-box"><svg width="180" height="180" viewBox="0 0 200 200"><rect x="15" y="15" width="170" height="170" fill="none" stroke="#000" stroke-width="2"/></svg></div>
+                    <div class="qr-box">
+                      <svg width="180" height="180" viewBox="0 0 200 200"><rect x="15" y="15" width="170" height="170" fill="none" stroke="#000" stroke-width="2"/></svg>
+                    </div>
                     <div class="ticket-wallet-label">${t.token}</div>
                   `
                   }
-                  
                   <div class="text-sm text-center"><div class="fw-semibold">${t.attendeeName || order.guestName}</div></div>
                 </div>
               `,
